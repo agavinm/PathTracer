@@ -10,6 +10,8 @@
 #ifndef TRABAJO1_TRANSFORM_HPP
 #define TRABAJO1_TRANSFORM_HPP
 
+#include "HCoord.hpp"
+
 
 // Interface:
 
@@ -40,6 +42,11 @@ struct Transform {
     friend Transform rotationZ(float th);
     friend Transform changeBase(float u[3], float v[3], float w[3], float o[3]);
     friend Transform inverse(Transform t);
+
+    Transform operator+(const Transform &t);
+    Transform operator-(const Transform &t);
+    Transform operator*(const Transform &t);
+    Transform operator*(const HCoord &t);
 
 private:
     float e[4][4]; // Elements (row, column)
