@@ -4,10 +4,10 @@
 // Author: Abel Naya Forcano 544125
 // Date:   Septiembre 2019
 // Coms:   Informática Gráfica - Trabajo recomendado 1
-//         Biblioteca de funciones de geometría
+//         Biblioteca de operaciones con vectores y matrices
 //******************************************************************************
 
-#ifndef TRABAJO1_GEOMETRIA_HPP
-#define TRABAJO1_GEOMETRIA_HPP
+#ifndef TRABAJO1_OPERATIONS_HPP
+#define TRABAJO1_OPERATIONS_HPP
 
-#endif //TRABAJO1_GEOMETRIA_HPP
+#endif //TRABAJO1_OPERATIONS_HPP
