@@ -1,5 +1,5 @@
 Clase matriz (transformaciones) - Class Transform
-Class HPoint
+Class HCoord
 Biblioteca operaciones: inversa, multiplicar por matriz y vector, producto escalar y vectorial, módulo, vector entre dos puntos. Operaciones de creación de transformaciones.
 Objetos geométricos: esfera
 Biblioteca geométrica: normal a la esfera, calcular punto en esfera dadas coordenadas
