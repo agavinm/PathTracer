@@ -10,8 +10,9 @@
 #ifndef TRABAJO1_TRANSFORM_HPP
 #define TRABAJO1_TRANSFORM_HPP
 
-#include "HCoord.hpp"
+static const int N = 4;
 
+#include "HCoord.hpp"
 
 // Interface:
 
@@ -37,9 +38,20 @@ Transform inverse(const Transform &t);
 struct Transform {
     float e[4][4]; // Elements (row, column)
 
-    Transform& operator=(const Transform &t);
-    Transform operator*(const Transform &t) const;
-    HCoord operator*(const HCoord &t) const;
+    /**
+     * Copy
+     */
+    Transform &operator=(const Transform &other);
+
+    /**
+     * Multiplication matrix * matrix -> matrix
+     */
+    Transform operator*(const Transform &right) const;
+
+    /**
+     * Multiplication matrix * vector -> vector
+     */
+    HCoord operator*(const HCoord &right) const;
 };
 
 #endif //TRABAJO1_TRANSFORM_HPP

@@ -7,7 +7,7 @@
 //******************************************************************************
 
 #include "HCoord.hpp"
-#include "Geometric.cpp"
+#include "Geometric.hpp"
 #include <iostream>
 
 using namespace std;
@@ -40,13 +40,13 @@ int main() {
     cout
             << "·¬· From the station A you need to point the death, I mean, the quantum catapult ray to local coordinates: "
             << dirAtoB << endl;
-    if (dirAtoB.z < 0) {
+    if (dirAtoB.z() < 0) {
         cout << "._. I'm afraid I can't do that Dave";
     }
 
-    cout << "From the station B you need to point the receiver to local coordinates: " << dirBtoA << endl;
-    if (dirBtoA.z < 0) {
-        cout << " ._. I Can't Let You Do That Starfox";
+    cout << "^.^ From the station B you need to point the receiver to local coordinates: " << dirBtoA << endl;
+    if (dirBtoA.z() < 0) {
+        cout << " O_o I Can't Let You Do That Starfox";
     }
 
     return 0;

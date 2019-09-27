@@ -37,7 +37,13 @@ std::ostream& operator<<(std::ostream &o, const HCoord &h);
 // Declarations:
 
 struct HCoord {
-    float x, y, z, w; // Coordinates
+    float e[4]; // Coordinates
+
+    float x() const; // x/w
+    float y() const; // y/w
+    float z() const; // z/w
+
+    bool isVector() const; // w!=0
 
     HCoord& operator=(const HCoord &h);
     bool operator==(const HCoord &h) const;
