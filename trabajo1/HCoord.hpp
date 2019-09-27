@@ -23,7 +23,7 @@ HCoord point(float x, float y, float z);
 
 HCoord direction(float x, float y, float z);
 
-HCoord dot(const HCoord &a, const HCoord &b);
+float dot(const HCoord &a, const HCoord &b);
 
 HCoord cross(const HCoord &a, const HCoord &b);
 
