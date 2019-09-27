@@ -38,8 +38,8 @@ struct Transform {
     float e[4][4]; // Elements (row, column)
 
     Transform& operator=(const Transform &t);
-    Transform operator*(const Transform &t);
-    HCoord operator*(const HCoord &t);
+    Transform operator*(const Transform &t) const;
+    HCoord operator*(const HCoord &t) const;
 };
 
 #endif //TRABAJO1_TRANSFORM_HPP

@@ -110,13 +110,13 @@ Transform &Transform::operator=(const Transform &t) {
     return *this;
 }
 
-Transform Transform::operator*(const Transform &t) {
+Transform Transform::operator*(const Transform &t) const {
     //TODO
 
     return Transform();
 }
 
-HCoord Transform::operator*(const HCoord &t) {
+HCoord Transform::operator*(const HCoord &t) const {
     //TODO
 
     return HCoord();
