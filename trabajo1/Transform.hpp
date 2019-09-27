@@ -17,9 +17,9 @@
 
 struct Transform;
 
-Transform translation(float t[3]);
+Transform translation(const HCoord &t);
 
-Transform scale(float s[3]);
+Transform scale(const HCoord &s);
 
 Transform rotationX(float th);
 
@@ -27,31 +27,19 @@ Transform rotationY(float th);
 
 Transform rotationZ(float th);
 
-Transform changeBase(float u[3], float v[3], float w[3], float o[3]);
+Transform changeBase(const HCoord &u, const HCoord &v, const HCoord &w, const HCoord &o);
 
-Transform inverse(Transform t);
+Transform inverse(const Transform &t);
 
 
 // Declarations:
 
 struct Transform {
-    friend Transform translation(float t[3]);
-    friend Transform scale(float s[3]);
-    friend Transform rotationX(float th);
-    friend Transform rotationY(float th);
-    friend Transform rotationZ(float th);
-    friend Transform changeBase(float u[3], float v[3], float w[3], float o[3]);
-    friend Transform inverse(Transform t);
-
-    Transform operator+(const Transform &t);
-    Transform operator-(const Transform &t);
-    Transform operator*(const Transform &t);
-    Transform operator*(const HCoord &t);
-
-private:
     float e[4][4]; // Elements (row, column)
 
-    friend Transform identity();
+    Transform& operator=(const Transform &t);
+    Transform operator*(const Transform &t);
+    HCoord operator*(const HCoord &t);
 };
 
 #endif //TRABAJO1_TRANSFORM_HPP

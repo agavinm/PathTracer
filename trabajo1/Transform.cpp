@@ -27,20 +27,20 @@ Transform identity() {
     return m;
 }
 
-Transform translation(float t[3]) {
+Transform translation(const HCoord &t) {
     Transform m = identity();
-    m.e[0][3] = t[0];
-    m.e[1][3] = t[1];
-    m.e[2][3] = t[2];
+    m.e[0][3] = t.x;
+    m.e[1][3] = t.y;
+    m.e[2][3] = t.z;
 
     return m;
 }
 
-Transform scale(float s[3]) {
+Transform scale(const HCoord &s) {
     Transform m = identity();
-    m.e[0][0] = s[0];
-    m.e[1][1] = s[1];
-    m.e[2][2] = s[2];
+    m.e[0][0] = s.x;
+    m.e[1][1] = s.y;
+    m.e[2][2] = s.z;
 
     return m;
 }
@@ -75,26 +75,49 @@ Transform rotationZ(float th) {
     return m;
 }
 
-Transform changeBase(float u[3], float v[3], float w[3], float o[3]) {
+Transform changeBase(const HCoord &u, const HCoord &v, const HCoord &w, const HCoord &o) {
     Transform m = identity();
-    m.e[0][0] = u[0];
-    m.e[1][0] = u[1];
-    m.e[2][0] = u[2];
-    m.e[0][1] = v[0];
-    m.e[1][1] = v[1];
-    m.e[2][1] = v[2];
-    m.e[0][2] = w[0];
-    m.e[1][2] = w[1];
-    m.e[2][2] = w[2];
-    m.e[0][3] = o[0];
-    m.e[1][3] = o[1];
-    m.e[2][3] = o[2];
+    m.e[0][0] = u.x;
+    m.e[1][0] = u.y;
+    m.e[2][0] = u.z;
+    m.e[0][1] = v.x;
+    m.e[1][1] = v.y;
+    m.e[2][1] = v.z;
+    m.e[0][2] = w.x;
+    m.e[1][2] = w.y;
+    m.e[2][2] = w.z;
+    m.e[0][3] = o.x;
+    m.e[1][3] = o.y;
+    m.e[2][3] = o.z;
     return m;
 }
 
-Transform inverse(Transform t) {
-    Transform m = identity();
+Transform inverse(const Transform &t) {
     //TODO
 
-    return m;
+    return Transform();
+}
+
+// Operators
+
+Transform &Transform::operator=(const Transform &t) {
+    for (int i=0; i<4; i++) {
+        for (int j=0; j<4; j++) {
+            this->e[i][j] = t.e[i][j];
+        }
+    }
+
+    return *this;
+}
+
+Transform Transform::operator*(const Transform &t) {
+    //TODO
+
+    return Transform();
+}
+
+HCoord Transform::operator*(const HCoord &t) {
+    //TODO
+
+    return HCoord();
 }

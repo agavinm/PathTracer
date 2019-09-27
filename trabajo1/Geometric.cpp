@@ -4,7 +4,6 @@
 // Author: Abel Naya Forcano 544125
 // Date:   Septiembre 2019
 // Coms:   Informática Gráfica - Trabajo recomendado 1
-//         Transform Matrix ADT
 //******************************************************************************
 
 #include "HCoord.hpp"
@@ -43,7 +42,7 @@ Planet createPlanet(HCoord center, HCoord axis, HCoord city) {
 
     // create longitudeDir
     planet.longitudeDir = cross(axis, cityVect); // WARNING: maybe needs to be negated
-    if (planet.longitudeDir == HCoord.ZERO) {
+    if (planet.longitudeDir == zeroHCoord()) { //HCoord.ZERO) {
         throw "City can't be on the poles";
     }
     planet.longitudeDir = norm(planet.longitudeDir);
@@ -62,7 +61,7 @@ Station getStation(Planet planet, float inclination, float azimut) {
     Transform transform = translation(planet.sphere.center) * rotationX(azimut) * rotationY(inclination); // WARNING: maybe azimut and/or inclination needs to be negated
 
     // apply transformation
-    station.position = transform * HCoord(0, 0, planet.sphere.radius);
+    station.position = transform * point(0, 0, planet.sphere.radius); //HCoord(0, 0, planet.sphere.radius);
     station.latitudeDir = transform * planet.latitudeDir;
     station.longitudeDir = transform * planet.longitudeDir;
 
