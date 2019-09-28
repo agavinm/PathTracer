@@ -17,19 +17,19 @@
 
 struct Sphere {
     HCoord center; // center of sphere (UCS)
-    float radius; // radius of sphere (>0)
+    float radius; // radius of sphere (>=0)
 };
 
 struct Planet {
     Sphere sphere; // planet as sphere
-    HCoord longitudeDir; // azimut vector from local (0,0,1) [i]
-    HCoord latitudeDir; // inclination vector from local (0,0,1) [j]
+    HCoord axisX; // local X axis (UCS)
+    HCoord axisY; // local Y axis (UCS)
 };
 
 struct Station {
     HCoord position; // position of station (UCS)
-    HCoord longitudeDir; // azimut positive vector (localCS) [i]
-    HCoord latitudeDir; // inclination negative vector (localCS) [j]
+    HCoord axisX; // local X axis (UCS)
+    HCoord axisY; // local Y axis (UCS)
 };
 
 // Functions

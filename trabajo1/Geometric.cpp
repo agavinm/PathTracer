@@ -22,15 +22,15 @@ Planet createPlanet(const HCoord &center, const HCoord &axis, const HCoord &city
         throw "Radius of planet can't be deduced: axis module is not double of city distance to center";
     }
 
-    // create longitudeDir
-    planet.longitudeDir = cross(axis, cityVect); // WARNING: maybe needs to be negated
-    if (planet.longitudeDir == zeroHCoord()) { //HCoord.ZERO) {
+    // create axisX
+    planet.axisX = cross(axis, cityVect);
+    if (planet.axisX == point(0, 0, 0)) {
         throw "City can't be on the poles";
     }
-    planet.longitudeDir = norm(planet.longitudeDir);
+    planet.axisX = norm(planet.axisX);
 
-    // create latitudeDir
-    planet.latitudeDir = norm(cross(axis, planet.longitudeDir)); // WARNING: maybe needs to be negated
+    // create axisY
+    planet.axisY = norm(cross(axis, planet.axisX));
 
     // return
     return planet;
@@ -40,17 +40,22 @@ Station getStation(const Planet &planet, float inclination, float azimut) {
     Station station;
 
     // create transformation
-    Transform transform = translation(planet.sphere.center) * rotationX(azimut) * rotationY(inclination); // WARNING: maybe azimut and/or inclination needs to be negated
+    Transform transform = changeFromBase(planet.axisX, planet.axisY, cross(planet.axisX, planet.axisY), planet.sphere.center)
+                          * rotationZ(azimut)
+                          * rotationX(inclination);
 
     // apply transformation
-    station.position = transform * point(0, 0, planet.sphere.radius); //HCoord(0, 0, planet.sphere.radius);
-    station.latitudeDir = transform * planet.latitudeDir;
-    station.longitudeDir = transform * planet.longitudeDir;
+    station.position = transform * point(0, 0, planet.sphere.radius);
+    station.axisX = transform * vector(1, 0, 0);
+    station.axisY = transform * vector(0, 1, 0);
 
     return station;
 }
 
 
 HCoord getLocalDirection(const Station &local, const Station &other) {
-    return changeBase(local.longitudeDir, local.latitudeDir, cross(local.longitudeDir, local.latitudeDir), local.position) * other.position;
+    // translate position of other to local basei
+    return norm(vectorify(
+            changeToBase(local.axisX, local.axisY, cross(local.axisX, local.axisY), local.position) * other.position
+    ));
 }

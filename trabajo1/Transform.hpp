@@ -10,8 +10,6 @@
 #ifndef TRABAJO1_TRANSFORM_HPP
 #define TRABAJO1_TRANSFORM_HPP
 
-static const int N = 4;
-
 #include "HCoord.hpp"
 
 // Interface:
@@ -28,7 +26,9 @@ Transform rotationY(float th);
 
 Transform rotationZ(float th);
 
-Transform changeBase(const HCoord &u, const HCoord &v, const HCoord &w, const HCoord &o);
+Transform changeFromBase(const HCoord &u, const HCoord &v, const HCoord &w, const HCoord &o);
+
+Transform changeToBase(const HCoord &u, const HCoord &v, const HCoord &w, const HCoord &o);
 
 Transform inverse(const Transform &t);
 

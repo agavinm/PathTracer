@@ -9,98 +9,180 @@
 
 #include "HCoord.hpp"
 #include <cmath>
+#include <cassert>
 
 using namespace std;
 
 
-HCoord zeroHCoord() {
-    HCoord h;
-    h.x = 0.0f;
-    h.y = 0.0f;
-    h.z = 0.0f;
-    h.w = 0.0f;
-
-    return h;
-}
-
 HCoord point(float x, float y, float z) {
     HCoord h;
-    h.x = x;
-    h.y = y;
-    h.z = z;
-    h.w = 1.0f;
-
+    h.e[0] = x;
+    h.e[1] = y;
+    h.e[2] = z;
+    h.e[3] = 1.0f;
     return h;
 }
 
-HCoord direction(float x, float y, float z) {
+HCoord vector(float x, float y, float z) {
     HCoord h;
-    h.x = x;
-    h.y = y;
-    h.z = z;
-    h.w = 0.0f;
-
+    h.e[0] = x;
+    h.e[1] = y;
+    h.e[2] = z;
+    h.e[3] = 0.0f;
     return h;
 }
 
 float dot(const HCoord &a, const HCoord &b) {
-    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+    assert(a.isVector() && b.isVector());
+
+    return a.e[0] * b.e[0] + a.e[1] * b.e[1] + a.e[2] * b.e[2];
 }
 
-HCoord cross(const HCoord &a, const HCoord &b) { // w component ignored
-    HCoord h;
-    h.x = a.y * b.z - a.z * b.y;
-    h.y = a.z * b.x - a.x * b.z;
-    h.z = a.x * b.y - a.y * b.x;
-    //h.w = a.w * b.w;
+HCoord cross(const HCoord &a, const HCoord &b) {
+    assert(a.isVector() && b.isVector());
 
+    HCoord h;
+    h.e[0] = a.e[1] * b.e[2] - a.e[2] * b.e[1];
+    h.e[1] = a.e[2] * b.e[0] - a.e[0] * b.e[2];
+    h.e[2] = a.e[0] * b.e[1] - a.e[1] * b.e[0];
+    h.e[3] = 0;
     return h;
 }
 
 HCoord norm(const HCoord &h) {
-    //TODO: La norma de un vector es un escalar
-    return HCoord();
+    assert(h.isVector());
+
+    HCoord n;
+    for (int i = 0; i < 3; i++) {
+        n.e[i] = h.e[i] / mod(h);
+    }
+    n.e[3] = 0;
+    return n;
 }
 
 float mod(const HCoord &h) {
-    return sqrt(h.x * h.x + h.y * h.y + h.z * h.z); // w component ignored
+    assert(h.isVector());
+    return sqrt(h.e[0] * h.e[0] + h.e[1] * h.e[1] + h.e[2] * h.e[2]);
 }
 
-ostream& operator<<(ostream &o, const HCoord &h) {
-    o << "(" << h.x << ", " << h.y << ", " << h.z << ", " << h.w << ")";
+HCoord vectorify(const HCoord &p) {
+    assert(!p.isVector());
 
+    HCoord v = p;
+    v.e[3] = 0;
+    return v;
+}
+
+ostream &operator<<(ostream &o, const HCoord &h) {
+    if (h.isVector()) {
+        o << "Vector(" << h.e[0] << ", " << h.e[1] << ", " << h.e[2] << ")";
+    } else {
+        o << "Point(" << h.x() << ", " << h.y() << ", " << h.z() << ")";
+    }
     return o;
 }
 
 HCoord &HCoord::operator=(const HCoord &h) {
-    this->x = h.x;
-    this->y = h.y;
-    this->z = h.z;
-    this->w = h.w;
-
+    for (int i = 0; i < 4; i++) {
+        this->e[i] = h.e[i];
+    }
     return *this;
 }
 
 bool HCoord::operator==(const HCoord &h) const {
-    return this->x == h.x && this->y == h.y && this->z == h.z && this->w == h.w;
+    // check if one is vector and the other isn't
+    if (h.isVector() != this->isVector()) return false;
+
+    if (h.isVector()) {
+        // two vectors, no third component
+        return this->e[0] == h.e[0] && this->e[1] == h.e[1] && this->e[2] == h.e[2];
+    } else {
+        // two points, same coordinates
+        return this->x() == h.x() && this->y() == h.y() && this->z() == h.z();
+    }
 }
 
-HCoord HCoord::operator+(const HCoord &h) const { // w component ignored
+HCoord HCoord::operator+(const HCoord &right) const {
     HCoord v;
-    v.x = this->x + h.x;
-    v.y = this->y + h.y;
-    v.z = this->z + h.z;
-    //v.w = this->w * h.w;
-
+    if (this->isVector()) {
+        if (right.isVector()) {
+            // vector + vector
+            for (int i = 0; i < 3; ++i) {
+                v.e[i] = this->e[i] + right.e[i];
+            }
+            v.e[3] = 0;
+        } else {
+            // vector + point
+            for (int i = 0; i < 3; ++i) {
+                v.e[i] = this->e[i] * right.e[3] + right.e[i];
+            }
+            v.e[3] = right.e[3];
+        }
+    } else {
+        if (right.isVector()) {
+            // point + vector
+            for (int i = 0; i < 3; ++i) {
+                v.e[i] = this->e[i] + right.e[i] * this->e[3];
+            }
+            v.e[3] = this->e[3];
+        } else {
+            // point + point
+            assert(false);
+        }
+    }
     return v;
 }
 
-HCoord HCoord::operator-(const HCoord &h) const {
+HCoord HCoord::operator-(const HCoord &right) const {
     HCoord v;
-    v.x = this->x + h.x;
-    v.y = this->y + h.y;
-    v.z = this->z + h.z;
-    //v.w = this->w * h.w;
-
+    if (this->isVector()) {
+        if (right.isVector()) {
+            // vector - vector
+            for (int i = 0; i < 3; ++i) {
+                v.e[i] = this->e[i] - right.e[i];
+            }
+            v.e[3] = 0;
+        } else {
+            // vector - point
+            assert(false);
+        }
+    } else {
+        if (right.isVector()) {
+            // point - vector
+            for (int i = 0; i < 3; ++i) {
+                v.e[i] = this->e[i] - right.e[i] * this->e[3];
+            }
+            v.e[3] = this->e[3];
+        } else {
+            // point - point
+            float w = this->e[3] * right.e[3];
+            for (int i = 0; i < 3; ++i) {
+                v.e[i] = (this->e[i] * right.e[3] - right.e[i] * this->e[3]) / w;
+            }
+            v.e[3] = 0;
+        }
+    }
     return v;
+}
+
+float HCoord::x() const {
+    assert(!this->isVector());
+
+    return this->e[0] / this->e[3];
+}
+
+float HCoord::y() const {
+    assert(!this->isVector());
+
+    return this->e[1] / this->e[3];
+}
+
+float HCoord::z() const {
+    assert(!this->isVector());
+
+    return this->e[2] / this->e[3];
+}
+
+bool HCoord::isVector() const {
+    return this->e[3] == 0;
 }

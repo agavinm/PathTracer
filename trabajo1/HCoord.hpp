@@ -17,11 +17,9 @@
 
 struct HCoord;
 
-HCoord zeroHCoord();
-
 HCoord point(float x, float y, float z);
 
-HCoord direction(float x, float y, float z);
+HCoord vector(float x, float y, float z);
 
 float dot(const HCoord &a, const HCoord &b);
 
@@ -30,6 +28,8 @@ HCoord cross(const HCoord &a, const HCoord &b);
 HCoord norm(const HCoord &h);
 
 float mod(const HCoord &h);
+
+HCoord vectorify(const HCoord &p);
 
 std::ostream& operator<<(std::ostream &o, const HCoord &h);
 
@@ -47,8 +47,10 @@ struct HCoord {
 
     HCoord& operator=(const HCoord &h);
     bool operator==(const HCoord &h) const;
-    HCoord operator+(const HCoord &h) const;
-    HCoord operator-(const HCoord &h) const;
+
+    HCoord operator+(const HCoord &right) const;
+
+    HCoord operator-(const HCoord &right) const;
 };
 
 #endif //TRABAJO1_HCOORD_HPP
