@@ -54,8 +54,8 @@ Station getStation(const Planet &planet, float inclination, float azimut) {
 
 
 HCoord getLocalDirection(const Station &local, const Station &other) {
-    // translate position of other to local basei
-    return norm(vectorify(
-            changeToBase(local.axisX, local.axisY, cross(local.axisX, local.axisY), local.position) * other.position
-    ));
+    // translate position of other to local base
+    return norm(
+            changeToBase(local.axisX, local.axisY, cross(local.axisX, local.axisY), local.position) * other.position - point(0, 0, 0)
+    );
 }

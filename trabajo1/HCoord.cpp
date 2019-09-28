@@ -65,14 +65,6 @@ float mod(const HCoord &h) {
     return sqrt(h.e[0] * h.e[0] + h.e[1] * h.e[1] + h.e[2] * h.e[2]);
 }
 
-HCoord vectorify(const HCoord &p) {
-    assert(!p.isVector());
-
-    HCoord v = p;
-    v.e[3] = 0;
-    return v;
-}
-
 ostream &operator<<(ostream &o, const HCoord &h) {
     if (h.isVector()) {
         o << "Vector(" << h.e[0] << ", " << h.e[1] << ", " << h.e[2] << ")";
@@ -106,13 +98,13 @@ HCoord HCoord::operator+(const HCoord &right) const {
     HCoord v;
     if (this->isVector()) {
         if (right.isVector()) {
-            // vector + vector
+            // vector + vector = vector
             for (int i = 0; i < 3; ++i) {
                 v.e[i] = this->e[i] + right.e[i];
             }
             v.e[3] = 0;
         } else {
-            // vector + point
+            // vector + point = point
             for (int i = 0; i < 3; ++i) {
                 v.e[i] = this->e[i] * right.e[3] + right.e[i];
             }
@@ -120,13 +112,13 @@ HCoord HCoord::operator+(const HCoord &right) const {
         }
     } else {
         if (right.isVector()) {
-            // point + vector
+            // point + vector = point
             for (int i = 0; i < 3; ++i) {
                 v.e[i] = this->e[i] + right.e[i] * this->e[3];
             }
             v.e[3] = this->e[3];
         } else {
-            // point + point
+            // point + point = ERROR
             assert(false);
         }
     }
@@ -137,24 +129,24 @@ HCoord HCoord::operator-(const HCoord &right) const {
     HCoord v;
     if (this->isVector()) {
         if (right.isVector()) {
-            // vector - vector
+            // vector - vector = vector
             for (int i = 0; i < 3; ++i) {
                 v.e[i] = this->e[i] - right.e[i];
             }
             v.e[3] = 0;
         } else {
-            // vector - point
+            // vector - point = ERROR
             assert(false);
         }
     } else {
         if (right.isVector()) {
-            // point - vector
+            // point - vector = point
             for (int i = 0; i < 3; ++i) {
                 v.e[i] = this->e[i] - right.e[i] * this->e[3];
             }
             v.e[3] = this->e[3];
         } else {
-            // point - point
+            // point - point = vector
             float w = this->e[3] * right.e[3];
             for (int i = 0; i < 3; ++i) {
                 v.e[i] = (this->e[i] * right.e[3] - right.e[i] * this->e[3]) / w;
