@@ -15,16 +15,16 @@
 #include <array>
 
 /*
- * m = p maximum of the image (stored as floating point precision; 1 is LDR; >1 is HDR)
- * w = Width
- * h = Height
- * c = Color resolution
- * p = w*h RGB pixel array (stored as floating point precision)
+ * maxVal = pixels maximum of the image (stored as floating point precision; 1 is LDR; >1 is HDR)
+ * width = Width
+ * height = Height
+ * colorRes = Color resolution
+ * pixels = width*height RGB pixel array (stored as floating point precision)
  */
 struct Image {
-    float m;
-    int w, h, c;
-    std::vector<std::array<float, 3>> p;
+    float maxVal;
+    int width, height, colorRes; // TODO: colorRes is not part of the image, should be removed
+    std::vector<std::array<float, 3>> pixels; //TODO: to a 2d vector (will be useful later)
 };
 
 // Load and store operations
