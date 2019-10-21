@@ -51,3 +51,29 @@ Image loadPPM(const std::string &name) {
     fin.close();
     return image;
 }
+
+void storePPM(const std::string &name, const Image &image) {
+    ofstream fout;
+    fout.open(name);
+    if (!fout.is_open()) {
+        exit(1);
+    }
+
+    fout << "P3" << endl; // Format identification
+
+    fout << "#MAX=" << image.m << endl; // Maximum
+
+    fout << image.w << " " << image.h << endl; // Width and height
+
+    fout << image.c << endl; // Color resolution
+
+    int r, g, b;
+    for (int i = 0; i < image.w * image.h; i++) { // Pixels
+        r = image.p[i][0] * image.c / image.m; // Red
+        g = image.p[i][1] * image.c / image.m; // Green
+        b = image.p[i][2] * image.c / image.m; // Blue
+        fout << r << " " << g << " " << b << "     ";
+    }
+
+    fout.close();
+}

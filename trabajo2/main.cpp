@@ -13,6 +13,6 @@ using namespace std;
 
 int main() {
     Image image = loadPPM("hdr-ppm/mpi_atrium_1.ppm");
-    cout << image.p.size();
+    storePPM("pruebas.ppm", image);
     return 0;
 }
