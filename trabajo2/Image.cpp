@@ -82,7 +82,7 @@ void storePPM(const std::string &name, const Image &image) {
 
 // Tone mapping operators
 
-Image clamping(const Image &image) {
+Image clamping(const Image &image, float v) {
     Image cImage;
 
     cImage.m = 1.0f;
@@ -93,8 +93,8 @@ Image clamping(const Image &image) {
     cImage.p.resize(cImage.w * cImage.h); // Fix capacity
     for (int i = 0; i < cImage.w * cImage.h; i++) { // Pixels
         for (int j = 0; j < 3; j++) {
-            if (image.p[i][j] > 1.0f) {
-                cImage.p[i][j] = 1.0f;
+            if (image.p[i][j] > v) {
+                cImage.p[i][j] = v;
             }
             else {
                 cImage.p[i][j] = image.p[i][j];
@@ -104,3 +104,31 @@ Image clamping(const Image &image) {
 
     return cImage;
 }
+
+Image clamping(const Image &image) {
+    return clamping(image, 1.0f);
+}
+
+Image equalization(const Image &image) {
+    Image eImage;
+
+    eImage.m = 1.0f;
+    eImage.w = image.w;
+    eImage.h = image.h;
+    eImage.c = 65535;
+
+    eImage.p.resize(eImage.w * eImage.h); // Fix capacity
+    for (int i = 0; i < eImage.w * eImage.h; i++) { // Pixels
+        for (int j = 0; j < 3; j++) {
+            eImage.p[i][j] = image.p[i][j] / image.m;
+        }
+    }
+
+    return eImage;
+}
+
+Image equalizeAndClamp(const Image &image, float v) {
+    return equalization(clamping(image, v));
+}
+
+

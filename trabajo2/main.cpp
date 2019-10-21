@@ -13,7 +13,7 @@ using namespace std;
 
 int main() {
     Image image = loadPPM("hdr-ppm/seymour_park.ppm");
-    Image cImage = clamping(image);
-    storePPM("pruebas.ppm", cImage);
+    Image eImage = equalization(image);
+    storePPM("pruebas.ppm", eImage);
     return 0;
 }

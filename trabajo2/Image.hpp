@@ -15,7 +15,7 @@
 #include <array>
 
 /*
- * m = Real maximum of the image (1 is LDR; >1 is HDR)
+ * m = p maximum of the image (stored as floating point precision; 1 is LDR; >1 is HDR)
  * w = Width
  * h = Height
  * c = Color resolution
