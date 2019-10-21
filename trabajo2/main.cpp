@@ -26,6 +26,6 @@ int main() {
     Image img_ldr = equalization(img_hdr);
     //Image img_ldr = equalizeAndClamp(img_hdr, 10000);
 
-    storePPM("pruebas.ppm", img_ldr);
+    storePPM("pruebas.ppm", img_ldr, 255);
     return 0;
 }

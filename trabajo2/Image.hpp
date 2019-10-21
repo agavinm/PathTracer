@@ -15,23 +15,20 @@
 #include <array>
 
 /*
- * maxVal = pixels maximum of the image (stored as floating point precision; 1 is LDR; >1 is HDR)
  * width = Width
  * height = Height
- * colorRes = Color resolution
  * pixels = width*height RGB pixel array (stored as floating point precision)
  */
 struct Image {
-    float maxVal;
-    int width, height, colorRes; // TODO: colorRes is not part of the image, should be removed
-    std::vector<std::array<float, 3>> pixels; //TODO: to a 2d vector (will be useful later)
+    int width, height;
+    std::vector<std::array<float, 3>> pixels; //TODO: allow 2d vector access
 };
 
 // Load and store operations
 
 Image loadPPM(const std::string &name);
 
-void storePPM(const std::string &name, const Image &image);
+void storePPM(const std::string &name, const Image &image, int resolution);
 
 // Tone mapping operators
 

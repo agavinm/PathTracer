@@ -44,11 +44,11 @@ Image loadPPM(const string &name) {
 
     // get max value from comments
     // TODO allow comments in other positions too
-    image.maxVal = 1.0f;
+    float maxVal = 1.0f;
     while(file.peek() == COMMENT){
         getline(file, line);
         if (line.compare(0, MAX_SPECIFICATION.size(), MAX_SPECIFICATION)==0) {
-            image.maxVal = stof(line.substr(MAX_SPECIFICATION.size(), line.size()));
+            maxVal = stof(line.substr(MAX_SPECIFICATION.size(), line.size()));
         }
     }
 
@@ -56,7 +56,8 @@ Image loadPPM(const string &name) {
     file >> image.width >> image.height;
 
     // get color resolution
-    file >> image.colorRes;
+    float colorRes;
+    file >> colorRes;
 
     // get rgb pixels
     float r, g, b;
@@ -64,15 +65,16 @@ Image loadPPM(const string &name) {
     for (int i = 0; i < image.width * image.height; i++) {
         // foreach pixel, compute
         file >> r >> g >> b;
-        image.pixels[i][0] = r * image.maxVal / (float) image.colorRes; // Red
-        image.pixels[i][1] = g * image.maxVal / (float) image.colorRes; // Green
-        image.pixels[i][2] = b * image.maxVal / (float) image.colorRes; // Blue
+        image.pixels[i][0] = r * maxVal / (float) colorRes; // Red
+        image.pixels[i][1] = g * maxVal / (float) colorRes; // Green
+        image.pixels[i][2] = b * maxVal / (float) colorRes; // Blue
     }
 
     return image;
 }
 
-void storePPM(const std::string &name, const Image &image) {
+// assumes the max value is 1.0f
+void storePPM(const std::string &name, const Image &image, int resolution) {
 
     // open output file stream
     ofstream fout(name);
@@ -85,44 +87,39 @@ void storePPM(const std::string &name, const Image &image) {
     // write header
     fout << HEADER << endl;
 
-    // write maximum
-    fout << MAX_SPECIFICATION << image.maxVal << endl;
-
     // write width/height
     fout << image.width << SPACE << image.height << endl;
 
     // write color resolution
-    fout << image.colorRes << endl;
+    fout << resolution << endl;
 
     // write rgb pixels
     int r, g, b;
     for (int i = 0; i < image.width * image.height; i++) {
         // foreach pixel, compute
-        r = image.pixels[i][0] * image.colorRes / image.maxVal; // Red
-        g = image.pixels[i][1] * image.colorRes / image.maxVal; // Green
-        b = image.pixels[i][2] * image.colorRes / image.maxVal; // Blue
+        r = image.pixels[i][0] * resolution; // Red
+        g = image.pixels[i][1] * resolution; // Green
+        b = image.pixels[i][2] * resolution; // Blue
         fout << r << SPACE << g << SPACE << b << string(5, SPACE);
     }
 }
 
 // Tone mapping operators
 
-Image equalizeAndClamp(const Image &image, float v, float maxVal) {
+Image equalizeAndClamp(const Image &image, float v) {
     Image imageOut;
 
-    imageOut.maxVal = 1.0f;
     imageOut.width = image.width;
     imageOut.height = image.height;
-    imageOut.colorRes = 255; // TODO: this parameter should be in storePPM
 
     imageOut.pixels.resize(imageOut.width * imageOut.height); // Fix capacity
     for (int i = 0; i < imageOut.width * imageOut.height; i++) {
         // foreach pixel, compute
         for (int j = 0; j < 3; j++) {
-            if (image.pixels[i][j] > v) {
-                imageOut.pixels[i][j] = imageOut.maxVal;
+            if (image.pixels[i][j] >= v) {
+                imageOut.pixels[i][j] = 1.0f;
             } else {
-                imageOut.pixels[i][j] = image.pixels[i][j] / v * imageOut.maxVal;
+                imageOut.pixels[i][j] = image.pixels[i][j] / v;
             }
         }
     }
@@ -130,15 +127,22 @@ Image equalizeAndClamp(const Image &image, float v, float maxVal) {
     return imageOut;
 }
 
-Image equalizeAndClamp(const Image &image, float v) {
-    return equalizeAndClamp(image, v, image.maxVal);
-}
-
 Image clamping(const Image &image) {
-    return equalizeAndClamp(image, 1.0f, 1.0f);
+    return equalizeAndClamp(image, 1.0f);
 }
 
 Image equalization(const Image &image) {
-    return equalizeAndClamp(image, image.maxVal, image.maxVal);
+    // find max value in image
+    float max = 0;
+    for (int i = 0; i < image.width * image.height; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (image.pixels[i][j] > max) {
+                max = image.pixels[i][j];
+            }
+        }
+    }
+
+    // equalize
+    return equalizeAndClamp(image, max);
 }
 
