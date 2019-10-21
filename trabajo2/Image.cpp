@@ -82,34 +82,7 @@ void storePPM(const std::string &name, const Image &image) {
 
 // Tone mapping operators
 
-Image clamping(const Image &image, float v) {
-    Image cImage;
-
-    cImage.m = 1.0f;
-    cImage.w = image.w;
-    cImage.h = image.h;
-    cImage.c = 65535;
-
-    cImage.p.resize(cImage.w * cImage.h); // Fix capacity
-    for (int i = 0; i < cImage.w * cImage.h; i++) { // Pixels
-        for (int j = 0; j < 3; j++) {
-            if (image.p[i][j] > v) {
-                cImage.p[i][j] = v;
-            }
-            else {
-                cImage.p[i][j] = image.p[i][j];
-            }
-        }
-    }
-
-    return cImage;
-}
-
-Image clamping(const Image &image) {
-    return clamping(image, 1.0f);
-}
-
-Image equalization(const Image &image) {
+Image equalizeAndClamp(const Image &image, float v, float m) {
     Image eImage;
 
     eImage.m = 1.0f;
@@ -120,7 +93,12 @@ Image equalization(const Image &image) {
     eImage.p.resize(eImage.w * eImage.h); // Fix capacity
     for (int i = 0; i < eImage.w * eImage.h; i++) { // Pixels
         for (int j = 0; j < 3; j++) {
-            eImage.p[i][j] = image.p[i][j] / image.m;
+            if (image.p[i][j] > v) {
+                eImage.p[i][j] = v / m;
+            }
+            else {
+                eImage.p[i][j] = image.p[i][j] / m;
+            }
         }
     }
 
@@ -128,7 +106,14 @@ Image equalization(const Image &image) {
 }
 
 Image equalizeAndClamp(const Image &image, float v) {
-    return equalization(clamping(image, v));
+    return equalizeAndClamp(image, v, image.m);
 }
 
+Image clamping(const Image &image) {
+    return equalizeAndClamp(image, 1.0f, 1.0f);
+}
+
+Image equalization(const Image &image) {
+    return equalizeAndClamp(image, image.m, image.m);
+}
 
