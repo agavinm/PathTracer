@@ -120,9 +120,9 @@ Image equalizeAndClamp(const Image &image, float v, float maxVal) {
         // foreach pixel, compute
         for (int j = 0; j < 3; j++) {
             if (image.pixels[i][j] > v) {
-                imageOut.pixels[i][j] = v / maxVal;
+                imageOut.pixels[i][j] = imageOut.maxVal;
             } else {
-                imageOut.pixels[i][j] = image.pixels[i][j] / maxVal;
+                imageOut.pixels[i][j] = image.pixels[i][j] / v * imageOut.maxVal;
             }
         }
     }
