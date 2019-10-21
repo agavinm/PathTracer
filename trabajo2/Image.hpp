@@ -33,4 +33,16 @@ Image loadPPM(const std::string &name);
 
 void storePPM(const std::string &name, const Image &image);
 
+// Tone mapping operators
+
+Image clamping(const Image &image);
+
+Image equalization(const Image &image);
+
+Image equalizeAndClamp(const Image &image, float v);
+
+Image gammaCurve(const Image &image);
+
+Image clampAndGammaCurve(const Image &image, float v);
+
 #endif //TRABAJO2_IMAGE_HPP

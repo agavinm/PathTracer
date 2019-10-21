@@ -12,7 +12,8 @@
 using namespace std;
 
 int main() {
-    Image image = loadPPM("hdr-ppm/mpi_atrium_1.ppm");
-    storePPM("pruebas.ppm", image);
+    Image image = loadPPM("hdr-ppm/seymour_park.ppm");
+    Image cImage = clamping(image);
+    storePPM("pruebas.ppm", cImage);
     return 0;
 }

@@ -13,6 +13,8 @@
 
 using namespace std;
 
+// Load and store operations
+
 Image loadPPM(const std::string &name) {
     ifstream fin;
     fin.open(name);
@@ -76,4 +78,29 @@ void storePPM(const std::string &name, const Image &image) {
     }
 
     fout.close();
+}
+
+// Tone mapping operators
+
+Image clamping(const Image &image) {
+    Image cImage;
+
+    cImage.m = 1.0f;
+    cImage.w = image.w;
+    cImage.h = image.h;
+    cImage.c = 65535;
+
+    cImage.p.resize(cImage.w * cImage.h); // Fix capacity
+    for (int i = 0; i < cImage.w * cImage.h; i++) { // Pixels
+        for (int j = 0; j < 3; j++) {
+            if (image.p[i][j] > 1.0f) {
+                cImage.p[i][j] = 1.0f;
+            }
+            else {
+                cImage.p[i][j] = image.p[i][j];
+            }
+        }
+    }
+
+    return cImage;
 }
