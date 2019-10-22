@@ -21,7 +21,6 @@ static const char SPACE = ' ';
 
 // Load and store operations
 
-
 Image loadPPM(const string &name) {
     cout << "[INFO] Loading image " << name << endl;
 
@@ -118,21 +117,26 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
     }
 }
 
+
 // Tone mapping operators
 
 Image equalizeAndClamp(const Image &image, float v) {
+    cout << "(equalizeAndClamp) ";
     return clampAndGammaCurve(image, v, 1);
 }
 
 Image clamping(const Image &image) {
+    cout << "(clamping) ";
     return clampAndGammaCurve(image, 1, 1);
 }
 
 Image equalization(const Image &image) {
+    cout << "(equalization) ";
     return clampAndGammaCurve(image, image.maxVal, 1);
 }
 
 Image gammaCurve(const Image &image, float gamma) {
+    cout << "(gammaCurve) ";
     return clampAndGammaCurve(image, image.maxVal, gamma);
 }
 
