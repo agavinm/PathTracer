@@ -15,11 +15,13 @@
 #include <array>
 
 /*
+ * maxVal = maximum value of the pixels
  * width = Width
  * height = Height
  * pixels = width*height RGB pixel array (stored as floating point precision)
  */
 struct Image {
+    float maxVal;
     int width, height;
     std::vector<std::array<float, 3>> pixels; //TODO: allow 2d vector access
 };
