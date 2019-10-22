@@ -14,8 +14,8 @@ using namespace std;
 int main() {
     // TODO read image path, method and possibly output path from standard input
 
-    //Image img_hdr = loadPPM("hdr-ppm/seymour_park.ppm");
-    Image img_hdr = loadPPM("hdr-ppm/mpi_office.ppm");
+    Image img_hdr = loadPPM("hdr-ppm/seymour_park.ppm");
+    //Image img_hdr = loadPPM("hdr-ppm/mpi_office.ppm");
     //Image img_hdr = loadPPM("hdr-ppm/mpi_atrium_1.ppm");
     //Image img_hdr = loadPPM("hdr-ppm/mpi_atrium_3.ppm");
     //Image img_hdr = loadPPM("hdr-ppm/nancy_church_1.ppm");
@@ -23,8 +23,10 @@ int main() {
     //Image img_hdr = loadPPM("hdr-ppm/nancy_church_3.ppm");
 
     //Image img_ldr = clamping(img_hdr);
-    //Image img_ldr = equalization(img_hdr);
-    Image img_ldr = equalizeAndClamp(img_hdr, 10000);
+    Image img_ldr = equalization(img_hdr);
+    //Image img_ldr = equalizeAndClamp(img_hdr, 10000);
+    //Image img_ldr = gammaCurve(img_hdr, 0.5f);
+    //Image img_ldr = clampAndGammaCurve(img_hdr, 50000, 0.5f);
 
     storePPM("pruebas.ppm", img_ldr, 255);
 

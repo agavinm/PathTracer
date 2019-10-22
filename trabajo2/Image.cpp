@@ -10,6 +10,7 @@
 #include "Image.hpp"
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 using namespace std;
 
@@ -22,6 +23,7 @@ static const char SPACE = ' ';
 
 
 Image loadPPM(const string &name) {
+    cout << "[INFO] Loading image " << name << endl;
 
     // open input file stream
     ifstream file(name);
@@ -81,6 +83,7 @@ Image loadPPM(const string &name) {
 }
 
 void storePPM(const std::string &name, const Image &image, int resolution) {
+    cout << "[INFO] Storing image " << name << endl;
 
     // open output file stream
     ofstream fout(name);
@@ -94,7 +97,7 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
     fout << HEADER << endl;
 
     // write maxval (if not 1)
-    if(image.maxVal != 1.0f){
+    if (image.maxVal != 1.0f) {
         fout << MAX_SPECIFICATION << image.maxVal << endl;
     }
 
@@ -118,6 +121,23 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
 // Tone mapping operators
 
 Image equalizeAndClamp(const Image &image, float v) {
+    return clampAndGammaCurve(image, v, 1);
+}
+
+Image clamping(const Image &image) {
+    return clampAndGammaCurve(image, 1, 1);
+}
+
+Image equalization(const Image &image) {
+    return clampAndGammaCurve(image, image.maxVal, 1);
+}
+
+Image gammaCurve(const Image &image, float gamma) {
+    return clampAndGammaCurve(image, image.maxVal, gamma);
+}
+
+Image clampAndGammaCurve(const Image &image, float v, float gamma) {
+    cout << "[INFO] Clamping image with v=" << v << " and applying gamma curve with gamma=" << gamma << endl;
     Image imageOut;
 
     imageOut.width = image.width;
@@ -128,19 +148,10 @@ Image equalizeAndClamp(const Image &image, float v) {
     for (int i = 0; i < imageOut.width * imageOut.height; i++) {
         // foreach pixel, compute
         for (int j = 0; j < 3; j++) {
-            imageOut.pixels[i][j] = image.pixels[i][j] >= v ? 1.0f : image.pixels[i][j] / v;
+            imageOut.pixels[i][j] = image.pixels[i][j] >= v ? 1.0f : pow(image.pixels[i][j] / v, 1 / gamma);
         }
     }
 
     return imageOut;
-}
-
-Image clamping(const Image &image) {
-    return equalizeAndClamp(image, 1.0f);
-}
-
-Image equalization(const Image &image) {
-    // equalize
-    return equalizeAndClamp(image, image.maxVal);
 }
 

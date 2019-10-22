@@ -40,8 +40,8 @@ Image equalization(const Image &image);
 
 Image equalizeAndClamp(const Image &image, float v);
 
-Image gammaCurve(const Image &image);
+Image gammaCurve(const Image &image, float gamma);
 
-Image clampAndGammaCurve(const Image &image, float v);
+Image clampAndGammaCurve(const Image &image, float v, float gamma);
 
 #endif //TRABAJO2_IMAGE_HPP
