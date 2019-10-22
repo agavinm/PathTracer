@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <cstring>
 
 using namespace std;
 
@@ -82,7 +83,7 @@ Image loadPPM(const string &name) {
 }
 
 void storePPM(const std::string &name, const Image &image, int resolution) {
-    cout << "[INFO] Storing image " << name << endl;
+    cout << "[INFO] Storing image as ppm " << name << endl;
 
     // open output file stream
     ofstream fout(name);
@@ -117,26 +118,88 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
     }
 }
 
+void storeBMP(const std::string &name, const Image &image) {
+    // copied from https://stackoverflow.com/a/2654860
+    cout << "[INFO] Storing image as bmp " << name << endl;
+
+    // open output file stream
+    FILE *f;
+    f = fopen(name.c_str(), "wb");
+//    if (!f.is_open()) {
+//        // can't open, exit
+//        cerr << "The file " << name << " can't be opened to write." << endl;
+//        exit(1);
+//    }
+
+
+    unsigned char *img = nullptr;
+    int filesize = 54 + 3 * image.width * image.height;  //w is your image width, h is image height, both int
+
+    img = (unsigned char *) malloc(3 * image.width * image.height);
+    memset(img, 0, 3 * image.width * image.height);
+
+    for (int i = 0; i < image.width; i++) {
+        for (int j = 0; j < image.height; j++) {
+            int x = i;
+            int y = (image.height - 1) - j;
+            int r = image.pixels[x + y * image.width][0] / image.maxVal * 255;
+            int g = image.pixels[x + y * image.width][1] / image.maxVal * 255;
+            int b = image.pixels[x + y * image.width][2] / image.maxVal * 255;
+            img[(x + y * image.width) * 3 + 2] = (unsigned char) (r);
+            img[(x + y * image.width) * 3 + 1] = (unsigned char) (g);
+            img[(x + y * image.width) * 3 + 0] = (unsigned char) (b);
+        }
+    }
+
+    unsigned char bmpfileheader[14] = {'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0};
+    unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0};
+    unsigned char bmppad[3] = {0, 0, 0};
+
+    bmpfileheader[2] = (unsigned char) (filesize);
+    bmpfileheader[3] = (unsigned char) (filesize >> 8);
+    bmpfileheader[4] = (unsigned char) (filesize >> 16);
+    bmpfileheader[5] = (unsigned char) (filesize >> 24);
+
+    bmpinfoheader[4] = (unsigned char) (image.width);
+    bmpinfoheader[5] = (unsigned char) (image.width >> 8);
+    bmpinfoheader[6] = (unsigned char) (image.width >> 16);
+    bmpinfoheader[7] = (unsigned char) (image.width >> 24);
+    bmpinfoheader[8] = (unsigned char) (image.height);
+    bmpinfoheader[9] = (unsigned char) (image.height >> 8);
+    bmpinfoheader[10] = (unsigned char) (image.height >> 16);
+    bmpinfoheader[11] = (unsigned char) (image.height >> 24);
+
+    fwrite(bmpfileheader, 1, 14, f);
+    fwrite(bmpinfoheader, 1, 40, f);
+    for (int i = 0; i < image.height; i++) {
+        fwrite(img + (image.width * (image.height - i - 1) * 3), 3, image.width, f);
+        fwrite(bmppad, 1, (4 - (image.width * 3) % 4) % 4, f);
+    }
+
+    free(img);
+    fclose(f);
+}
+
 
 // Tone mapping operators
 
 Image equalizeAndClamp(const Image &image, float v) {
-    cout << "(equalizeAndClamp) ";
+    cout << "[INFO] equalizeAndClamp -> ";
     return clampAndGammaCurve(image, v, 1);
 }
 
 Image clamping(const Image &image) {
-    cout << "(clamping) ";
+    cout << "[INFO] clamping -> ";
     return clampAndGammaCurve(image, 1, 1);
 }
 
 Image equalization(const Image &image) {
-    cout << "(equalization) ";
+    cout << "[INFO] equalization -> ";
     return clampAndGammaCurve(image, image.maxVal, 1);
 }
 
 Image gammaCurve(const Image &image, float gamma) {
-    cout << "(gammaCurve) ";
+    cout << "[INFO] gammaCurve -> ";
     return clampAndGammaCurve(image, image.maxVal, gamma);
 }
 

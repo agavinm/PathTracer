@@ -20,6 +20,7 @@ void printUsage(const string &name) {
          << "* <file input> needs to be a .ppm file" << endl
          << "* <file output> needs to be one of" << endl
          << "       - .ppm" << endl
+         << "       - .bmp" << endl
          << "* <operator> needs to be one of: " << endl
          << "       - clamping" << endl
          << "       - equalization " << endl
@@ -88,6 +89,9 @@ int main(int argc, char *argv[]) {
     // save file
     if (endsWith(args[2], ".ppm")) {
         storePPM(args[2], img_ldr, 255);
+
+    } else if (endsWith(args[2], ".bmp")) {
+        storeBMP(args[2], img_ldr);
 
     } else {
         cerr << "Unknown output file extension" << endl;

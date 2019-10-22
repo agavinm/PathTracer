@@ -32,6 +32,8 @@ Image loadPPM(const std::string &name);
 
 void storePPM(const std::string &name, const Image &image, int resolution);
 
+void storeBMP(const std::string &name, const Image &image);
+
 // Tone mapping operators
 
 Image clamping(const Image &image);
