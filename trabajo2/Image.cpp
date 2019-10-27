@@ -119,65 +119,54 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
 }
 
 void storeBMP(const std::string &name, const Image &image) {
-    // copied from https://stackoverflow.com/a/2654860
+    // adapted from https://stackoverflow.com/a/2654860
     cout << "[INFO] Storing image as bmp " << name << endl;
 
+#define WRITE(A, F) F.write(reinterpret_cast<const char *>(A), sizeof(A))
+
     // open output file stream
-    FILE *f;
-    f = fopen(name.c_str(), "wb");
-//    if (!f.is_open()) {
-//        // can't open, exit
-//        cerr << "The file " << name << " can't be opened to write." << endl;
-//        exit(1);
-//    }
+    ofstream f(name, ios::binary);
+    if (!f.is_open()) {
+        // can't open, exit
+        cerr << "The file " << name << " can't be opened to write." << endl;
+        exit(1);
+    }
 
-
-    unsigned char *img = nullptr;
+    // write header
+    unsigned char header[14] = {'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0};
     int filesize = 54 + 3 * image.width * image.height;  //w is your image width, h is image height, both int
+    header[2] = (unsigned char) (filesize);
+    header[3] = (unsigned char) (filesize >> 8);
+    header[4] = (unsigned char) (filesize >> 16);
+    header[5] = (unsigned char) (filesize >> 24);
+    WRITE(header, f);
 
-    img = (unsigned char *) malloc(3 * image.width * image.height);
-    memset(img, 0, 3 * image.width * image.height);
+    // write file info
+    unsigned char info[40] = {40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0};
+    info[4] = (unsigned char) (image.width);
+    info[5] = (unsigned char) (image.width >> 8);
+    info[6] = (unsigned char) (image.width >> 16);
+    info[7] = (unsigned char) (image.width >> 24);
+    info[8] = (unsigned char) (image.height);
+    info[9] = (unsigned char) (image.height >> 8);
+    info[10] = (unsigned char) (image.height >> 16);
+    info[11] = (unsigned char) (image.height >> 24);
+    WRITE(info, f);
 
-    for (int i = 0; i < image.width; i++) {
-        for (int j = 0; j < image.height; j++) {
+    // write data
+    unsigned char padding[(4 - (image.width * 3) % 4) % 4];
+    for (int j = 0; j < image.height; j++) {
+        for (int i = 0; i < image.width; i++) {
             int x = i;
             int y = (image.height - 1) - j;
-            int r = image.pixels[x + y * image.width][0] / image.maxVal * 255;
-            int g = image.pixels[x + y * image.width][1] / image.maxVal * 255;
-            int b = image.pixels[x + y * image.width][2] / image.maxVal * 255;
-            img[(x + y * image.width) * 3 + 2] = (unsigned char) (r);
-            img[(x + y * image.width) * 3 + 1] = (unsigned char) (g);
-            img[(x + y * image.width) * 3 + 0] = (unsigned char) (b);
+            unsigned char r = (int) (image.pixels[x + y * image.width][0] / image.maxVal * 255);
+            unsigned char g = (int) (image.pixels[x + y * image.width][1] / image.maxVal * 255);
+            unsigned char b = (int) (image.pixels[x + y * image.width][2] / image.maxVal * 255);
+            f << b << g << r;
         }
+        WRITE(padding, f);
     }
 
-    unsigned char bmpfileheader[14] = {'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0};
-    unsigned char bmpinfoheader[40] = {40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 24, 0};
-    unsigned char bmppad[3] = {0, 0, 0};
-
-    bmpfileheader[2] = (unsigned char) (filesize);
-    bmpfileheader[3] = (unsigned char) (filesize >> 8);
-    bmpfileheader[4] = (unsigned char) (filesize >> 16);
-    bmpfileheader[5] = (unsigned char) (filesize >> 24);
-
-    bmpinfoheader[4] = (unsigned char) (image.width);
-    bmpinfoheader[5] = (unsigned char) (image.width >> 8);
-    bmpinfoheader[6] = (unsigned char) (image.width >> 16);
-    bmpinfoheader[7] = (unsigned char) (image.width >> 24);
-    bmpinfoheader[8] = (unsigned char) (image.height);
-    bmpinfoheader[9] = (unsigned char) (image.height >> 8);
-    bmpinfoheader[10] = (unsigned char) (image.height >> 16);
-    bmpinfoheader[11] = (unsigned char) (image.height >> 24);
-
-    fwrite(bmpfileheader, 1, 14, f);
-    fwrite(bmpinfoheader, 1, 40, f);
-    for (int i = 0; i < image.height; i++) {
-        fwrite(img + (image.width * (image.height - i - 1) * 3), 3, image.width, f);
-        fwrite(bmppad, 1, (4 - (image.width * 3) % 4) % 4, f);
-    }
-
-    free(img);
-    fclose(f);
 }
 
 
