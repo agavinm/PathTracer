@@ -17,16 +17,17 @@ bool endsWith(const string &original, const string &suffix) {
 
 void printUsage(const string &name) {
     cout << "Usage: " << name << " <file input> <file output> {operator} [operator parameters...]" << endl
-         << "* <file input> needs to be a .ppm file" << endl
-         << "* <file output> needs to be one of" << endl
-         << "       - .ppm" << endl
-         << "       - .bmp" << endl
-         << "* <operator> needs to be one of: " << endl
-         << "       - clamping" << endl
-         << "       - equalization " << endl
-         << "       - equalizeAndClamp <v>" << endl
-         << "       - gammaCurve <gamma>" << endl
-         << "       - clampAndGammaCurve <v> <gamma>" << endl;
+                              << "* <file input> needs to be a .ppm file" << endl
+                              << "* <file output> needs to be one of" << endl
+                              << "       - .ppm" << endl
+                              << "       - .bmp" << endl
+                              << "* <operator> needs to be one of: " << endl
+                              << "       - clamping" << endl
+                              << "       - equalization " << endl
+                              << "       - equalizeAndClamp <v>" << endl
+                              << "       - gammaCurve <gamma>" << endl
+                              << "       - clampAndGammaCurve <v> <gamma>" << endl
+                              << "       - reinhard2002 <a> " << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -79,6 +80,14 @@ int main(int argc, char *argv[]) {
             return 1;
         }
         img_ldr = clampAndGammaCurve(img_hdr, stof(args[4]), stof(args[5]));
+
+    } else if (args[3] == "reinhard2002") {
+        if (argc < 4) {
+            cerr << "Invalid number of parameters to " << args[3] << endl;
+            printUsage(args[0]);
+            return 1;
+        }
+        img_ldr = reinhard2002(img_hdr, stof(args[4]));
 
     } else {
         cerr << "Unknown operator " << args[3] << endl;

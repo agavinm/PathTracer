@@ -198,7 +198,7 @@ Image clampAndGammaCurve(const Image &image, float v, float gamma) {
 
     imageOut.width = image.width;
     imageOut.height = image.height;
-    imageOut.maxVal = image.maxVal >= v ? 1.0f : image.maxVal / v;
+    imageOut.maxVal = image.maxVal >= v ? 1.0f : pow(image.maxVal / v, 1 / gamma);
 
     imageOut.pixels.resize(imageOut.width * imageOut.height); // Fix capacity
     for (int i = 0; i < imageOut.width * imageOut.height; i++) {
@@ -210,4 +210,34 @@ Image clampAndGammaCurve(const Image &image, float v, float gamma) {
 
     return imageOut;
 }
+
+Image reinhard2002(const Image &image, float a) {
+    cout << "[INFO] Reinhard2002-ing image with a=" << a << endl;
+    int n = image.width * image.height;
+
+    float Lw_average = 0;
+    for (int i = 0; i < n; ++i)
+        Lw_average += log(0.001f + (image.pixels[i][0] + image.pixels[i][1] + image.pixels[i][2]) / 3);
+    Lw_average = exp(Lw_average / n);
+
+    Image imageOut;
+
+    imageOut.width = image.width;
+    imageOut.height = image.height;
+    float L = a * image.maxVal / Lw_average;
+    imageOut.maxVal = L * (1 + L / image.maxVal * image.maxVal) / (1 + L);
+
+    imageOut.pixels.resize(n); // Fix capacity
+
+    for (int i = 0; i < imageOut.width * imageOut.height; i++) {
+        // foreach pixel, compute
+        for (int j = 0; j < 3; j++) {
+            L = a * image.pixels[i][j] / Lw_average;
+            imageOut.pixels[i][j] = L * (1 + L / image.maxVal * image.maxVal) / (1 + L);
+        }
+    }
+
+    return imageOut;
+}
+
 

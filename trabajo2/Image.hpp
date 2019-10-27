@@ -46,4 +46,6 @@ Image gammaCurve(const Image &image, float gamma);
 
 Image clampAndGammaCurve(const Image &image, float v, float gamma);
 
+Image reinhard2002(const Image &image, float a);
+
 #endif //TRABAJO2_IMAGE_HPP
