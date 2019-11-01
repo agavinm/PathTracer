@@ -198,7 +198,7 @@ Image clampAndGammaCurve(const Image &image, float v, float gamma) {
 
     imageOut.width = image.width;
     imageOut.height = image.height;
-    imageOut.maxVal = image.maxVal >= v ? 1.0f : pow(image.maxVal / v, 1 / gamma);
+    imageOut.maxVal = 1.0f;
 
     imageOut.pixels.resize(imageOut.width * imageOut.height); // Fix capacity
     for (int i = 0; i < imageOut.width * imageOut.height; i++) {
