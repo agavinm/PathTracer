@@ -15,23 +15,24 @@
 #include <array>
 
 /*
- * m = p maximum of the image (stored as floating point precision; 1 is LDR; >1 is HDR)
- * w = Width
- * h = Height
- * c = Color resolution
- * p = w*h RGB pixel array (stored as floating point precision)
+ * maxVal = maximum value of the pixels
+ * width = Width
+ * height = Height
+ * pixels = width*height RGB pixel array (stored as floating point precision)
  */
 struct Image {
-    float m;
-    int w, h, c;
-    std::vector<std::array<float, 3>> p;
+    float maxVal;
+    int width, height;
+    std::vector<std::array<float, 3>> pixels; //TODO: allow 2d vector access
 };
 
 // Load and store operations
 
 Image loadPPM(const std::string &name);
 
-void storePPM(const std::string &name, const Image &image);
+void storePPM(const std::string &name, const Image &image, int resolution);
+
+void storeBMP(const std::string &name, const Image &image);
 
 // Tone mapping operators
 
@@ -41,8 +42,10 @@ Image equalization(const Image &image);
 
 Image equalizeAndClamp(const Image &image, float v);
 
-Image gammaCurve(const Image &image);
+Image gammaCurve(const Image &image, float gamma);
 
-Image clampAndGammaCurve(const Image &image, float v);
+Image clampAndGammaCurve(const Image &image, float v, float gamma);
+
+Image reinhard2002(const Image &image, float a);
 
 #endif //TRABAJO2_IMAGE_HPP
