@@ -15,14 +15,9 @@ using namespace std;
 
 std::vector<Object> getObjects() {
     return vector<Object>{
-            {
-                    Sphere(hPoint(10, 0, 0), 1),
-                    Emitter(1, 0, 0)
-            },
-            {
-                    Sphere(hPoint(5, 2, 0), 1),
-                    Emitter(0, 1, 0)
-            },
+            {Sphere(hPoint(10, 0, 0), 1),  Emitter({1, 0, 0})},
+            {Sphere(hPoint(5, 5, 0), 1),   Emitter({0, 1, 0})},
+            {Plane(hVector(0, 0, 1), -10), Emitter({0, 0, 1})},
     };
 }
 

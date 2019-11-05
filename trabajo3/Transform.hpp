@@ -39,11 +39,6 @@ struct Transform {
     float e[4][4]; // Elements (row, column)
 
     /**
-     * Copy
-     */
-    Transform &operator=(const Transform &other);
-
-    /**
      * Multiplication matrix * matrix -> matrix
      */
     Transform operator*(const Transform &right) const;

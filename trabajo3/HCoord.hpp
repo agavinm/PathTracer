@@ -13,29 +13,6 @@
 #include <ostream>
 
 
-// Interface:
-
-struct HCoord;
-
-HCoord hPoint(float x, float y, float z);
-
-HCoord hVector(float x, float y, float z);
-
-float dot(const HCoord &a, const HCoord &b);
-
-HCoord cross(const HCoord &a, const HCoord &b);
-
-HCoord norm(const HCoord &h);
-
-float mod(const HCoord &h);
-
-HCoord vectorify(const HCoord &p);
-
-std::ostream &operator<<(std::ostream &o, const HCoord &h);
-
-
-// Declarations:
-
 struct HCoord {
     float e[4]; // Coordinates
 
@@ -45,15 +22,72 @@ struct HCoord {
 
     bool isVector() const; // w!=0
 
+    /**
+     * Clone point/vector
+     */
     HCoord &operator=(const HCoord &h);
 
+    /**
+     * same vector or same points
+     */
     bool operator==(const HCoord &h) const;
 
+    /**
+     * vector + vector = vector
+     * vector + point = point
+     * point + vector = point
+     * point + point = ERROR
+     */
     HCoord operator+(const HCoord &right) const;
 
+    /**
+     * vector - vector = vector
+     * vector - point = ERROR
+     * point - vector = point
+     * point - point = vector
+     */
     HCoord operator-(const HCoord &right) const;
 
+    /**
+     * Increases vector modulus by the amount 's'
+     */
     HCoord operator*(float s) const;
 };
+
+/**
+ * A point in space (UCS)
+ */
+HCoord hPoint(float x, float y, float z);
+
+/**
+ * A vector in space
+ */
+HCoord hVector(float x, float y, float z);
+
+/**
+ * Dot product of two vectors
+ */
+float dot(const HCoord &a, const HCoord &b);
+
+/**
+ * Cross product of two vectors
+ */
+HCoord cross(const HCoord &a, const HCoord &b);
+
+/**
+ * Normalizes a vector
+ */
+HCoord norm(const HCoord &h);
+
+/**
+ * Modulus of a vector
+ */
+float mod(const HCoord &h);
+
+/**
+ * To pretty print a point/vector
+ */
+std::ostream &operator<<(std::ostream &o, const HCoord &h);
+
 
 #endif //TRABAJO1_HCOORD_HPP

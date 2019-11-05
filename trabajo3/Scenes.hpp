@@ -8,8 +8,15 @@
 #include <vector>
 #include "Geometric.hpp"
 
+/**
+ * @return a list of objects in the scene
+ */
 std::vector<Object> getObjects();
 
+/**
+ * @return the camera
+ * @param ratio width/height of image
+ */
 Camera getCamera(float ratio);
 
 #endif //TRABAJO3_SCENES_HPP

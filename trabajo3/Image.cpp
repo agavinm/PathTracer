@@ -14,6 +14,26 @@
 
 using namespace std;
 
+float COLOR::max() const {
+    return std::max(std::max(this->r, this->g), this->b);
+}
+
+COLOR COLOR::operator+(const COLOR &right) const {
+    return {
+            this->r + right.r,
+            this->g + right.g,
+            this->b + right.b
+    };
+}
+
+COLOR COLOR::operator/(float s) const {
+    return {
+            this->r / s,
+            this->g / s,
+            this->b / s
+    };
+}
+
 Image initImage(int width, int height) {
     Image image;
     image.width = width;
@@ -22,11 +42,10 @@ Image initImage(int width, int height) {
     return image;
 }
 
-void setPixel(Image &image, int i, int j, float r, float g, float b) {
-    image.pixels[i + (image.height - 1 - j) * image.width][0] = r;
-    image.pixels[i + (image.height - 1 - j) * image.width][1] = g;
-    image.pixels[i + (image.height - 1 - j) * image.width][2] = b;
+void setPixel(Image &image, int i, int j, COLOR pixel) {
+    image.pixels[i + (image.height - 1 - j) * image.width] = pixel;
 }
+
 
 ///////////////////////////////////////////////////////
 
@@ -42,15 +61,14 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
 
     float maxVal = 0;
     for (int i = 0; i < image.pixels.size(); ++i)
-        for (int j = 0; j < 3; ++j)
-            maxVal = max(image.pixels[i][j], maxVal);
+        maxVal = max(image.pixels[i].max(), maxVal);
 
     // open output file stream
     ofstream fout(name);
     if (!fout.is_open()) {
         // can't open, exit
         cerr << "The file " << name << " can't be opened to write." << endl;
-        exit(1);
+        exit(10);
     }
 
     // write header
@@ -71,10 +89,9 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
     int r, g, b;
     for (int i = 0; i < image.width * image.height; i++) {
         // foreach pixel, compute
-        r = image.pixels[i][0] * resolution / maxVal; // Red
-        g = image.pixels[i][1] * resolution / maxVal; // Green
-        b = image.pixels[i][2] * resolution / maxVal; // Blue
+        r = image.pixels[i].r * resolution / maxVal; // Red
+        g = image.pixels[i].g * resolution / maxVal; // Green
+        b = image.pixels[i].b * resolution / maxVal; // Blue
         fout << r << SPACE << g << SPACE << b << string(5, SPACE);
     }
 }
-

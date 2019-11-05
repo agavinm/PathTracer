@@ -141,15 +141,6 @@ Transform inverse(const Transform &t) {
 
 // Operators
 
-Transform &Transform::operator=(const Transform &other) {
-    for (int row = 0; row < 4; row++) {
-        for (int column = 0; column < 4; column++) {
-            this->e[row][column] = other.e[row][column];
-        }
-    }
-    return *this;
-}
-
 Transform Transform::operator*(const Transform &right) const { // matrix * matrix
     Transform result;
     for (int row = 0; row < 4; row++) { // each row of result

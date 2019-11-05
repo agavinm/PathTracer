@@ -8,60 +8,87 @@
 
 #include <cmath>
 #include <vector>
+#include <iostream>
 
 #include "HCoord.hpp"
 #include "Geometric.hpp"
 #include "Scenes.hpp"
 #include "Image.hpp"
 
+#define RAND(max) ( (float)rand() / (float)(RAND_MAX) * (float) max )
+
 using namespace std;
 
-int main() {
+void printUsage(const string &name) {
+    cout << "Usage: " << name << " <ppp>" << endl;
+}
 
+int main(int argc, char *argv[]) {
 
-    int width = 100;
-    int height = 100;
+    // for convenience
+    vector<string> args(argv, argv + argc);
 
+    // check enough arguments
+    if (argc < 2) {
+        printUsage(args[0]);
+        return 0;
+    }
+
+    // rays
+    int ppp = stoi(args[1]);
+
+    // Image
+    int width = 1920;
+    int height = 1080;
+    Image image = initImage(width, height);
+
+    // Scene
     vector<Object> objects = getObjects();
-
     Camera camera = getCamera((float) width / (float) height);
 
-    Image image = initImage(width, height);
+    cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << objects.size() << " objects)" << endl;
 
     for (int i = 0; i < width; ++i) {
         for (int j = 0; j < height; ++j) {
+            // foreach pixel
+            COLOR color = {0, 0, 0};
 
-            HCoord direction = getRay(camera, (float) i / (float) width, (float) j / (float) height);
-            HCoord position = camera.origin;
+            for (int p = 0; p < ppp; ++p) {
 
-            Object *intersection = nullptr;
-            float dist = INFINITY;
-            for (Object &object : objects) {
-                if (posDist(position, direction, object) < dist) {
-                    intersection = &object;
-                }
-            }
+                // get initial ray
+                HCoord direction = getRay(camera, ((float) i + RAND(1)) / (float) width, ((float) j + RAND(1)) / (float) height);
+                HCoord position = camera.origin;
 
-            float r, g, b;
-            if (intersection == nullptr) {
-                // no object
-                r = g = b = 0;
-            } else {
-                // object
-                switch (intersection->material.type) {
-                    case EMITTER: {
-                        MATERIAL_EMMITER data = intersection->material.material_data.emitter_data;
-                        r = data.r;
-                        g = data.g;
-                        b = data.b;
-                        break;
+                // find nearest intersection
+                Object *intersection = nullptr;
+                float dist = INFINITY;
+                for (Object &object : objects) {
+                    float obj_dist = intersect(position, direction, object);
+                    if (obj_dist < dist) {
+                        intersection = &object;
+                        dist = obj_dist;
                     }
-                    default:
-                        exit(1);
+                }
+
+                // get color
+                if (intersection == nullptr) {
+                    // no object
+                    // pixel += 0
+                } else {
+                    // object
+                    switch (intersection->material.type) {
+                        case EMITTER: {
+                            color = color + intersection->material.data.emitter;
+                            break;
+                        }
+                        default:
+                            exit(6);
+                    }
                 }
             }
 
-            setPixel(image, i, j, r, g, b);
+            // save
+            setPixel(image, i, j, color / ppp);
         }
     }
 
