@@ -2,12 +2,13 @@
 // Created by abeln on 04/11/2019.
 //
 
+#include <cmath>
 #include "Geometric.hpp"
 #include "Scenes.hpp"
 
 using namespace std;
 
-#define SCENE 1
+#define SCENE 2
 
 //////////////////////////////////////////////////////
 

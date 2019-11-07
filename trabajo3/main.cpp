@@ -15,7 +15,7 @@
 #include "Scenes.hpp"
 #include "Image.hpp"
 
-#define RAND(max) ( (float)rand() / (float)(RAND_MAX) * (float) max )
+#define RAND(max) ( (float)rand() / (float)(RAND_MAX) * (float) (max) )
 
 using namespace std;
 

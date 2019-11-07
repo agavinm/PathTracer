@@ -35,11 +35,11 @@ COLOR COLOR::operator/(float s) const {
 }
 
 Image initImage(int width, int height) {
-    Image image;
-    image.width = width;
-    image.height = height;
-    image.pixels.resize(width * height);
-    return image;
+    return {
+            .width=width,
+            .height=height,
+            .pixels=vector<COLOR>(width * height),
+    };
 }
 
 void setPixel(Image &image, int i, int j, COLOR pixel) {
@@ -60,8 +60,8 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
     cout << "[INFO] Storing image as ppm " << name << endl;
 
     float maxVal = 0;
-    for (int i = 0; i < image.pixels.size(); ++i)
-        maxVal = max(image.pixels[i].max(), maxVal);
+    for (auto pixel : image.pixels)
+        maxVal = max(pixel.max(), maxVal);
 
     // open output file stream
     ofstream fout(name);

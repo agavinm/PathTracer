@@ -14,76 +14,78 @@
 using namespace std;
 
 Transform identity() {
-    Transform m;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            m.e[i][j] = i == j ? 1.0f : 0.0f;
-        }
-    }
-
-    return m;
+    return {{
+                    {1, 0, 0, 0},
+                    {0, 1, 0, 0},
+                    {0, 0, 1, 0},
+                    {0, 0, 0, 1}
+            }};
 }
 
 Transform translation(const HCoord &t) {
     assert(!t.isVector());
-    Transform m = identity();
-    m.e[0][3] = t.x();
-    m.e[1][3] = t.y();
-    m.e[2][3] = t.z();
-
-    return m;
+    return {{
+                    {1, 0, 0, t.x()},
+                    {0, 1, 0, t.y()},
+                    {0, 0, 1, t.z()},
+                    {0, 0, 0, 1}
+            }};
 }
 
 Transform scale(const HCoord &s) {
     assert(!s.isVector());
-    Transform m = identity();
-    m.e[0][0] = s.x();
-    m.e[1][1] = s.y();
-    m.e[2][2] = s.z();
-
-    return m;
+    return {{
+                    {s.x(), 0, 0, 0},
+                    {0, s.y(), 0, 0},
+                    {0, 0, s.z(), 0},
+                    {0, 0, 0, 1}
+            }};
 }
 
 Transform rotationX(float th) {
-    Transform m = identity();
-    m.e[1][1] = cos(th);
-    m.e[2][1] = sin(th);
-    m.e[1][2] = -m.e[2][1];
-    m.e[2][2] = m.e[1][1];
+    float c = cos(th);
+    float s = sin(th);
 
-    return m;
+    return {{
+                    {1, 0, 0, 0},
+                    {0, c, -s, 0},
+                    {0, s, c, 0},
+                    {0, 0, 0, 1}
+            }};
 }
 
 Transform rotationY(float th) {
-    Transform m = identity();
-    m.e[0][0] = cos(th);
-    m.e[0][2] = sin(th);
-    m.e[2][0] = -m.e[0][2];
-    m.e[2][2] = m.e[0][0];
+    float c = cos(th);
+    float s = sin(th);
 
-    return m;
+    return {{
+                    {c, 0, s, 0},
+                    {0, 1, 0, 0},
+                    {-s, 0, c, 0},
+                    {0, 0, 0, 1}
+            }};
 }
 
 Transform rotationZ(float th) {
-    Transform m = identity();
-    m.e[0][0] = cos(th);
-    m.e[1][0] = sin(th);
-    m.e[0][1] = -m.e[1][0];
-    m.e[1][1] = m.e[0][0];
+    float c = cos(th);
+    float s = sin(th);
 
-    return m;
+    return {{
+                    {c, -s, 0, 0},
+                    {s, c, 0, 0},
+                    {0, 0, 1, 0},
+                    {0, 0, 0, 1}
+            }};
 }
 
 Transform changeFromBase(const HCoord &u, const HCoord &v, const HCoord &w, const HCoord &o) {
     assert(u.isVector() && v.isVector() && w.isVector());
-    Transform m = identity();
-    for (int i = 0; i < 3; ++i) {
-        m.e[i][0] = u.e[i];
-        m.e[i][1] = v.e[i];
-        m.e[i][2] = w.e[i];
-        m.e[i][3] = o.e[i];
-    }
-    return m;
+    return {{
+                    {u.e[0], v.e[0], w.e[0], o.e[0]},
+                    {u.e[1], v.e[1], w.e[1], o.e[1]},
+                    {u.e[2], v.e[2], w.e[2], o.e[2]},
+                    {u.e[3], v.e[3], w.e[3], o.e[3]},
+            }};
 }
 
 Transform changeToBase(const HCoord &u, const HCoord &v, const HCoord &w, const HCoord &o) {
@@ -91,7 +93,6 @@ Transform changeToBase(const HCoord &u, const HCoord &v, const HCoord &w, const 
 }
 
 Transform inverse(const Transform &t) {
-    Transform result;
 
     //https://stackoverflow.com/a/44446912
     float A2323 = t.e[2][2] * t.e[3][3] - t.e[2][3] * t.e[3][2];
@@ -119,48 +120,61 @@ Transform inverse(const Transform &t) {
                 - t.e[0][3] * (t.e[1][0] * A1223 - t.e[1][1] * A0223 + t.e[1][2] * A0123);
     det = 1 / det;
 
-    result.e[0][0] = det * (t.e[1][1] * A2323 - t.e[1][2] * A1323 + t.e[1][3] * A1223);
-    result.e[0][1] = det * -(t.e[0][1] * A2323 - t.e[0][2] * A1323 + t.e[0][3] * A1223);
-    result.e[0][2] = det * (t.e[0][1] * A2313 - t.e[0][2] * A1313 + t.e[0][3] * A1213);
-    result.e[0][3] = det * -(t.e[0][1] * A2312 - t.e[0][2] * A1312 + t.e[0][3] * A1212);
-    result.e[1][0] = det * -(t.e[1][0] * A2323 - t.e[1][2] * A0323 + t.e[1][3] * A0223);
-    result.e[1][1] = det * (t.e[0][0] * A2323 - t.e[0][2] * A0323 + t.e[0][3] * A0223);
-    result.e[1][2] = det * -(t.e[0][0] * A2313 - t.e[0][2] * A0313 + t.e[0][3] * A0213);
-    result.e[1][3] = det * (t.e[0][0] * A2312 - t.e[0][2] * A0312 + t.e[0][3] * A0212);
-    result.e[2][0] = det * (t.e[1][0] * A1323 - t.e[1][1] * A0323 + t.e[1][3] * A0123);
-    result.e[2][1] = det * -(t.e[0][0] * A1323 - t.e[0][1] * A0323 + t.e[0][3] * A0123);
-    result.e[2][2] = det * (t.e[0][0] * A1313 - t.e[0][1] * A0313 + t.e[0][3] * A0113);
-    result.e[2][3] = det * -(t.e[0][0] * A1312 - t.e[0][1] * A0312 + t.e[0][3] * A0112);
-    result.e[3][0] = det * -(t.e[1][0] * A1223 - t.e[1][1] * A0223 + t.e[1][2] * A0123);
-    result.e[3][1] = det * (t.e[0][0] * A1223 - t.e[0][1] * A0223 + t.e[0][2] * A0123);
-    result.e[3][2] = det * -(t.e[0][0] * A1213 - t.e[0][1] * A0213 + t.e[0][2] * A0113);
-    result.e[3][3] = det * (t.e[0][0] * A1212 - t.e[0][1] * A0212 + t.e[0][2] * A0112);
-
-    return result;
+    return {{
+                    {
+                            det * (t.e[1][1] * A2323 - t.e[1][2] * A1323 + t.e[1][3] * A1223),
+                            det * -(t.e[0][1] * A2323 - t.e[0][2] * A1323 + t.e[0][3] * A1223),
+                            det * (t.e[0][1] * A2313 - t.e[0][2] * A1313 + t.e[0][3] * A1213),
+                            det * -(t.e[0][1] * A2312 - t.e[0][2] * A1312 + t.e[0][3] * A1212),
+                    },
+                    {
+                            det * -(t.e[1][0] * A2323 - t.e[1][2] * A0323 + t.e[1][3] * A0223),
+                            det * (t.e[0][0] * A2323 - t.e[0][2] * A0323 + t.e[0][3] * A0223),
+                            det * -(t.e[0][0] * A2313 - t.e[0][2] * A0313 + t.e[0][3] * A0213),
+                            det * (t.e[0][0] * A2312 - t.e[0][2] * A0312 + t.e[0][3] * A0212),
+                    },
+                    {
+                            det * (t.e[1][0] * A1323 - t.e[1][1] * A0323 + t.e[1][3] * A0123),
+                            det * -(t.e[0][0] * A1323 - t.e[0][1] * A0323 + t.e[0][3] * A0123),
+                            det * (t.e[0][0] * A1313 - t.e[0][1] * A0313 + t.e[0][3] * A0113),
+                            det * -(t.e[0][0] * A1312 - t.e[0][1] * A0312 + t.e[0][3] * A0112),
+                    },
+                    {
+                            det * -(t.e[1][0] * A1223 - t.e[1][1] * A0223 + t.e[1][2] * A0123),
+                            det * (t.e[0][0] * A1223 - t.e[0][1] * A0223 + t.e[0][2] * A0123),
+                            det * -(t.e[0][0] * A1213 - t.e[0][1] * A0213 + t.e[0][2] * A0113),
+                            det * (t.e[0][0] * A1212 - t.e[0][1] * A0212 + t.e[0][2] * A0112),
+                    }
+            }};
 }
 
 // Operators
 
 Transform Transform::operator*(const Transform &right) const { // matrix * matrix
-    Transform result;
+    float r[4][4] = {0};
     for (int row = 0; row < 4; row++) { // each row of result
         for (int column = 0; column < 4; column++) { // each column of result
-            result.e[row][column] = 0;
+            r[row][column] = 0;
             for (int slice = 0; slice < 4; slice++) { // traverse 'slice'
-                result.e[row][column] += this->e[row][slice] * right.e[slice][column];
+                r[row][column] += this->e[row][slice] * right.e[slice][column];
             }
         }
     }
-    return result;
+    return {{
+                    {r[0][0], r[0][1], r[0][2], r[0][3]},
+                    {r[1][0], r[1][1], r[1][2], r[1][3]},
+                    {r[2][0], r[2][1], r[2][2], r[2][3]},
+                    {r[3][0], r[3][1], r[3][2], r[3][3]},
+            }};
 }
 
 HCoord Transform::operator*(const HCoord &right) const { // matrix * vector
-    HCoord result;
+    float r[4] = {0};
     for (int row = 0; row < 4; row++) { // each row of matrix
-        result.e[row] = 0;
+        r[row] = 0;
         for (int column = 0; column < 4; column++) { // each column on matrix
-            result.e[row] += this->e[row][column] * right.e[column];
+            r[row] += this->e[row][column] * right.e[column];
         }
     }
-    return result;
+    return {{r[0], r[1], r[2], r[3]}};
 }

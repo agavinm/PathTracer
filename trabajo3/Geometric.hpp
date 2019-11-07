@@ -24,20 +24,20 @@ enum GEOMETRY_TYPE {
 };
 
 typedef struct {
-    HCoord center; // center of sphere (UCS)
-    float radius; // radius of sphere (>=0)
+    const HCoord center; // center of sphere (UCS)
+    const float radius; // radius of sphere (>=0)
 } GEOMETRY_SPHERE;
 
 typedef struct {
-    HCoord normal; // normal direction of plane (UCS)
-    float dist; // distance to origin
+    const HCoord normal; // normal direction of plane (UCS)
+    const float dist; // distance to origin
 } GEOMETRY_PLANE;
 
 typedef struct {
-    GEOMETRY_TYPE type;
-    union {
-        GEOMETRY_SPHERE sphere;
-        GEOMETRY_PLANE plane;
+    const GEOMETRY_TYPE type;
+    const union {
+        const GEOMETRY_SPHERE sphere;
+        const GEOMETRY_PLANE plane;
     } data;
 } GEOMETRY;
 
@@ -64,9 +64,9 @@ enum MATERIAL_TYPE {
 };
 
 typedef struct {
-    MATERIAL_TYPE type;
-    union {
-        COLOR emitter;
+    const MATERIAL_TYPE type;
+    const union {
+        const COLOR emitter;
     } data;
 } MATERIAL;
 
@@ -79,17 +79,17 @@ MATERIAL Emitter(COLOR color);
 // Objects
 
 struct Object {
-    GEOMETRY geometry;
-    MATERIAL material;
+    const GEOMETRY geometry;
+    const MATERIAL material;
 };
 
 // Camera
 
 struct Camera {
-    HCoord origin; // center of camera (UCS)
-    HCoord front; // front vector of camera (UCS)
-    HCoord left; // left vector of camera (UCS)
-    HCoord up; // up vector of camera (UCS)
+    const HCoord origin; // center of camera (UCS)
+    const HCoord front; // front vector of camera (UCS)
+    const HCoord left; // left vector of camera (UCS)
+    const HCoord up; // up vector of camera (UCS)
 };
 
 /**

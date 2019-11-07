@@ -10,35 +10,39 @@
 #include "Geometric.hpp"
 
 Camera createCamera(const HCoord &origin, const HCoord &front, const HCoord &up, float ratio) {
-    Camera cam;
-    cam.origin = origin;
-    cam.front = front;
-    cam.up = up;
-    cam.left = norm(cross(up, front)) * mod(up) * ratio; // left is ortogonal to up and left, with the size of up*ratio
-    return cam;
+    return {
+            .origin=origin,
+            .front=front,
+            .left=norm(cross(up, front)) * mod(up) * ratio, // left is ortogonal to up and left, with the size of up*ratio
+            .up=up,
+    };
 }
 
 GEOMETRY Sphere(const HCoord &center, float radius) {
-    GEOMETRY geometry;
-    geometry.type = SPHERE;
-    geometry.data.sphere.radius = radius;
-    geometry.data.sphere.center = center;
-    return geometry;
+    return {
+            .type=SPHERE,
+            .data={.sphere={
+                    .center=center,
+                    .radius=radius,
+            }},
+    };
 }
 
 GEOMETRY Plane(const HCoord &normal, float dist) {
-    GEOMETRY geometry;
-    geometry.type = PLANE;
-    geometry.data.plane.normal = normal;
-    geometry.data.plane.dist = dist;
-    return geometry;
+    return {
+            .type = PLANE,
+            .data={.plane={
+                    .normal = normal,
+                    .dist = dist,
+            }},
+    };
 }
 
 MATERIAL Emitter(COLOR color) {
-    MATERIAL material;
-    material.type = EMITTER;
-    material.data.emitter = color;
-    return material;
+    return {
+            .type = EMITTER,
+            .data={.emitter = color},
+    };
 }
 
 HCoord getRay(Camera camera, float i, float j) {

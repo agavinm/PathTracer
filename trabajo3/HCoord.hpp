@@ -14,18 +14,13 @@
 
 
 struct HCoord {
-    float e[4]; // Coordinates
+    const float e[4]; // Coordinates
 
     float x() const; // x/w
     float y() const; // y/w
     float z() const; // z/w
 
     bool isVector() const; // w!=0
-
-    /**
-     * Clone point/vector
-     */
-    HCoord &operator=(const HCoord &h);
 
     /**
      * same vector or same points

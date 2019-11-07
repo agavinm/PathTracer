@@ -36,7 +36,7 @@ Transform inverse(const Transform &t);
 // Declarations:
 
 struct Transform {
-    float e[4][4]; // Elements (row, column)
+    const float e[4][4]; // Elements (row, column)
 
     /**
      * Multiplication matrix * matrix -> matrix

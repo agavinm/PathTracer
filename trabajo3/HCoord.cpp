@@ -15,21 +15,11 @@ using namespace std;
 
 
 HCoord hPoint(float x, float y, float z) {
-    HCoord h;
-    h.e[0] = x;
-    h.e[1] = y;
-    h.e[2] = z;
-    h.e[3] = 1.0f;
-    return h;
+    return {{x, y, z, 1.0f}};
 }
 
 HCoord hVector(float x, float y, float z) {
-    HCoord h;
-    h.e[0] = x;
-    h.e[1] = y;
-    h.e[2] = z;
-    h.e[3] = 0.0f;
-    return h;
+    return {{x, y, z, 0}};
 }
 
 float dot(const HCoord &a, const HCoord &b) {
@@ -41,23 +31,24 @@ float dot(const HCoord &a, const HCoord &b) {
 HCoord cross(const HCoord &a, const HCoord &b) {
     assert(a.isVector() && b.isVector());
 
-    HCoord h;
-    h.e[0] = a.e[1] * b.e[2] - a.e[2] * b.e[1];
-    h.e[1] = a.e[2] * b.e[0] - a.e[0] * b.e[2];
-    h.e[2] = a.e[0] * b.e[1] - a.e[1] * b.e[0];
-    h.e[3] = 0;
-    return h;
+    return {{
+                    a.e[1] * b.e[2] - a.e[2] * b.e[1],
+                    a.e[2] * b.e[0] - a.e[0] * b.e[2],
+                    a.e[0] * b.e[1] - a.e[1] * b.e[0],
+                    0
+            }};
 }
 
 HCoord norm(const HCoord &h) {
     assert(h.isVector());
 
-    HCoord n;
-    for (int i = 0; i < 3; i++) {
-        n.e[i] = h.e[i] / mod(h);
-    }
-    n.e[3] = 0;
-    return n;
+    float modh = mod(h);
+    return {{
+                    h.e[0] / modh,
+                    h.e[1] / modh,
+                    h.e[2] / modh,
+                    0
+            }};
 }
 
 float mod(const HCoord &h) {
@@ -74,13 +65,6 @@ ostream &operator<<(ostream &o, const HCoord &h) {
     return o;
 }
 
-HCoord &HCoord::operator=(const HCoord &h) {
-    for (int i = 0; i < 4; i++) {
-        this->e[i] = h.e[i];
-    }
-    return *this;
-}
-
 bool HCoord::operator==(const HCoord &h) const {
     // check if one is vector and the other isn't
     if (h.isVector() != this->isVector()) return false;
@@ -95,45 +79,52 @@ bool HCoord::operator==(const HCoord &h) const {
 }
 
 HCoord HCoord::operator+(const HCoord &right) const {
-    HCoord v;
     if (this->isVector()) {
         if (right.isVector()) {
             // vector + vector = vector
-            for (int i = 0; i < 3; ++i) {
-                v.e[i] = this->e[i] + right.e[i];
-            }
-            v.e[3] = 0;
+            return {{
+                            this->e[0] + right.e[0],
+                            this->e[1] + right.e[1],
+                            this->e[2] + right.e[2],
+                            0
+                    }};
         } else {
             // vector + point = point
-            for (int i = 0; i < 3; ++i) {
-                v.e[i] = this->e[i] * right.e[3] + right.e[i];
-            }
-            v.e[3] = right.e[3];
+            float w = right.e[3];
+            return {{
+                            this->e[0] * w + right.e[0],
+                            this->e[1] * w + right.e[1],
+                            this->e[2] * w + right.e[2],
+                            w
+                    }};
         }
     } else {
         if (right.isVector()) {
             // point + vector = point
-            for (int i = 0; i < 3; ++i) {
-                v.e[i] = this->e[i] + right.e[i] * this->e[3];
-            }
-            v.e[3] = this->e[3];
+            float w = this->e[3];
+            return {{
+                            this->e[0] + right.e[0] * w,
+                            this->e[1] + right.e[1] * w,
+                            this->e[2] + right.e[2] * w,
+                            w
+                    }};
         } else {
             // point + point = ERROR
             assert(false);
         }
     }
-    return v;
 }
 
 HCoord HCoord::operator-(const HCoord &right) const {
-    HCoord v;
     if (this->isVector()) {
         if (right.isVector()) {
             // vector - vector = vector
-            for (int i = 0; i < 3; ++i) {
-                v.e[i] = this->e[i] - right.e[i];
-            }
-            v.e[3] = 0;
+            return {{
+                            this->e[0] - right.e[0],
+                            this->e[1] - right.e[1],
+                            this->e[2] - right.e[2],
+                            0
+                    }};
         } else {
             // vector - point = ERROR
             assert(false);
@@ -141,31 +132,37 @@ HCoord HCoord::operator-(const HCoord &right) const {
     } else {
         if (right.isVector()) {
             // point - vector = point
-            for (int i = 0; i < 3; ++i) {
-                v.e[i] = this->e[i] - right.e[i] * this->e[3];
-            }
-            v.e[3] = this->e[3];
+            float w = this->e[3];
+            return {{
+                            this->e[0] - right.e[0] * w,
+                            this->e[1] - right.e[1] * w,
+                            this->e[2] - right.e[2] * w,
+                            w
+                    }};
         } else {
             // point - point = vector
-            float w = this->e[3] * right.e[3];
-            for (int i = 0; i < 3; ++i) {
-                v.e[i] = (this->e[i] * right.e[3] - right.e[i] * this->e[3]) / w;
-            }
-            v.e[3] = 0;
+            float thisw = this->e[3];
+            float rightw = right.e[3];
+            float ww = thisw * rightw;
+            return {{
+                            (this->e[0] * rightw - right.e[0] * thisw) / ww,
+                            (this->e[1] * rightw - right.e[1] * thisw) / ww,
+                            (this->e[2] * rightw - right.e[2] * thisw) / ww,
+                            0
+                    }};
         }
     }
-    return v;
 }
 
 HCoord HCoord::operator*(float s) const {
     assert(this->isVector());
 
-    HCoord v;
-    v.e[0] = this->e[0] * s;
-    v.e[1] = this->e[1] * s;
-    v.e[2] = this->e[2] * s;
-    v.e[3] = 0;
-    return v;
+    return {{
+                    this->e[0] * s,
+                    this->e[1] * s,
+                    this->e[2] * s,
+                    0
+            }};
 }
 
 float HCoord::x() const {

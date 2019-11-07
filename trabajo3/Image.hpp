@@ -34,7 +34,7 @@ struct COLOR {
  * pixels = width*height RGB pixel array (stored as floating point precision)
  */
 struct Image {
-    int width, height;
+    const int width, height;
     std::vector<COLOR> pixels;
 };
 
