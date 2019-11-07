@@ -38,8 +38,9 @@ int main(int argc, char *argv[]) {
     int ppp = stoi(args[1]);
 
     // Image
-    int width = 1920;
-    int height = 1080;
+//    int width = 1920; int height = 1080; // HD
+    int width = 520;
+    int height = 480; // SD
     Image image = initImage(width, height);
 
     // Scene
@@ -49,6 +50,7 @@ int main(int argc, char *argv[]) {
     cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << objects.size() << " objects)" << endl;
 
     for (int i = 0; i < width; ++i) {
+        cout << "\r> Render status: " << i * 100 / width << "%     " << flush;
         for (int j = 0; j < height; ++j) {
             // foreach pixel
             COLOR color = {0, 0, 0};
@@ -64,7 +66,7 @@ int main(int argc, char *argv[]) {
                 float dist = INFINITY;
                 for (Object &object : objects) {
                     float obj_dist = intersect(position, direction, object);
-                    if (obj_dist < dist) {
+                    if (obj_dist > -1e-6 && obj_dist < dist) {
                         intersection = &object;
                         dist = obj_dist;
                     }
@@ -90,7 +92,9 @@ int main(int argc, char *argv[]) {
             // save
             setPixel(image, i, j, color / ppp);
         }
+
     }
+    cout << "\r[INFO] Render completed                   " << endl;
 
     storePPM("test.ppm", image, 255);
 

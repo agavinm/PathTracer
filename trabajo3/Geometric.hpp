@@ -52,7 +52,7 @@ GEOMETRY Sphere(const HCoord &center, float radius);
 /**
  * Creates a plane
  * @param normal normal vector of plane
- * @param dist distance to origin
+ * @param dist distance to origin (in normal direction: if normal is (0,0,1) and dist=1 the plane is on (0,0,-1) visible from origin)
  * @return the plane as geometry
  */
 GEOMETRY Plane(const HCoord &normal, float dist);
@@ -105,8 +105,8 @@ Camera createCamera(const HCoord &origin, const HCoord &front, const HCoord &up,
 /**
  * Computes the direction of a ray from a camera
  * @param camera origin of ray
- * @param i horizontal position in image (0-1)
- * @param j vertical position in image (0-1)
+ * @param i horizontal position in image (0=left -> 1=right)
+ * @param j vertical position in image (0=bottom -> 1=top)
  * @return the ray as vector
  */
 HCoord getRay(Camera camera, float i, float j);

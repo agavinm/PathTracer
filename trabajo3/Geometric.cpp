@@ -50,26 +50,35 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
     switch (object.geometry.type) {
         case SPHERE: {
             GEOMETRY_SPHERE data = object.geometry.data.sphere;
-            // this needs understanding and comments
-            HCoord oc = origin - data.center;
-            float dotdoc = dot(norm(dir), oc);
-            float _d = dotdoc * dotdoc - dot(oc, oc) + data.radius * data.radius;
-            return _d < 1e-6 ? INFINITY : -dotdoc - sqrt(_d);
+
+//            // Unoptimized
+//            HCoord normdir = norm(dir);
+//            HCoord ominusc = origin - data.center; // origin minus center
+//            float a = 1;
+//            float b = 2 * dot(normdir, ominusc);
+//            float c = dot(ominusc, ominusc) - data.radius * data.radius;
+//            float discriminant = b * b - 4 * a * c;
+//            if (discriminant < 1e-6)
+//                return INFINITY;
+//            float t = (-b + sqrt(discriminant)) / 2 / a;
+//            return t > -1e-6 ? t : INFINITY;
+
+            // Optimized
+            HCoord ominusc = origin - data.center; // origin minus center
+            float b = dot(norm(dir), ominusc);
+            float discriminant = b * b - dot(ominusc, ominusc) + data.radius * data.radius;
+            return discriminant < 1e-6 ? INFINITY : -b - sqrt(discriminant);
+
         }
         case PLANE: {
             GEOMETRY_PLANE data = object.geometry.data.plane;
-            // this needs understanding and comments
-            float denom = dot(norm(data.normal), norm(dir));
-            if (fabs(denom) > 1e-6) {
-                HCoord p0l0 = (hPoint(0, 0, 0) + data.normal * data.dist) - origin;
-                float t = dot(p0l0, norm(data.normal)) / denom;
-                return t > 1e-6 ? t : INFINITY;
-            }
-            return INFINITY;
+
+            HCoord normdir = norm(dir);
+            float denom = dot(normdir, norm(data.normal));
+            return denom > -1e-6 ? INFINITY : -(dot(origin - hPoint(0, 0, 0), normdir) + data.dist) / denom;
+
         }
         default:
             exit(50);
     }
-
-    return INFINITY;
 }
