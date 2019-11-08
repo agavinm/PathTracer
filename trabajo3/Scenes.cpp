@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define SCENE 2
+#define SCENE 3
 
 //////////////////////////////////////////////////////
 
@@ -36,10 +36,19 @@ vector<Object> getObjects() {
 
 
 Camera getCamera(float ratio) {
+#if SCENE == 3
+    return createCamera(
+            hPoint(-5, 0, 0),
+            hVector(1, 0, 0),
+            hVector(0, 0, 1),
+            ratio
+    );
+#else
     return createCamera(
             hPoint(0, 0, 0),
             hVector(1, 0, 0),
             hVector(0, 0, 1),
             ratio
     );
+#endif
 }

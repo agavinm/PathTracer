@@ -62,9 +62,9 @@ int main(int argc, char *argv[]) {
                 HCoord position = camera.origin;
 
                 // find nearest intersection
-                Object *intersection = nullptr;
+                const Object *intersection = nullptr;
                 float dist = INFINITY;
-                for (Object &object : objects) {
+                for (const Object &object : objects) {
                     float obj_dist = intersect(position, direction, object);
                     if (obj_dist > -1e-6 && obj_dist < dist) {
                         intersection = &object;

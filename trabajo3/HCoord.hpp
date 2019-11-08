@@ -16,9 +16,9 @@
 struct HCoord {
     const float e[4]; // Coordinates
 
-    float x() const; // x/w
-    float y() const; // y/w
-    float z() const; // z/w
+    float x() const; // x/w : +x goes inside the screen, -x goes outside the screen
+    float y() const; // y/w : +y goes to the left, -y goes to the right
+    float z() const; // z/w : +z goes to the top, -z goes to the bottom
 
     bool isVector() const; // w!=0
 

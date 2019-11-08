@@ -106,7 +106,7 @@ Camera createCamera(const HCoord &origin, const HCoord &front, const HCoord &up,
  * Computes the direction of a ray from a camera
  * @param camera origin of ray
  * @param i horizontal position in image (0=left -> 1=right)
- * @param j vertical position in image (0=bottom -> 1=top)
+ * @param j vertical position in image (0=up -> 1=bottom)
  * @return the ray as vector
  */
 HCoord getRay(Camera camera, float i, float j);

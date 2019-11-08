@@ -46,7 +46,7 @@ MATERIAL Emitter(COLOR color) {
 }
 
 HCoord getRay(Camera camera, float i, float j) {
-    return camera.front + camera.left * (2 * i - 1) + camera.up * (2 * j - 1);
+    return camera.front + camera.left * (1 - 2 * i) + camera.up * (1 - 2 * j);
 }
 
 float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {

@@ -43,7 +43,7 @@ Image initImage(int width, int height) {
 }
 
 void setPixel(Image &image, int i, int j, COLOR pixel) {
-    image.pixels[i + (image.height - 1 - j) * image.width] = pixel;
+    image.pixels[i + j * image.width] = pixel;
 }
 
 
