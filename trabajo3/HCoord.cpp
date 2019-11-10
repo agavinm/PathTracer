@@ -154,6 +154,10 @@ HCoord HCoord::operator-(const HCoord &right) const {
     }
 }
 
+HCoord HCoord::operator-() const {
+    return {{-this->e[0], -this->e[1], -this->e[2], this->e[3]}};
+}
+
 HCoord HCoord::operator*(float s) const {
     assert(this->isVector());
 

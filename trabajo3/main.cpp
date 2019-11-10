@@ -45,24 +45,25 @@ int main(int argc, char *argv[]) {
 
     // Image
 //    int width = 1920; int height = 1080; // HD
-    int width = 520;
-    int height = 480; // SD
+//    int width = 520; int height = 480; // SD
+    int width = 500;
+    int height = 500; //square
     Image image = initImage(width, height);
 
     // Scene
-    vector<Object> objects = getObjects("XYZ");
-    //vector<Object> objects = getObjects("spiral");
-    //vector<Object> objects = getObjects("test");
+    //vector<Object> objects = getObjects("XYZ");
+    vector<Object> objects = getObjects("spiral");
+//    vector<Object> objects = getObjects("test");
     Camera camera = getCamera((float) width / (float) height);
 
     cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << objects.size() << " objects)" << endl;
 
-    progress.start();
+    progress.start("[INFO] Render");
     for (int i = 0; i < width; ++i) {
         progress.step(i * 100.0f / width);
         for (int j = 0; j < height; ++j) {
             // foreach pixel
-            COLOR color = {0, 0, 0};
+            COLOR color = C_BLACK;
 
             for (int p = 0; p < ppp; ++p) {
 
@@ -75,7 +76,7 @@ int main(int argc, char *argv[]) {
                 float dist = INFINITY;
                 for (const Object &object : objects) {
                     float obj_dist = intersect(position, direction, object);
-                    if (obj_dist > -1e-6 && obj_dist < dist) {
+                    if (obj_dist > -EPS && obj_dist < dist) {
                         intersection = &object;
                         dist = obj_dist;
                     }
@@ -105,7 +106,8 @@ int main(int argc, char *argv[]) {
     }
     progress.end();
 
-    storePPM("test.ppm", image, 255);
+//    storePPM("test.ppm", image, 255);
+    storeBMP("test.bmp", image);
 
     return 0;
 }

@@ -38,6 +38,16 @@ struct Image {
     std::vector<COLOR> pixels;
 };
 
+// color constants
+static const COLOR C_BLACK = {0, 0, 0};
+static const COLOR C_RED = {1, 0, 0};
+static const COLOR C_GREEN = {0, 1, 0};
+static const COLOR C_BLUE = {0, 0, 1};
+static const COLOR C_CYAN = {0, 1, 1};
+static const COLOR C_PURPLE = {1, 0, 1};
+static const COLOR C_YELLOW = {1, 1, 0};
+static const COLOR C_WHITE = {1, 1, 1};
+
 /**
  * Initializes an image
  */
@@ -63,5 +73,7 @@ void setPixel(Image &image, int i, int j, COLOR pixel);
  * @param resolution max value to store, 255 for standard ppm
  */
 void storePPM(const std::string &name, const Image &image, int resolution);
+
+void storeBMP(const std::string &name, const Image &image);
 
 #endif //TRABAJO2_IMAGE_HPP

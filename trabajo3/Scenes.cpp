@@ -14,9 +14,11 @@ using namespace std;
 vector<Object> getObjects(const string &scene) {
     vector<Object> objects;
     if (scene == "test") {
-        objects.push_back({Sphere(hPoint(10, 0, 0), 1), Emitter({1, 0, 0})});
-        objects.push_back({Sphere(hPoint(5, 5, 0), 1), Emitter({0, 1, 0})});
-        objects.push_back({Plane(hVector(0, 0, 1), 10), Emitter({0, 0, 1})});
+        objects.push_back({Sphere(hPoint(10, 0, 0), 1), Emitter(C_RED)});
+        objects.push_back({Sphere(hPoint(5, 5, 0), 1), Emitter(C_GREEN)});
+        objects.push_back({Plane(V_AZ, 10), Emitter({0, 0, 1})});
+        objects.push_back({Circle(hPoint(5, -5, 0), -V_AX, V_AZ * 2), Emitter(C_WHITE)});
+        objects.push_back({Triangle(hPoint(10, 0, 0), hPoint(5, 5, 0), hPoint(5, 0, -5)), Emitter(C_PURPLE)});
     }
 
     if (scene == "spiral") {
@@ -29,28 +31,19 @@ vector<Object> getObjects(const string &scene) {
     }
 
     if (scene == "XYZ") {
-        objects.push_back({Sphere(hPoint(3, 0, 0), 1), Emitter({1, 0, 0})});
-        objects.push_back({Sphere(hPoint(0, 3, 0), 1), Emitter({0, 1, 0})});
-        objects.push_back({Sphere(hPoint(0, 0, 3), 1), Emitter({0, 0, 1})});
+        objects.push_back({Sphere(hPoint(3, 0, 0), 1), Emitter(C_RED)});
+        objects.push_back({Sphere(hPoint(0, 3, 0), 1), Emitter(C_GREEN)});
+        objects.push_back({Sphere(hPoint(0, 0, 3), 1), Emitter(C_BLUE)});
     }
     return objects;
 }
 
 
 Camera getCamera(float ratio) {
-#if SCENE == 3
     return createCamera(
-            hPoint(-5, 0, 0),
-            hVector(1, 0, 0),
-            hVector(0, 0, 1),
+            P_ZERO,
+            V_AX,
+            V_AZ,
             ratio
     );
-#else
-    return createCamera(
-            hPoint(0, 0, 0),
-            hVector(1, 0, 0),
-            hVector(0, 0, 1),
-            ratio
-    );
-#endif
 }

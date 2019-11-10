@@ -43,10 +43,13 @@ struct HCoord {
      */
     HCoord operator-(const HCoord &right) const;
 
+    HCoord operator-() const;
+
     /**
      * Increases vector modulus by the amount 's'
      */
     HCoord operator*(float s) const;
+
 };
 
 /**
@@ -84,5 +87,11 @@ float mod(const HCoord &h);
  */
 std::ostream &operator<<(std::ostream &o, const HCoord &h);
 
+// constants
+static const HCoord P_ZERO = hPoint(0, 0, 0);
+static const HCoord V_ZERO = hVector(0, 0, 0);
+static const HCoord V_AX = hVector(1, 0, 0);
+static const HCoord V_AY = hVector(0, 1, 0);
+static const HCoord V_AZ = hVector(0, 0, 1);
 
 #endif //TRABAJO1_HCOORD_HPP

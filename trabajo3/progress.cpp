@@ -6,15 +6,16 @@
 #include <iostream>
 #include <iomanip>
 
-void Progress::start() {
+void Progress::start(const std::string &prefix) {
     using namespace std::chrono;
     this->startTime = high_resolution_clock::now();
+    this->prefix = prefix;
     this->step(0);
 }
 
 void Progress::step(float currentStep) {
     using namespace std;
-    cout << "\rProgress : " << fixed << setprecision(2) << setw(6) << currentStep << "%" << flush;
+    cout << "\r" << this->prefix << " progress : " << fixed << setprecision(2) << setw(6) << currentStep << "%" << flush;
 }
 
 void Progress::end() {
@@ -28,7 +29,7 @@ void Progress::end() {
 
     using namespace std;
 
-    cout << "\rFinished in ";
+    cout << "\r" << this->prefix << " finished in ";
     if (h.count() != 0) {
         cout << h.count() << "d ";
     }

@@ -32,6 +32,9 @@ Transform changeToBase(const HCoord &u, const HCoord &v, const HCoord &w, const 
 
 Transform inverse(const Transform &t);
 
+// Constants
+static const float EPS = 1e-6;
+
 
 // Declarations:
 
