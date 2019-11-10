@@ -11,7 +11,7 @@
 /**
  * @return a list of objects in the scene
  */
-std::vector<Object> getObjects();
+std::vector<Object> getObjects(const std::string &scene);
 
 /**
  * @return the camera

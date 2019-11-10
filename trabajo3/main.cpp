@@ -9,13 +9,13 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <random>
 
 #include "HCoord.hpp"
 #include "Geometric.hpp"
 #include "Scenes.hpp"
 #include "Image.hpp"
-
-#define RAND(max) ( (float)rand() / (float)(RAND_MAX) * (float) (max) )
+#include "progress.hpp"
 
 using namespace std;
 
@@ -34,6 +34,12 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    // initialization of utilities
+    random_device rd;
+    mt19937 mt(rd());
+    uniform_real_distribution<float> dist(0.0f, nextafter(1.0f, MAXFLOAT));
+    Progress progress;
+
     // rays
     int ppp = stoi(args[1]);
 
@@ -44,13 +50,16 @@ int main(int argc, char *argv[]) {
     Image image = initImage(width, height);
 
     // Scene
-    vector<Object> objects = getObjects();
+    vector<Object> objects = getObjects("XYZ");
+    //vector<Object> objects = getObjects("spiral");
+    //vector<Object> objects = getObjects("test");
     Camera camera = getCamera((float) width / (float) height);
 
     cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << objects.size() << " objects)" << endl;
 
+    progress.start();
     for (int i = 0; i < width; ++i) {
-        cout << "\r> Render status: " << i * 100 / width << "%     " << flush;
+        progress.step(i * 100.0f / width);
         for (int j = 0; j < height; ++j) {
             // foreach pixel
             COLOR color = {0, 0, 0};
@@ -58,7 +67,7 @@ int main(int argc, char *argv[]) {
             for (int p = 0; p < ppp; ++p) {
 
                 // get initial ray
-                HCoord direction = getRay(camera, ((float) i + RAND(1)) / (float) width, ((float) j + RAND(1)) / (float) height);
+                HCoord direction = getRay(camera, ((float) i + dist(mt)) / (float) width, ((float) j + dist(mt)) / (float) height);
                 HCoord position = camera.origin;
 
                 // find nearest intersection
@@ -94,7 +103,7 @@ int main(int argc, char *argv[]) {
         }
 
     }
-    cout << "\r[INFO] Render completed                   " << endl;
+    progress.end();
 
     storePPM("test.ppm", image, 255);
 
