@@ -1,11 +1,10 @@
-//******************************************************************************
-// File:   Image.hpp
-// Author: Andrés Gavín Murillo 716358
-// Author: Abel Naya Forcano 544125
-// Date:   Octubre 2019
-// Coms:   Informática Gráfica - Trabajo recomendado 2
-//         Imaging
-//******************************************************************************
+/******************************************************************************
+ * @file    Image.hpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Noviembre 2019
+ * @coms    Informática Gráfica - Trabajo recomendado 3
+ ******************************************************************************/
 
 #ifndef TRABAJO2_IMAGE_HPP
 #define TRABAJO2_IMAGE_HPP
@@ -58,11 +57,17 @@ Image initImage(int width, int height);
  * @param image to modify
  * @param i horizontal coordinate, [0,width-1]
  * @param j vertical coordinate [0,height-1]
- * @param r red
- * @param g green
- * @param b blue
+ * @param pixel RGB color
  */
 void setPixel(Image &image, int i, int j, COLOR pixel);
+
+/**
+ * Sets a pixel of an image
+ * @param image to modify
+ * @param p coordinate, [0,width*height-1]
+ * @param pixel RGB color
+ */
+void setPixel(Image &image, int p, COLOR pixel);
 
 // Load and store operations
 

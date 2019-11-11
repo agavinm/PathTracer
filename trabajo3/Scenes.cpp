@@ -1,9 +1,12 @@
-//
-// Created by abeln on 04/11/2019.
-//
+/******************************************************************************
+ * @file    Scenes.cpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Noviembre 2019
+ * @coms    Informática Gráfica - Trabajo recomendado 3
+ ******************************************************************************/
 
 #include <cmath>
-#include "Geometric.hpp"
 #include "Scenes.hpp"
 
 using namespace std;

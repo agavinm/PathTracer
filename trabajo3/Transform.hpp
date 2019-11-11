@@ -1,11 +1,10 @@
-//******************************************************************************
-// File:   Transform.hpp
-// Author: Andrés Gavín Murillo 716358
-// Author: Abel Naya Forcano 544125
-// Date:   Septiembre 2019
-// Coms:   Informática Gráfica - Trabajo recomendado 1
-//         Transform Matrix ADT
-//******************************************************************************
+/******************************************************************************
+ * @file    Transform.hpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Noviembre 2019
+ * @coms    Informática Gráfica - Trabajo recomendado 3
+ ******************************************************************************/
 
 #ifndef TRABAJO1_TRANSFORM_HPP
 #define TRABAJO1_TRANSFORM_HPP

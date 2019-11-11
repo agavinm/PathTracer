@@ -1,11 +1,10 @@
-//******************************************************************************
-// File:   Image.cpp
-// Author: Andrés Gavín Murillo 716358
-// Author: Abel Naya Forcano 544125
-// Date:   Octubre 2019
-// Coms:   Informática Gráfica - Trabajo recomendado 2
-//         Imaging
-//******************************************************************************
+/******************************************************************************
+ * @file    Image.cpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Noviembre 2019
+ * @coms    Informática Gráfica - Trabajo recomendado 3
+ ******************************************************************************/
 
 #include "Image.hpp"
 #include <iostream>
@@ -44,6 +43,10 @@ Image initImage(int width, int height) {
 
 void setPixel(Image &image, int i, int j, COLOR pixel) {
     image.pixels[i + j * image.width] = pixel;
+}
+
+void setPixel(Image &image, int p, COLOR pixel) {
+    image.pixels[p] = pixel;
 }
 
 

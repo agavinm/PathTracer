@@ -1,17 +1,15 @@
-//******************************************************************************
-// File:   HCoord.hpp
-// Author: Andrés Gavín Murillo 716358
-// Author: Abel Naya Forcano 544125
-// Date:   Septiembre 2019
-// Coms:   Informática Gráfica - Trabajo recomendado 1
-//         Points and Directions ADT
-//******************************************************************************
+/******************************************************************************
+ * @file    HCoord.hpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Noviembre 2019
+ * @coms    Informática Gráfica - Trabajo recomendado 3
+ ******************************************************************************/
 
 #ifndef TRABAJO1_HCOORD_HPP
 #define TRABAJO1_HCOORD_HPP
 
 #include <ostream>
-
 
 struct HCoord {
     const float e[4]; // Coordinates

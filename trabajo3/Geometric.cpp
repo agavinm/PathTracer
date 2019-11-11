@@ -1,10 +1,10 @@
-//******************************************************************************
-// File:   Geometric.cpp
-// Author: Andrés Gavín Murillo 716358
-// Author: Abel Naya Forcano 544125
-// Date:   Septiembre 2019
-// Coms:   Informática Gráfica - Trabajo recomendado 1
-//******************************************************************************
+/******************************************************************************
+ * @file    Geometric.cpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Noviembre 2019
+ * @coms    Informática Gráfica - Trabajo recomendado 3
+ ******************************************************************************/
 
 #include <cmath>
 #include "Geometric.hpp"

@@ -1,11 +1,10 @@
-//******************************************************************************
-// File:   HCoord.hpp
-// Author: Andrés Gavín Murillo 716358
-// Author: Abel Naya Forcano 544125
-// Date:   Septiembre 2019
-// Coms:   Informática Gráfica - Trabajo recomendado 1
-//         Points and Directions ADT
-//******************************************************************************
+/******************************************************************************
+ * @file    HCoord.cpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Noviembre 2019
+ * @coms    Informática Gráfica - Trabajo recomendado 3
+ ******************************************************************************/
 
 #include "HCoord.hpp"
 #include <cmath>
@@ -19,7 +18,7 @@ HCoord hPoint(float x, float y, float z) {
 }
 
 HCoord hVector(float x, float y, float z) {
-    return {{x, y, z, 0}};
+    return {{x, y, z, 0.0f}};
 }
 
 float dot(const HCoord &a, const HCoord &b) {
