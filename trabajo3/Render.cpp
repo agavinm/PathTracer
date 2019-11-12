@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cmath>
 #include <random>
+#include <iostream>
 #include "Render.hpp"
 #include "Progress.hpp"
 
@@ -55,6 +56,10 @@ void renderRegion(int i_ini, int i_end, int width, int height, int ppp,
                             color = color + intersection->material.data.emitter;
                             break;
                         }
+                        case TEXTURE: {
+                            color = color + getColor2D(intersection->material.data.texture, i, j);
+                            break;
+                        }
                         default:
                             exit(6);
                     }
@@ -75,6 +80,8 @@ Image render(int width, int height, int ppp, const vector<Object> &objects, cons
 
 Image render(int width, int height, int ppp, const vector<Object> &objects, const Camera &camera, int numThreads) {
     assert(numThreads > 0);
+
+    cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << objects.size() << " objects)" << endl;
 
     Progress progress;
     progress.start("[INFO] Render");

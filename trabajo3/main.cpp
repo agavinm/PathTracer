@@ -41,11 +41,9 @@ int main(int argc, char *argv[]) {
 
     // Scene
     //vector<Object> objects = getObjects("XYZ");
-    vector<Object> objects = getObjects("spiral");
-    //vector<Object> objects = getObjects("test");
+    //vector<Object> objects = getObjects("spiral");
+    vector<Object> objects = getObjects("test");
     Camera camera = getCamera((float) width / (float) height);
-
-    cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << objects.size() << " objects)" << endl;
 
     if (endsWith(argv[2], ".ppm")) {
         storePPM(argv[2], render(width, height, ppp, objects, camera), 255);

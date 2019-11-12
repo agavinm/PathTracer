@@ -9,11 +9,9 @@
 #ifndef TRABAJO1_GEOMETRIC_HPP
 #define TRABAJO1_GEOMETRIC_HPP
 
-#include "HCoord.hpp"
-#include "Transform.hpp"
-#include "Image.hpp"
-
 #include <array>
+#include "Transform.hpp"
+#include "Texture.hpp"
 
 // Geometries
 
@@ -21,7 +19,7 @@ enum GEOMETRY_TYPE {
     SPHERE,
     PLANE,
     TRIANGLE,
-    CIRCLE,
+    CIRCLE
 };
 
 typedef struct {
@@ -95,13 +93,15 @@ GEOMETRY Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY);
 // Materials
 
 enum MATERIAL_TYPE {
-    EMITTER
+    EMITTER,
+    TEXTURE
 };
 
 typedef struct {
     const MATERIAL_TYPE type;
     const union {
         const COLOR emitter;
+        const Texture texture;
     } data;
 } MATERIAL;
 
@@ -109,7 +109,13 @@ typedef struct {
  * Creates an emitter material
  * @return the emitter as material
  */
-MATERIAL Emitter(COLOR color);
+MATERIAL Emitter(const COLOR &color);
+
+/**
+ * Creates a textured material
+ * @return the texturer as material
+ */
+MATERIAL Texturer(const Texture &texture);
 
 // Objects
 
@@ -144,7 +150,7 @@ Camera createCamera(const HCoord &origin, const HCoord &front, const HCoord &up,
  * @param j vertical position in image (0=up -> 1=bottom)
  * @return the ray as vector
  */
-HCoord getRay(Camera camera, float i, float j);
+HCoord getRay(const Camera &camera, float i, float j);
 
 /**
  * Calculates the intersection between an object and a ray

@@ -75,14 +75,21 @@ GEOMETRY Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY) 
     };
 }
 
-MATERIAL Emitter(COLOR color) {
+MATERIAL Emitter(const COLOR &color) {
     return {
             .type = EMITTER,
             .data={.emitter = color},
     };
 }
 
-HCoord getRay(Camera camera, float i, float j) {
+MATERIAL Texturer(const Texture &texture) {
+    return {
+            .type = TEXTURE,
+            .data={.texture = texture},
+    };
+}
+
+HCoord getRay(const Camera &camera, float i, float j) {
     return camera.front + camera.left * (1 - 2 * i) + camera.up * (1 - 2 * j);
 }
 

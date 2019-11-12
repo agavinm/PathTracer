@@ -17,10 +17,10 @@ using namespace std;
 vector<Object> getObjects(const string &scene) {
     vector<Object> objects;
     if (scene == "test") {
-        objects.push_back({Sphere(hPoint(10, 0, 0), 1), Emitter(C_RED)});
-        objects.push_back({Sphere(hPoint(5, 5, 0), 1), Emitter(C_GREEN)});
+        objects.push_back({Sphere(hPoint(10, 0, 0), 1), Texturer(sin2D(C_RED))});
+        objects.push_back({Sphere(hPoint(5, 5, 0), 1), Texturer(sin22D(C_GREEN))});
         objects.push_back({Plane(V_AZ, 10), Emitter({0, 0, 1})});
-        objects.push_back({Circle(hPoint(5, -5, 0), -V_AX, V_AZ * 2), Emitter(C_WHITE)});
+        objects.push_back({Circle(hPoint(5, -5, 0), -V_AX, V_AZ * 2), Texturer(sinCos2D(C_WHITE))});
         objects.push_back({Triangle(hPoint(10, 0, 0), hPoint(5, 5, 0), hPoint(5, 0, -5)), Emitter(C_PURPLE)});
     }
 
