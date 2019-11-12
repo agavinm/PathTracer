@@ -33,6 +33,10 @@ COLOR COLOR::operator/(float s) const {
     };
 }
 
+COLOR rgb(const unsigned char r, const unsigned char g, const unsigned char b) {
+    return {(float) r / 255.0f, (float) g / 255.0f, (float) b / 255.0f};
+}
+
 Image initImage(int width, int height) {
     return {
             .width=width,

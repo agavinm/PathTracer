@@ -13,6 +13,7 @@
 #include "Geometric.hpp"
 
 /**
+ * @param scene name from predefined scenes ("test", "spiral", "XYZ") or triangular ply file
  * @return a list of objects in the scene
  */
 std::vector<Object> getObjects(const std::string &scene);

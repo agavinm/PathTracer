@@ -26,6 +26,8 @@ struct COLOR {
 
 };
 
+COLOR rgb(unsigned char r, unsigned char g, unsigned char b);
+
 /**
  * maxVal = maximum value of the pixels
  * width = Width

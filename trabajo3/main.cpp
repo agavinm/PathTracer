@@ -13,20 +13,20 @@
 
 using namespace std;
 
-bool endsWith(const string &original, const string &suffix) {
-    return original.compare(original.length() - suffix.length(), suffix.length(), suffix) == 0;
-}
-
 void printUsage(const string &name) {
-    cout << "Usage: " << name << " <ppp>" << " <file output>" << endl
-         << "* <file output> needs to be one of" << endl
-         << "       - .ppm" << endl
-         << "       - .bmp" << endl;
+    cout << "Usage: " << name << " <ppp> <scene> <output format>" << endl
+         << "* <scene> can be a .ply file or a predefined scene:" << endl
+         << "       test" << endl
+         << "       spiral" << endl
+         << "       XYZ" << endl
+         << "* <output format> needs to be" << endl
+         << "       ppm" << endl
+         << "       bmp" << endl;
 }
 
 int main(int argc, char *argv[]) {
     // check enough arguments
-    if (argc < 3) {
+    if (argc < 4) {
         printUsage(argv[0]);
         return 0;
     }
@@ -37,24 +37,24 @@ int main(int argc, char *argv[]) {
     // Image
     //int width = 1920; int height = 1080; // HD
     //int width = 520; int height = 480; // SD
-    //int width = 500; int height = 500; //square
-    int width = 1000;
-    int height = 500; //strip
+    int width = 500; int height = 500; //square
+    //int width = 1000; int height = 500; //strip
 
     // Scene
-    //vector<Object> objects = getObjects("XYZ");
-    //vector<Object> objects = getObjects("spiral");
-    vector<Object> objects = getObjects("test");
+    vector<Object> objects = getObjects(argv[2]);;
     Camera camera = getCamera((float) width / (float) height);
 
-    if (endsWith(argv[2], ".ppm")) {
-        storePPM(argv[2], render(width, height, ppp, objects, camera), 255);
+    if (string(argv[3]) == "ppm") {
+        storePPM(string(argv[2]) + ".ppm", render(width, height, ppp, objects, camera), 255);
 
-    } else if (endsWith(argv[2], ".bmp")) {
-        storeBMP(argv[2], render(width, height, ppp, objects, camera));
+    }
+    else if (string(argv[3]) == "bmp") {
+        storeBMP(string(argv[2]) + ".bmp", render(width, height, ppp, objects, camera));
 
-    } else {
+    }
+    else {
         cerr << "Unknown output file extension" << endl;
+        return 1;
     }
 
     return 0;
