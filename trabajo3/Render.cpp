@@ -16,15 +16,14 @@
 
 using namespace std;
 
-void renderRegion(int i_ini, int i_end, int width, int height, int ppp,
-        const vector<Object> &objects, const Camera &camera, bool last, vector<COLOR> &pixels, Progress &progress) {
+void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const vector<Object> &objects, const Camera &camera, bool last, Image &image, Progress &progress) {
     // initialization of utilities
     random_device rd;
     mt19937 mt(rd());
     uniform_real_distribution<float> dist(0.0f, nextafter(1.0f, MAXFLOAT));
 
-    for (int i = i_ini; i < i_end; ++i) {
-        for (int j = 0; j < height; ++j) {
+    for (int j = j_ini; j < j_end; ++j) {
+        for (int i = 0; i < width; ++i) {
             // foreach pixel
             COLOR color = C_BLACK;
 
@@ -67,10 +66,10 @@ void renderRegion(int i_ini, int i_end, int width, int height, int ppp,
             }
 
             // save
-            pixels.push_back(color / (float) ppp);
+            setPixel(image, i, j, color / (float) ppp);
 
-            if (last) progress.step((float) (i - i_ini) * 100.0f / (float) (i_end - i_ini));
         }
+        if (last) progress.step((float) (j - j_ini) * 100.0f / (float) (j_end - j_ini));
     }
 }
 
@@ -89,28 +88,20 @@ Image render(int width, int height, int ppp, const vector<Object> &objects, cons
     Image image = initImage(width, height);
 
     thread threads[numThreads];
-    vector<COLOR> pixels[numThreads]; // return thread vector array
 
-    int i_ini = 0, i_end = width / numThreads;
+    int j_ini = 0, j_end = height / numThreads;
     for (int n = 0; n < numThreads; n++) {
-        pixels[n].reserve((i_end - i_ini) * height);
 
-        threads[n] = thread(renderRegion, i_ini, i_end, width, height, ppp, ref(objects), ref(camera),
-                n == numThreads - 1, ref(pixels[n]), ref(progress));
+        threads[n] = thread(renderRegion, j_ini, j_end, width, height, ppp, ref(objects), ref(camera),
+                            n == numThreads - 1, ref(image), ref(progress));
 
-        i_ini = i_end;
-        if (n == numThreads - 2) i_end = width; // next is last iteration
-        else i_end += width / numThreads;
+        j_ini = j_end;
+        if (n == numThreads - 2) j_end = height; // next is last iteration
+        else j_end += height / numThreads;
     }
 
-    int p = 0;
     for (int n = 0; n < numThreads; n++) {
         threads[n].join(); // wait thread n ends
-
-        for (auto i : pixels[n]) {
-            setPixel(image, p, i); // save result of thread n into image
-            p++;
-        }
     }
 
     progress.end();

@@ -37,7 +37,9 @@ int main(int argc, char *argv[]) {
     // Image
     //int width = 1920; int height = 1080; // HD
     //int width = 520; int height = 480; // SD
-    int width = 500; int height = 500; //square
+    //int width = 500; int height = 500; //square
+    int width = 1000;
+    int height = 500; //strip
 
     // Scene
     //vector<Object> objects = getObjects("XYZ");
