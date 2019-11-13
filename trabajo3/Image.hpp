@@ -24,9 +24,13 @@ struct COLOR {
 
     COLOR operator/(float s) const;
 
+    COLOR operator*(float s) const;
+
 };
 
 COLOR rgb(unsigned char r, unsigned char g, unsigned char b);
+
+COLOR oposite(const COLOR &color);
 
 /**
  * maxVal = maximum value of the pixels

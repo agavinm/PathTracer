@@ -11,6 +11,7 @@
 
 #include "Image.hpp"
 #include "HCoord.hpp"
+#include "Geometric.hpp"
 
 struct Texture {
 private:
@@ -21,17 +22,25 @@ private:
         SIN_COS_2D,
 
         // 2D types from file:
-        IMAGE_2D
+        IMAGE_2D,
+
+        VERTEX_COLOR
     };
 
 public:
     const TEXTURE_TYPE type;
-    const COLOR color;
+    const union {
+        const COLOR color;
+        const COLOR colors[3];
+    };
+    const HCoord vertices[3];
 
     friend Texture sin2D(const COLOR &color);
     friend Texture sin22D(const COLOR &color);
     friend Texture sinCos2D(const COLOR &color);
-    friend COLOR getColor2D(const Texture &texture, int i, int j);
+    friend Texture vertexColor(const COLOR colors[3], const HCoord vertices[3]);
+
+    friend COLOR getColor(const Texture &texture, const HCoord &position);
 };
 
 Texture sin2D(const COLOR &color);
@@ -40,6 +49,8 @@ Texture sin22D(const COLOR &color);
 
 Texture sinCos2D(const COLOR &color);
 
-COLOR getColor2D(const Texture &texture, int i, int j);
+Texture vertexColor(const COLOR colors[3], const HCoord vertices[3]);
+
+COLOR getColor(const Texture &texture, const HCoord &position);
 
 #endif //TRABAJO3_TEXTURE_HPP

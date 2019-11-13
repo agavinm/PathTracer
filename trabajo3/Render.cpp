@@ -14,10 +14,12 @@
 #include "Render.hpp"
 #include "Progress.hpp"
 #include "Transform.hpp"
+#include "Material.hpp"
 
 using namespace std;
 
-void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const vector<Object> &objects, const Camera &camera, bool last, Image &image, Progress &progress) {
+void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const vector<Object> &objects,
+        const Camera &camera, bool last, Image &image, Progress &progress) {
     // initialization of utilities
     random_device rd;
     mt19937 mt(rd());
@@ -30,8 +32,8 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
 
             for (int p = 0; p < ppp; ++p) {
                 // get initial ray
-                HCoord direction = getRay(camera, ((float) i + dist(mt)) / (float) width, ((float) j + dist(mt)) / (float) height);
-                //HCoord direction = getRay(camera, (float) i / (float) width, (float) j / (float) height);
+                HCoord direction = getRay(camera, ((float) i + dist(mt)) / (float) width,
+                        ((float) j + dist(mt)) / (float) height);
                 HCoord position = camera.origin;
 
                 // find nearest intersection
@@ -57,7 +59,13 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                             break;
                         }
                         case TEXTURE: {
-                            color = color + getColor2D(intersection->material.data.texture, i, j);
+                            GEOMETRY_TRIANGLE data = intersection->geometry.data.triangle;
+
+                            HCoord point = changeFromBase(data.dirX, data.dirY, data.plane.normal, data.point) *
+                                    (changeToBase(data.dirX, data.dirY, data.plane.normal, data.point) *
+                                    (position + norm(direction) * dist));
+
+                            color = color + getColor(intersection->material.data.texture, point);
                             break;
                         }
                         default:

@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iostream>
 #include "Scenes.hpp"
+#include "Texture.hpp"
 
 using namespace std;
 
@@ -65,7 +66,7 @@ vector<Object> getObjects(const string &scene) {
             exit(1);
         }
 
-        bool header = true, vertex = false, face = false;
+        bool header = true, vertex = false, face = false, color = false;
         string line, field;
         float x, y, z;
         int numVertices = 0, numFaces = 0, vertex1, vertex2, vertex3;
@@ -96,6 +97,8 @@ vector<Object> getObjects(const string &scene) {
                 y = stof(field);
 
                 if (line.find(' ') != string::npos) { // Vertex color
+                    color = true;
+
                     field = line.substr(0, line.find(' '));
                     line.erase(0, field.length() + 1);
                     z = stof(field);
@@ -148,9 +151,20 @@ vector<Object> getObjects(const string &scene) {
 
                 vertex3 = stoi(line);
 
-                objects.push_back({Triangle(vertices[vertex1].first, vertices[vertex2].first,
-                        vertices[vertex3].first), Emitter((vertices[vertex1].second +
-                        vertices[vertex2].second + vertices[vertex3].second) / 3)}); // TODO: En lugar de color de triangulo, pensar en textura dada la posicion dentro del triangulo
+                COLOR col[3] = {vertices[vertex1].second,
+                        vertices[vertex2].second, vertices[vertex3].second};
+
+                HCoord vert[3] = {vertices[vertex1].first, vertices[vertex2].first,
+                        vertices[vertex3].first};
+
+                if (color) {
+                    objects.push_back({Triangle(vertices[vertex1].first, vertices[vertex2].first,
+                                                vertices[vertex3].first), Texturer(vertexColor(col, vert))});
+                }
+                else {
+                    objects.push_back({Triangle(vertices[vertex1].first, vertices[vertex2].first,
+                                                vertices[vertex3].first), Emitter(C_WHITE)});
+                }
             }
         }
 
