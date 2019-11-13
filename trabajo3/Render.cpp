@@ -13,6 +13,7 @@
 #include <iostream>
 #include "Render.hpp"
 #include "Progress.hpp"
+#include "Transform.hpp"
 
 using namespace std;
 

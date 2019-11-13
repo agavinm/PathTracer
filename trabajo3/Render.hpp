@@ -10,7 +10,8 @@
 #define TRABAJO3_RENDER_HPP
 
 #include "Image.hpp"
-#include "Geometric.hpp"
+#include "Material.hpp"
+#include "Scenes.hpp"
 
 /**
  * Renders "objects" seen by "camera" into a width * height image. All cores parallel processing.

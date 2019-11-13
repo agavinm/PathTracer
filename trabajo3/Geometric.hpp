@@ -10,8 +10,7 @@
 #define TRABAJO1_GEOMETRIC_HPP
 
 #include <array>
-#include "Transform.hpp"
-#include "Texture.hpp"
+#include "HCoord.hpp"
 
 // Geometries
 
@@ -89,76 +88,5 @@ GEOMETRY Triangle(const HCoord &point1, const HCoord &point2, const HCoord &poin
  * @return the circle as geometry
  */
 GEOMETRY Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY);
-
-// Materials
-
-enum MATERIAL_TYPE {
-    EMITTER,
-    TEXTURE
-};
-
-typedef struct {
-    const MATERIAL_TYPE type;
-    const union {
-        const COLOR emitter;
-        const Texture texture;
-    } data;
-} MATERIAL;
-
-/**
- * Creates an emitter material
- * @return the emitter as material
- */
-MATERIAL Emitter(const COLOR &color);
-
-/**
- * Creates a textured material
- * @return the texturer as material
- */
-MATERIAL Texturer(const Texture &texture);
-
-// Objects
-
-struct Object {
-    const GEOMETRY geometry;
-    const MATERIAL material;
-};
-
-// Camera
-
-struct Camera {
-    const HCoord origin; // center of camera (UCS)
-    const HCoord front; // front vector of camera (UCS)
-    const HCoord left; // left vector of camera (UCS)
-    const HCoord up; // up vector of camera (UCS)
-};
-
-/**
- * Creates a camera
- * @param origin point (UCS)
- * @param front direction from origin to center of image (UCS)
- * @param up direction from center of image to top side of image
- * @param ratio width/height of image
- * @return the camera
- */
-Camera createCamera(const HCoord &origin, const HCoord &front, const HCoord &up, float ratio);
-
-/**
- * Computes the direction of a ray from a camera
- * @param camera origin of ray
- * @param i horizontal position in image (0=left -> 1=right)
- * @param j vertical position in image (0=up -> 1=bottom)
- * @return the ray as vector
- */
-HCoord getRay(const Camera &camera, float i, float j);
-
-/**
- * Calculates the intersection between an object and a ray
- * @param origin origin of ray
- * @param dir direction of ray
- * @param object the object to check colision
- * @return the distance between the origin and the intersection, or INFINITY if not collided
- */
-float intersect(const HCoord &origin, const HCoord &dir, const Object &object);
 
 #endif //TRABAJO1_GEOMETRIC_HPP
