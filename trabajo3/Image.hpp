@@ -30,8 +30,6 @@ struct COLOR {
 
 COLOR rgb(unsigned char r, unsigned char g, unsigned char b);
 
-COLOR oposite(const COLOR &color);
-
 /**
  * maxVal = maximum value of the pixels
  * width = Width
@@ -66,14 +64,6 @@ Image initImage(int width, int height);
  * @param pixel RGB color
  */
 void setPixel(Image &image, int i, int j, COLOR pixel);
-
-/**
- * Sets a pixel of an image
- * @param image to modify
- * @param p coordinate, [0,width*height-1]
- * @param pixel RGB color
- */
-void setPixel(Image &image, int p, COLOR pixel);
 
 // Load and store operations
 

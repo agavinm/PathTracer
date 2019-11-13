@@ -159,7 +159,8 @@ vector<Object> getObjects(const string &scene) {
 
                 if (color) {
                     objects.push_back({Triangle(vertices[vertex1].first, vertices[vertex2].first,
-                                                vertices[vertex3].first), Texturer(vertexColor(col, vert))});
+                                                vertices[vertex3].first),
+                                       Texturer(vertexColorDistanceWeightingSquare(col, vert))});
                 }
                 else {
                     objects.push_back({Triangle(vertices[vertex1].first, vertices[vertex2].first,

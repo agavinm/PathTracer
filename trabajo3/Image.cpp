@@ -45,10 +45,6 @@ COLOR rgb(const unsigned char r, const unsigned char g, const unsigned char b) {
     return {(float) r / 255.0f, (float) g / 255.0f, (float) b / 255.0f};
 }
 
-COLOR oposite(const COLOR &color) {
-    return {1.0f - color.r, 1.0f - color.g, 1.0f - color.b};
-}
-
 Image initImage(int width, int height) {
     return {
             .width=width,
@@ -59,10 +55,6 @@ Image initImage(int width, int height) {
 
 void setPixel(Image &image, int i, int j, COLOR pixel) {
     image.pixels[i + j * image.width] = pixel;
-}
-
-void setPixel(Image &image, int p, COLOR pixel) {
-    image.pixels[p] = pixel;
 }
 
 

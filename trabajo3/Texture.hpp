@@ -24,8 +24,16 @@ private:
         // 2D types from file:
         IMAGE_2D,
 
+        // 3D types from file:
         VERTEX_COLOR
     };
+    enum VERTEX_COLOR_TYPE {
+        NEAREST,
+        DISTANCE_WEIGHTING,
+        DISTANCE_WEIGHTING_SQUARE
+    };
+
+    friend Texture vertexColor(const COLOR colors[3], const HCoord vertices[3], const VERTEX_COLOR_TYPE &type);
 
 public:
     const TEXTURE_TYPE type;
@@ -34,11 +42,14 @@ public:
         const COLOR colors[3];
     };
     const HCoord vertices[3];
+    const VERTEX_COLOR_TYPE vertexColorType;
 
     friend Texture sin2D(const COLOR &color);
     friend Texture sin22D(const COLOR &color);
     friend Texture sinCos2D(const COLOR &color);
-    friend Texture vertexColor(const COLOR colors[3], const HCoord vertices[3]);
+    friend Texture vertexColorNearest(const COLOR colors[3], const HCoord vertices[3]);
+    friend Texture vertexColorDistanceWeighting(const COLOR colors[3], const HCoord vertices[3]);
+    friend Texture vertexColorDistanceWeightingSquare(const COLOR colors[3], const HCoord vertices[3]);
 
     friend COLOR getColor(const Texture &texture, const HCoord &position);
 };
@@ -49,7 +60,11 @@ Texture sin22D(const COLOR &color);
 
 Texture sinCos2D(const COLOR &color);
 
-Texture vertexColor(const COLOR colors[3], const HCoord vertices[3]);
+Texture vertexColorNearest(const COLOR colors[3], const HCoord vertices[3]);
+
+Texture vertexColorDistanceWeighting(const COLOR colors[3], const HCoord vertices[3]);
+
+Texture vertexColorDistanceWeightingSquare(const COLOR colors[3], const HCoord vertices[3]);
 
 COLOR getColor(const Texture &texture, const HCoord &position);
 

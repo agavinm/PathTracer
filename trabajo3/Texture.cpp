@@ -7,7 +7,6 @@
  ******************************************************************************/
 
 #include <cmath>
-#include <tuple>
 #include "Texture.hpp"
 #include "Geometric.hpp"
 
@@ -35,12 +34,25 @@ Texture sinCos2D(const COLOR &color) {
     };
 }
 
-Texture vertexColor(const COLOR colors[3], const HCoord vertices[3]) {
+Texture vertexColor(const COLOR colors[3], const HCoord vertices[3], const Texture::VERTEX_COLOR_TYPE &type) {
     return {
         .type = Texture::VERTEX_COLOR,
         .colors = {colors[0], colors[1], colors[2]},
-        .vertices = {vertices[0], vertices[1], vertices[2]}
+        .vertices = {vertices[0], vertices[1], vertices[2]},
+        .vertexColorType = type
     };
+}
+
+Texture vertexColorNearest(const COLOR colors[3], const HCoord vertices[3]) {
+    return vertexColor(colors, vertices, Texture::NEAREST);
+}
+
+Texture vertexColorDistanceWeighting(const COLOR colors[3], const HCoord vertices[3]) {
+    return vertexColor(colors, vertices, Texture::DISTANCE_WEIGHTING);
+}
+
+Texture vertexColorDistanceWeightingSquare(const COLOR colors[3], const HCoord vertices[3]) {
+    return vertexColor(colors, vertices, Texture::DISTANCE_WEIGHTING_SQUARE);
 }
 
 COLOR getColor(const Texture &texture, const HCoord &position) {
@@ -75,8 +87,24 @@ COLOR getColor(const Texture &texture, const HCoord &position) {
             else if (mods[1] == 0.0f) return texture.colors[1];
             else if (mods[2] == 0.0f) return texture.colors[2];
 
-            return (oposite(texture.colors[0]) * mods[0] + oposite(texture.colors[1]) * mods[1] +
-                    oposite(texture.colors[2]) * mods[2]) / (mods[0] + mods[1] + mods[2]);
+            switch (texture.vertexColorType) {
+                case Texture::NEAREST: {
+                    if (mods[0] < mods[1] && mods[0] < mods[2]) return texture.colors[0];
+                    else if (mods[1] < mods[0] && mods[1] < mods[2]) return texture.colors[1];
+                    else return texture.colors[2];
+                }
+                case Texture::DISTANCE_WEIGHTING: {
+                    return ((texture.colors[0] / mods[0] + texture.colors[1] / mods[1] + texture.colors[2] / mods[2])
+                            / (1.0f / mods[0] + 1.0f / mods[1] + 1.0f / mods[2]));
+                }
+                case Texture::DISTANCE_WEIGHTING_SQUARE: {
+                    return ((texture.colors[0] / (mods[0] * mods[0]) + texture.colors[1] / (mods[1] * mods[1])
+                             + texture.colors[2] / (mods[2] * mods[2]))
+                            / (1.0f / (mods[0] * mods[0]) + 1.0f / (mods[1] * mods[1]) + 1.0f / (mods[2] * mods[2])));
+                }
+                default:
+                    break;
+            }
         }
         default:
             return texture.color;
