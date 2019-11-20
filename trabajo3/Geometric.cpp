@@ -64,3 +64,12 @@ GEOMETRY Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY) 
             }},
     };
 }
+
+GEOMETRY Cuadric(float A, float B, float C, float D, float E, float F, float G, float H, float I, float J) {
+    return GEOMETRY{
+            .type = CUADRIC,
+            .data = {.cuadric = {
+                    A, B, C, D, E, F, G, H, I, J
+            }},
+    };
+}

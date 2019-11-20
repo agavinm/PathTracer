@@ -19,7 +19,7 @@
 using namespace std;
 
 void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const vector<Object> &objects,
-        const Camera &camera, bool last, Image &image, Progress &progress) {
+                  const Camera &camera, bool last, Image &image, Progress &progress) {
     // initialization of utilities
     random_device rd;
     mt19937 mt(rd());
@@ -32,8 +32,8 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
 
             for (int p = 0; p < ppp; ++p) {
                 // get initial ray
-                HCoord direction = getRay(camera, ((float) i + dist(mt)) / (float) width,
-                                          ((float) j + dist(mt)) / (float) height); // should be a normalized ray
+                HCoord direction = norm(getRay(camera, ((float) i + dist(mt)) / (float) width,
+                                               ((float) j + dist(mt)) / (float) height)); // should be a normalized ray
                 HCoord position = camera.origin;
 
                 // find nearest intersection
@@ -61,9 +61,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                         case TEXTURE: {
                             GEOMETRY_TRIANGLE data = intersection->geometry.data.triangle;
 
-                            HCoord point = changeFromBase(data.dirX, data.dirY, data.plane.normal, data.point) *
-                                    (changeToBase(data.dirX, data.dirY, data.plane.normal, data.point) *
-                                     (position + direction * dist));
+                            HCoord point = position + direction * dist;
 
                             color = color + getColor(intersection->material.data.texture, point);
                             break;

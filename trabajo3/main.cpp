@@ -45,11 +45,11 @@ int main(int argc, char *argv[]) {
     Camera camera = getCamera((float) width / (float) height);
 
     if (string(argv[3]) == "ppm") {
-        storePPM(string(argv[2]) + ".ppm", render(width, height, ppp, objects, camera), 255);
+        storePPM("images/" + string(argv[2]) + ".ppm", render(width, height, ppp, objects, camera), 255);
 
     }
     else if (string(argv[3]) == "bmp") {
-        storeBMP(string(argv[2]) + ".bmp", render(width, height, ppp, objects, camera));
+        storeBMP("images/" + string(argv[2]) + ".bmp", render(width, height, ppp, objects, camera));
 
     }
     else {

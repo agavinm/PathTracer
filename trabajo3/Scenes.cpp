@@ -26,39 +26,50 @@ Camera createCamera(const HCoord &origin, const HCoord &front, const HCoord &up,
 }
 
 HCoord getRay(const Camera &camera, float i, float j) {
-    return norm(camera.front + camera.left * (1 - 2 * i) + camera.up * (1 - 2 * j));
+    return camera.front + camera.left * (1 - 2 * i) + camera.up * (1 - 2 * j);
 }
 
 vector<Object> getObjects(const string &scene) {
     vector<Object> objects;
     if (scene == "test") {
-        objects.push_back({Sphere(hPoint(10, 0, 0), 1), Texturer(sin2D(C_RED))});
-        objects.push_back({Sphere(hPoint(5, 5, 0), 1), Texturer(sin22D(C_GREEN))});
-        objects.push_back({Plane(V_AZ, 10), Emitter({0, 0, 1})});
-        objects.push_back({Circle(hPoint(5, -5, 0), -V_AX, V_AZ * 2),
-                           Texturer(sinCos2D(C_WHITE))});
-        objects.push_back({Triangle(hPoint(10, 0, 0), hPoint(5, 5, 0),
-                hPoint(5, 0, -5)), Emitter(C_PURPLE)});
-    }
-
-    else if (scene == "spiral") {
+        objects.push_back({
+                                  Sphere(hPoint(10, 0, 0), 1),
+                                  Texturer(sin2D(C_RED))
+                          });
+        objects.push_back({
+                                  Sphere(hPoint(5, 5, 0), 1),
+                                  Texturer(sin22D(C_GREEN))
+                          });
+        objects.push_back({
+                                  Plane(V_AZ, 10),
+                                  Emitter({0, 0, 1})
+                          });
+        objects.push_back({
+                                  Circle(hPoint(5, -5, 0), -V_AX, V_AZ * 2),
+                                  Texturer(sinCos2D(C_WHITE))
+                          });
+        objects.push_back({
+                                  Triangle(hPoint(10, 0, 0), hPoint(5, 5, 0), hPoint(5, 0, -5)),
+                                  Emitter(C_PURPLE)
+                          });
+//        objects.push_back({
+//                                  Cuadric(1, 1, 0, 0, 0, 0, 0, 0, 0, -1),
+//                                  Emitter(C_CYAN)
+//                          });
+    } else if (scene == "spiral") {
         int n = 6;
         int m = 10;
         for (int i = 0; i < n * m; ++i) {
             float ang = (float) i / (float) (n * M_PI * 2);
             objects.push_back({Sphere(hPoint((float) -(n * m) / 2 + (float) i, 3 * sin(ang),
-                    3 * cos(ang)), 1), Emitter({abs(cos(ang)), abs(sin(ang)),
-                                                (float) i / (float) (n * m)})});
+                                             3 * cos(ang)), 1), Emitter({abs(cos(ang)), abs(sin(ang)),
+                                                                         (float) i / (float) (n * m)})});
         }
-    }
-
-    else if (scene == "XYZ") {
+    } else if (scene == "XYZ") {
         objects.push_back({Sphere(hPoint(3, 0, 0), 1), Emitter(C_RED)});
         objects.push_back({Sphere(hPoint(0, 3, 0), 1), Emitter(C_GREEN)});
         objects.push_back({Sphere(hPoint(0, 0, 3), 1), Emitter(C_BLUE)});
-    }
-
-    else { // PLY file
+    } else { // PLY file
         ifstream file(scene);
         if (!file.is_open()) {
             // can't open, exit
@@ -80,17 +91,13 @@ vector<Object> getObjects(const string &scene) {
                 if (line.find("element vertex ") == 0) {
                     numVertices = stoi(line.substr(15));
                     vertices.reserve(numVertices);
-                }
-                else if (line.find("element face ") == 0) {
+                } else if (line.find("element face ") == 0) {
                     numFaces = stoi(line.substr(13));
-                }
-                else if (line == "end_header") {
+                } else if (line == "end_header") {
                     header = false;
                     vertex = true;
                 }
-            }
-
-            else if (line.find("comment") != 0 && vertex) {
+            } else if (line.find("comment") != 0 && vertex) {
                 field = line.substr(0, line.find(' '));
                 line.erase(0, field.length() + 1);
                 x = stof(field);
@@ -117,15 +124,13 @@ vector<Object> getObjects(const string &scene) {
                     if (line.find(' ') != string::npos) {
                         field = line.substr(0, line.find(' '));
                         line.erase(0, field.length() + 1);
-                    }
-                    else {
+                    } else {
                         field = line;
                     }
                     b = stoi(field);
 
                     vertices.emplace_back(hPoint(x, y, z), rgb(r, g, b));
-                }
-                else { // Not vertex color
+                } else { // Not vertex color
                     z = stof(line);
                     vertices.emplace_back(hPoint(x, y, z), C_WHITE);
                 }
@@ -134,9 +139,7 @@ vector<Object> getObjects(const string &scene) {
                     vertex = false;
                     face = true;
                 }
-            }
-
-            else if (line.find("comment") != 0 && face) {
+            } else if (line.find("comment") != 0 && face) {
                 field = line.substr(0, line.find(' '));
                 line.erase(0, field.length() + 1);
                 if (stoi(field) != 3) {
@@ -155,17 +158,16 @@ vector<Object> getObjects(const string &scene) {
                 vertex3 = stoi(line);
 
                 COLOR col[3] = {vertices[vertex1].second,
-                        vertices[vertex2].second, vertices[vertex3].second};
+                                vertices[vertex2].second, vertices[vertex3].second};
 
                 HCoord vert[3] = {vertices[vertex1].first, vertices[vertex2].first,
-                        vertices[vertex3].first};
+                                  vertices[vertex3].first};
 
                 if (color) {
                     objects.push_back({Triangle(vertices[vertex1].first, vertices[vertex2].first,
                                                 vertices[vertex3].first),
                                        Texturer(vertexColorDistanceWeightingSquare(col, vert))});
-                }
-                else {
+                } else {
                     objects.push_back({Triangle(vertices[vertex1].first, vertices[vertex2].first,
                                                 vertices[vertex3].first), Emitter(C_WHITE)});
                 }
@@ -184,7 +186,7 @@ vector<Object> getObjects(const string &scene) {
 
 Camera getCamera(float ratio) {
     return createCamera(
-            P_ZERO,
+            P_ZERO, //BUG! only works with 0,0,0
             V_AX,
             V_AZ,
             ratio

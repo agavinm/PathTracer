@@ -140,13 +140,10 @@ HCoord HCoord::operator-(const HCoord &right) const {
                     }};
         } else {
             // point - point = vector
-            float thisw = this->e[3];
-            float rightw = right.e[3];
-            float ww = thisw * rightw;
             return {{
-                            (this->e[0] * rightw - right.e[0] * thisw) / ww,
-                            (this->e[1] * rightw - right.e[1] * thisw) / ww,
-                            (this->e[2] * rightw - right.e[2] * thisw) / ww,
+                            this->x() - right.x(),
+                            this->y() - right.y(),
+                            this->z() - right.z(),
                             0
                     }};
         }
@@ -169,21 +166,15 @@ HCoord HCoord::operator*(float s) const {
 }
 
 float HCoord::x() const {
-    assert(!this->isVector());
-
-    return this->e[0] / this->e[3];
+    return this->isVector() ? this->e[0] : this->e[0] / this->e[3];
 }
 
 float HCoord::y() const {
-    assert(!this->isVector());
-
-    return this->e[1] / this->e[3];
+    return this->isVector() ? this->e[1] : this->e[1] / this->e[3];
 }
 
 float HCoord::z() const {
-    assert(!this->isVector());
-
-    return this->e[2] / this->e[3];
+    return this->isVector() ? this->e[2] : this->e[2] / this->e[3];
 }
 
 bool HCoord::isVector() const {

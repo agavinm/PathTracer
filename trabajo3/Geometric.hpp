@@ -18,7 +18,8 @@ enum GEOMETRY_TYPE {
     SPHERE,
     PLANE,
     TRIANGLE,
-    CIRCLE
+    CIRCLE,
+    CUADRIC
 };
 
 typedef struct {
@@ -46,12 +47,17 @@ typedef struct {
 } GEOMETRY_CIRCLE;
 
 typedef struct {
+    const float A, B, C, D, E, F, G, H, I, J; // cuadric values
+} GEOMETRY_CUADRIC;
+
+typedef struct {
     const GEOMETRY_TYPE type;
     const union {
         const GEOMETRY_SPHERE sphere;
         const GEOMETRY_PLANE plane;
         const GEOMETRY_TRIANGLE triangle;
         const GEOMETRY_CIRCLE circle;
+        const GEOMETRY_CUADRIC cuadric;
     } data;
 } GEOMETRY;
 
@@ -88,5 +94,14 @@ GEOMETRY Triangle(const HCoord &point1, const HCoord &point2, const HCoord &poin
  * @return the circle as geometry
  */
 GEOMETRY Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY);
+
+/**
+ * Creates a circle (Oval) from a center and two axis
+ * @param center center of the circle
+ * @param axisX direction of the x axis, its length marks the end of the circle
+ * @param axisY direction of the y axis, its length marks the end of the circle
+ * @return the circle as geometry
+ */
+GEOMETRY Cuadric(float A, float B, float C, float D, float E, float F, float G, float H, float I, float J);
 
 #endif //TRABAJO1_GEOMETRIC_HPP
