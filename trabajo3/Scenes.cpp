@@ -26,7 +26,7 @@ Camera createCamera(const HCoord &origin, const HCoord &front, const HCoord &up,
 }
 
 HCoord getRay(const Camera &camera, float i, float j) {
-    return camera.front + camera.left * (1 - 2 * i) + camera.up * (1 - 2 * j);
+    return norm(camera.front + camera.left * (1 - 2 * i) + camera.up * (1 - 2 * j));
 }
 
 vector<Object> getObjects(const string &scene) {

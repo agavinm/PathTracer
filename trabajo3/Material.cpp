@@ -44,7 +44,7 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
 
             // Optimized
             HCoord ominusc = origin - data.center; // origin minus center
-            float b = dot(norm(dir), ominusc);
+            float b = dot(dir, ominusc);
             float discriminant = b * b - dot(ominusc, ominusc) + data.radius * data.radius;
             return discriminant < EPS ? INFINITY : -b - sqrt(discriminant);
 
@@ -52,21 +52,19 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
         case PLANE: {
             GEOMETRY_PLANE data = object.geometry.data.plane;
 
-            HCoord normdir = norm(dir);
-            float denom = dot(normdir, data.normal);
-            return denom > -EPS ? INFINITY : -(dot(origin - P_ZERO, normdir) + data.dist) / denom;
+            float denom = dot(dir, data.normal);
+            return denom > -EPS ? INFINITY : -(dot(origin - P_ZERO, dir) + data.dist) / denom;
 
         }
         case TRIANGLE: {
             GEOMETRY_TRIANGLE data = object.geometry.data.triangle;
 
-            HCoord normdir = norm(dir);
-            float denom = dot(normdir, data.plane.normal);
+            float denom = dot(dir, data.plane.normal);
             if (denom == 0)
                 return INFINITY;
 
-            float dist = -(dot(origin - P_ZERO, normdir) + data.plane.dist) / denom;
-            HCoord point = changeToBase(data.dirX, data.dirY, data.plane.normal, data.point) * (origin + normdir * dist);
+            float dist = -(dot(origin - P_ZERO, dir) + data.plane.dist) / denom;
+            HCoord point = changeToBase(data.dirX, data.dirY, data.plane.normal, data.point) * (origin + dir * dist);
 
             if (point.x() < 0 || point.y() < 0 || point.x() + point.y() > 1)
                 return INFINITY;
@@ -75,13 +73,12 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
         case CIRCLE: {
             GEOMETRY_CIRCLE data = object.geometry.data.circle;
 
-            HCoord normdir = norm(dir);
-            float denom = dot(normdir, data.plane.normal);
+            float denom = dot(dir, data.plane.normal);
             if (denom == 0)
                 return INFINITY;
 
-            float dist = -(dot(origin - P_ZERO, normdir) + data.plane.dist) / denom;
-            HCoord point = changeToBase(data.axisX, data.axisY, data.plane.normal, data.center) * (origin + normdir * dist);
+            float dist = -(dot(origin - P_ZERO, dir) + data.plane.dist) / denom;
+            HCoord point = changeToBase(data.axisX, data.axisY, data.plane.normal, data.center) * (origin + dir * dist);
 
             if (point.x() * point.x() + point.y() * point.y() > 1 + EPS)
                 return INFINITY;
