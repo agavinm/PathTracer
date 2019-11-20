@@ -35,10 +35,10 @@ int main(int argc, char *argv[]) {
     int ppp = stoi(argv[1]);
 
     // Image
-    //int width = 1920; int height = 1080; // HD
-    //int width = 520; int height = 480; // SD
-    int width = 500; int height = 500; //square
-    //int width = 1000; int height = 500; //strip
+    //int width = 1920, height = 1080; // HD
+    //int width = 520, height = 480; // SD
+    int width = 500, height = 500; //square
+    //int width = 1000, height = 500; //strip
 
     // Scene
     vector<Object> objects = getObjects(argv[2]);;

@@ -89,7 +89,7 @@ Image render(int width, int height, int ppp, const vector<Object> &objects, cons
 Image render(int width, int height, int ppp, const vector<Object> &objects, const Camera &camera, int numThreads) {
     assert(numThreads > 0);
 
-    cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << objects.size() << " objects)" << endl;
+    cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << objects.size() << " objects) (" << numThreads << " threads)" << endl;
 
     Progress progress;
     progress.start("[INFO] Render");

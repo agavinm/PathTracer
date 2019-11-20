@@ -20,7 +20,7 @@ Camera createCamera(const HCoord &origin, const HCoord &front, const HCoord &up,
     return {
             .origin=origin,
             .front=front,
-            .left=norm(cross(up, front)) * mod(up) * ratio, // left is ortogonal to up and left, with the size of up*ratio
+            .left=norm(cross(up, front)) * mod(up) * ratio, // left is ortogonal to up and front, with the size of up*ratio
             .up=up,
     };
 }
@@ -73,6 +73,9 @@ vector<Object> getObjects(const string &scene) {
         unsigned char r, g, b;
         vector<pair<HCoord, COLOR>> vertices;
         while (getline(file, line)) {
+            if (line.size() && line[line.size() - 1] == '\r') {
+                line = line.substr(0, line.size() - 1);
+            }
             if (line.find("comment") != 0 && header) {
                 if (line.find("element vertex ") == 0) {
                     numVertices = stoi(line.substr(15));
@@ -171,7 +174,7 @@ vector<Object> getObjects(const string &scene) {
 
         if (!face || objects.size() != numFaces) {
             cerr << scene << " file must be a triangular ply file" << endl;
-            exit(1);
+            exit(2);
         }
     }
 

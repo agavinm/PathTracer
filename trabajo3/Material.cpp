@@ -18,7 +18,7 @@ MATERIAL Emitter(const COLOR &color) {
 }
 
 MATERIAL Texturer(const Texture &texture) {
-    return {
+    return MATERIAL{
             .type = TEXTURE,
             .data={.texture = texture},
     };

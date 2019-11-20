@@ -16,30 +16,30 @@ using namespace std;
 Texture sin2D(const COLOR &color) {
     return {
             .type = Texture::SIN_2D,
-            .color = color
+            {.color = color}
     };
 }
 
 Texture sin22D(const COLOR &color) {
     return {
             .type = Texture::SIN2_2D,
-            .color = color
+            {.color = color}
     };
 }
 
 Texture sinCos2D(const COLOR &color) {
     return {
             .type = Texture::SIN_COS_2D,
-            .color = color
+            {.color = color}
     };
 }
 
 Texture vertexColor(const COLOR colors[3], const HCoord vertices[3], const Texture::VERTEX_COLOR_TYPE &type) {
-    return {
-        .type = Texture::VERTEX_COLOR,
-        .colors = {colors[0], colors[1], colors[2]},
-        .vertices = {vertices[0], vertices[1], vertices[2]},
-        .vertexColorType = type
+    return Texture{
+            .type = Texture::VERTEX_COLOR,
+            {.colors = {colors[0], colors[1], colors[2]},},
+            .vertices = {vertices[0], vertices[1], vertices[2]},
+            .vertexColorType = type
     };
 }
 
@@ -59,23 +59,23 @@ COLOR getColor(const Texture &texture, const HCoord &position) {
     switch (texture.type) {
         case Texture::SIN_2D: {
             return {
-                texture.color.r * static_cast<float>(sin(position.x())),
-                texture.color.g * static_cast<float>(sin(position.y())),
-                texture.color.b * static_cast<float>(sin(position.z()))
+                    texture.color.r * static_cast<float>(sin(position.x())),
+                    texture.color.g * static_cast<float>(sin(position.y())),
+                    texture.color.b * static_cast<float>(sin(position.z()))
             };
         }
         case Texture::SIN_COS_2D: {
             return {
-                texture.color.r * static_cast<float>(sin(position.x()) * cos(position.x())),
-                texture.color.g * static_cast<float>(sin(position.y()) * cos(position.y())),
-                texture.color.b * static_cast<float>(sin(position.z()) * cos(position.z()))
+                    texture.color.r * static_cast<float>(sin(position.x()) * cos(position.x())),
+                    texture.color.g * static_cast<float>(sin(position.y()) * cos(position.y())),
+                    texture.color.b * static_cast<float>(sin(position.z()) * cos(position.z()))
             };
         }
         case Texture::SIN2_2D: {
             return {
-                texture.color.r * static_cast<float>(sin(position.x() * position.y() * position.z())),
-                texture.color.g * static_cast<float>(sin(position.x() * position.y() * position.z())),
-                texture.color.b * static_cast<float>(sin(position.x() * position.y() * position.z()))
+                    texture.color.r * static_cast<float>(sin(position.x() * position.y() * position.z())),
+                    texture.color.g * static_cast<float>(sin(position.x() * position.y() * position.z())),
+                    texture.color.b * static_cast<float>(sin(position.x() * position.y() * position.z()))
             };
         }
         case Texture::VERTEX_COLOR: {
