@@ -13,47 +13,15 @@
 
 using namespace std;
 
-float COLOR::max() const {
-    return std::max(std::max(this->r, this->g), this->b);
-}
-
-COLOR COLOR::operator+(const COLOR &right) const {
-    return {
-            this->r + right.r,
-            this->g + right.g,
-            this->b + right.b
-    };
-}
-
-COLOR COLOR::operator/(float s) const {
-    return {
-            this->r / s,
-            this->g / s,
-            this->b / s
-    };
-}
-
-COLOR COLOR::operator*(float s) const {
-    return {
-            this->r * s,
-            this->g * s,
-            this->b * s
-    };
-}
-
-COLOR rgb(const unsigned char r, const unsigned char g, const unsigned char b) {
-    return {(float) r / 255.0f, (float) g / 255.0f, (float) b / 255.0f};
-}
-
 Image initImage(int width, int height) {
     return {
             .width=width,
             .height=height,
-            .pixels=vector<COLOR>(width * height),
+            .pixels=vector<Color>(width * height),
     };
 }
 
-void setPixel(Image &image, int i, int j, COLOR pixel) {
+void setPixel(Image &image, int i, int j, Color pixel) {
     image.pixels[i + j * image.width] = pixel;
 }
 
@@ -159,5 +127,4 @@ void storeBMP(const std::string &name, const Image &image) {
         }
         WRITE(padding, f);
     }
-
 }

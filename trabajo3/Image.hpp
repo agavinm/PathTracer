@@ -12,23 +12,7 @@
 #include <string>
 #include <vector>
 #include <array>
-
-struct COLOR {
-    float r;
-    float g;
-    float b;
-
-    float max() const;
-
-    COLOR operator+(const COLOR &right) const;
-
-    COLOR operator/(float s) const;
-
-    COLOR operator*(float s) const;
-
-};
-
-COLOR rgb(unsigned char r, unsigned char g, unsigned char b);
+#include "Color.hpp"
 
 /**
  * maxVal = maximum value of the pixels
@@ -38,18 +22,8 @@ COLOR rgb(unsigned char r, unsigned char g, unsigned char b);
  */
 struct Image {
     const int width, height;
-    std::vector<COLOR> pixels;
+    std::vector<Color> pixels;
 };
-
-// color constants
-static const COLOR C_BLACK = {0, 0, 0};
-static const COLOR C_RED = {1, 0, 0};
-static const COLOR C_GREEN = {0, 1, 0};
-static const COLOR C_BLUE = {0, 0, 1};
-static const COLOR C_CYAN = {0, 1, 1};
-static const COLOR C_PURPLE = {1, 0, 1};
-static const COLOR C_YELLOW = {1, 1, 0};
-static const COLOR C_WHITE = {1, 1, 1};
 
 /**
  * Initializes an image
@@ -63,7 +37,7 @@ Image initImage(int width, int height);
  * @param j vertical coordinate [0,height-1]
  * @param pixel RGB color
  */
-void setPixel(Image &image, int i, int j, COLOR pixel);
+void setPixel(Image &image, int i, int j, Color pixel);
 
 // Load and store operations
 

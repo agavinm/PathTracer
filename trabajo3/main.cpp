@@ -42,14 +42,18 @@ int main(int argc, char *argv[]) {
 
     // Scene
     vector<Object> objects = getObjects(argv[2]);;
-    Camera camera = getCamera((float) width / (float) height);
+    //Camera camera = getCamera((float) width / (float) height);
+
+    // Cámara de prueba movida --- OK
+    Camera camera = createCamera(hPoint(2,-5,2), hVector(1, 1, 0),
+                                 hVector(0, 0, 1), (float) width / (float) height);
 
     if (string(argv[3]) == "ppm") {
-        storePPM("images/" + string(argv[2]) + ".ppm", render(width, height, ppp, objects, camera), 255);
+        storePPM(string(argv[2]) + ".ppm", render(width, height, ppp, objects, camera), 255);
 
     }
     else if (string(argv[3]) == "bmp") {
-        storeBMP("images/" + string(argv[2]) + ".bmp", render(width, height, ppp, objects, camera));
+        storeBMP(string(argv[2]) + ".bmp", render(width, height, ppp, objects, camera));
 
     }
     else {

@@ -28,7 +28,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
     for (int j = j_ini; j < j_end; ++j) {
         for (int i = 0; i < width; ++i) {
             // foreach pixel
-            COLOR color = C_BLACK;
+            Color color = C_BLACK;
 
             for (int p = 0; p < ppp; ++p) {
                 // get initial ray
@@ -55,15 +55,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                     // object
                     switch (intersection->material.type) {
                         case EMITTER: {
-                            color = color + intersection->material.data.emitter;
-                            break;
-                        }
-                        case TEXTURE: {
-                            GEOMETRY_TRIANGLE data = intersection->geometry.data.triangle;
-
-                            HCoord point = position + direction * dist;
-
-                            color = color + getColor(intersection->material.data.texture, point);
+                            color = color + getColor(intersection->material.texture, position + direction * dist);
                             break;
                         }
                         default:

@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file    Geometric.hpp
+ * @file    Geometry.hpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
  * @date    Noviembre 2019
@@ -11,6 +11,7 @@
 
 #include <array>
 #include "HCoord.hpp"
+#include "Material.hpp"
 
 // Geometries
 
@@ -59,7 +60,7 @@ typedef struct {
         const GEOMETRY_CIRCLE circle;
         const GEOMETRY_CUADRIC cuadric;
     } data;
-} GEOMETRY;
+} Geometry;
 
 /**
  * Creates a sphere
@@ -67,7 +68,7 @@ typedef struct {
  * @param radius radious of sphere (UCS)
  * @return the sphere as geometry
  */
-GEOMETRY Sphere(const HCoord &center, float radius);
+Geometry Sphere(const HCoord &center, float radius);
 
 /**
  * Creates a plane
@@ -75,7 +76,7 @@ GEOMETRY Sphere(const HCoord &center, float radius);
  * @param dist distance to origin (in normal direction: if normal is (0,0,1) and dist=1 the plane is on (0,0,-1) visible from origin)
  * @return the plane as geometry
  */
-GEOMETRY Plane(const HCoord &normal, float dist);
+Geometry Plane(const HCoord &normal, float dist);
 
 /**
  * Creates a triangle from 3 points. The normal of the triangle is cross(point2-point1,point3-point1)
@@ -84,7 +85,7 @@ GEOMETRY Plane(const HCoord &normal, float dist);
  * @param point3 like the end of the axisY of the triangle
  * @return the triangle as geometry
  */
-GEOMETRY Triangle(const HCoord &point1, const HCoord &point2, const HCoord &point3);
+Geometry Triangle(const HCoord &point1, const HCoord &point2, const HCoord &point3);
 
 /**
  * Creates a circle (Oval) from a center and two axis
@@ -93,7 +94,7 @@ GEOMETRY Triangle(const HCoord &point1, const HCoord &point2, const HCoord &poin
  * @param axisY direction of the y axis, its length marks the end of the circle
  * @return the circle as geometry
  */
-GEOMETRY Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY);
+Geometry Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY);
 
 /**
  * Creates a circle (Oval) from a center and two axis
@@ -102,6 +103,22 @@ GEOMETRY Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY);
  * @param axisY direction of the y axis, its length marks the end of the circle
  * @return the circle as geometry
  */
-GEOMETRY Cuadric(float A, float B, float C, float D, float E, float F, float G, float H, float I, float J);
+Geometry Cuadric(float A, float B, float C, float D, float E, float F, float G, float H, float I, float J);
+
+// Objects
+
+struct Object {
+    const Geometry geometry;
+    const Material material;
+};
+
+/**
+ * Calculates the intersection between an object and a ray
+ * @param origin origin of ray
+ * @param dir direction of ray
+ * @param object the object to check colision
+ * @return the distance between the origin and the intersection, or INFINITY if not collided
+ */
+float intersect(const HCoord &origin, const HCoord &dir, const Object &object);
 
 #endif //TRABAJO1_GEOMETRIC_HPP

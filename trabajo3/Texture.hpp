@@ -9,63 +9,48 @@
 #ifndef TRABAJO3_TEXTURE_HPP
 #define TRABAJO3_TEXTURE_HPP
 
-#include "Image.hpp"
-#include "HCoord.hpp"
-#include "Geometric.hpp"
+#include "Color.hpp"
 
-struct Texture {
-private:
+typedef struct {
     enum TEXTURE_TYPE {
-        // 2D types hardcoded:
+        // Only color without any texture:
+        COLORED,
+
+        // 2D types:
         SIN_2D,
         SIN2_2D,
         SIN_COS_2D,
 
         // 2D types from file:
-        IMAGE_2D,
+        IMAGE_2D
+    };
 
-        // 3D types from file:
+    enum COLOR_TYPE {
+        SOLID_COLOR,
         VERTEX_COLOR
     };
-    enum VERTEX_COLOR_TYPE {
-        NEAREST,
-        DISTANCE_WEIGHTING,
-        DISTANCE_WEIGHTING_SQUARE
-    };
 
-    friend Texture vertexColor(const COLOR colors[3], const HCoord vertices[3], const VERTEX_COLOR_TYPE &type);
-
-public:
     const TEXTURE_TYPE type;
+    const COLOR_TYPE colorType;
+
     const union {
-        const COLOR color;
-        const COLOR colors[3];
-    };
-    const HCoord vertices[3];
-    const VERTEX_COLOR_TYPE vertexColorType;
+        const Color solidColor;
+        const VertexColor vertexColor;
+    } color;
+} Texture;
 
-    friend Texture sin2D(const COLOR &color);
-    friend Texture sin22D(const COLOR &color);
-    friend Texture sinCos2D(const COLOR &color);
-    friend Texture vertexColorNearest(const COLOR colors[3], const HCoord vertices[3]);
-    friend Texture vertexColorDistanceWeighting(const COLOR colors[3], const HCoord vertices[3]);
-    friend Texture vertexColorDistanceWeightingSquare(const COLOR colors[3], const HCoord vertices[3]);
+Texture colored(const Color &color);
+Texture colored(const VertexColor &color);
 
-    friend COLOR getColor(const Texture &texture, const HCoord &position);
-};
+Texture sin2D(const Color &color);
+Texture sin2D(const VertexColor &color);
 
-Texture sin2D(const COLOR &color);
+Texture sin22D(const Color &color);
+Texture sin22D(const VertexColor &color);
 
-Texture sin22D(const COLOR &color);
+Texture sinCos2D(const Color &color);
+Texture sinCos2D(const VertexColor &color);
 
-Texture sinCos2D(const COLOR &color);
-
-Texture vertexColorNearest(const COLOR colors[3], const HCoord vertices[3]);
-
-Texture vertexColorDistanceWeighting(const COLOR colors[3], const HCoord vertices[3]);
-
-Texture vertexColorDistanceWeightingSquare(const COLOR colors[3], const HCoord vertices[3]);
-
-COLOR getColor(const Texture &texture, const HCoord &position);
+Color getColor(const Texture &texture, const HCoord &position);
 
 #endif //TRABAJO3_TEXTURE_HPP

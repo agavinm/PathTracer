@@ -10,7 +10,7 @@
 #define TRABAJO3_SCENES_HPP
 
 #include <vector>
-#include "Material.hpp"
+#include "Geometry.hpp"
 
 // Camera
 
