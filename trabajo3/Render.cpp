@@ -41,7 +41,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                 float dist = INFINITY;
                 for (const Object &object : objects) {
                     float obj_dist = intersect(position, direction, object);
-                    if (obj_dist > -EPS && obj_dist < dist) {
+                    if (obj_dist > EPS && obj_dist < dist) {
                         intersection = &object;
                         dist = obj_dist;
                     }

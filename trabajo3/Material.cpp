@@ -55,8 +55,7 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
             GEOMETRY_PLANE data = object.geometry.data.plane;
 
             float denom = dot(dir, data.normal);
-            return denom > -EPS ? INFINITY : -(dot(origin - P_ZERO, dir) + data.dist) / denom;
-
+            return denom == 0 ? INFINITY : -(dot(origin - P_ZERO, data.normal) + data.dist) / denom;
         }
         case TRIANGLE: {
             GEOMETRY_TRIANGLE data = object.geometry.data.triangle;
@@ -65,7 +64,7 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
             if (denom == 0)
                 return INFINITY;
 
-            float dist = -(dot(origin - P_ZERO, dir) + data.plane.dist) / denom;
+            float dist = -(dot(origin - P_ZERO, data.plane.normal) + data.plane.dist) / denom;
             HCoord point = changeToBase(data.dirX, data.dirY, data.plane.normal, data.point) * (origin + dir * dist);
 
             if (point.x() < 0 || point.y() < 0 || point.x() + point.y() > 1)
@@ -79,7 +78,7 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
             if (denom == 0)
                 return INFINITY;
 
-            float dist = -(dot(origin - P_ZERO, dir) + data.plane.dist) / denom;
+            float dist = -(dot(origin - P_ZERO, data.plane.normal) + data.plane.dist) / denom;
             HCoord point = changeToBase(data.axisX, data.axisY, data.plane.normal, data.center) * (origin + dir * dist);
 
             if (point.x() * point.x() + point.y() * point.y() > 1 + EPS)
@@ -94,7 +93,7 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
 
             float Bq = 2 * data.A * origin.x() * dir.x() + 2 * data.B * origin.y() * dir.y() + 2 * data.C * origin.z() * dir.z() + data.D * (origin.x() * dir.y() + origin.y() * dir.x()) + data.E * (origin.x() * dir.z() + origin.z() * dir.x()) + data.F * (origin.y() * dir.z() + dir.y() * origin.z()) + data.G * dir.x() + data.H * dir.y() + data.I * dir.z();
 
-            float Cq = data.A * origin.x() * 2 + data.B * origin.y() * 2 + data.C * origin.z() * 2 + data.D * origin.x() * origin.y() + data.E * origin.x() * origin.z() + data.F * origin.y() * origin.z() + data.G * origin.x() + data.H * origin.y() + data.I * origin.z() + data.J;
+            float Cq = data.A * origin.x() * origin.x() + data.B * origin.y() * origin.y() + data.C * origin.z() * origin.z() + data.D * origin.x() * origin.y() + data.E * origin.x() * origin.z() + data.F * origin.y() * origin.z() + data.G * origin.x() + data.H * origin.y() + data.I * origin.z() + data.J;
 
             if (Aq == 0) {
                 return -Cq / Bq;

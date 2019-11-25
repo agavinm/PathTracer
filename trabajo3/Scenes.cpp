@@ -52,10 +52,10 @@ vector<Object> getObjects(const string &scene) {
                                   Triangle(hPoint(10, 0, 0), hPoint(5, 5, 0), hPoint(5, 0, -5)),
                                   Emitter(C_PURPLE)
                           });
-//        objects.push_back({
-//                                  Cuadric(1, 1, 0, 0, 0, 0, 0, 0, 0, -1),
-//                                  Emitter(C_CYAN)
-//                          });
+        objects.push_back({
+                                  Cuadric(-1, -1, 1, 0, 0, 0, 0, 0, 0, -1),
+                                  Emitter(C_CYAN)
+                          });
     } else if (scene == "spiral") {
         int n = 6;
         int m = 10;
@@ -186,7 +186,7 @@ vector<Object> getObjects(const string &scene) {
 
 Camera getCamera(float ratio) {
     return createCamera(
-            P_ZERO, //BUG! only works with 0,0,0
+            P_ZERO - V_AX * 5, //BUG! only works with 0,0,0
             V_AX,
             V_AZ,
             ratio
