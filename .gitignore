@@ -33,7 +33,7 @@
 
 # Cmake
 .idea/
-.cmake-build-debug/
-cmake-build-debug/
+.cmake-build-*/
+cmake-build-*/
 CMakeLists.txt
 .directory
