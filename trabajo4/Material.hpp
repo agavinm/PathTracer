@@ -15,18 +15,40 @@
 // Materials
 
 enum MATERIAL_TYPE {
-    EMITTER
+    EMITTER,
+    REFLECTER,
+    BRDF
+};
+
+struct Reflection {
+    const Texture kd; // Diffuse
+    const Texture ks; // Specular
 };
 
 typedef struct {
     const MATERIAL_TYPE type;
-    const Texture texture;
+    const union {
+        const Texture texture;
+        const Reflection k;
+    } property;
 } Material;
 
 /**
- * Creates a textured emmiter material
- * @return the textured emmiter as material
+ * Creates an emmiter material
+ * @return the emmiter as material
  */
 Material Emitter(const Texture &texture);
+
+/**
+ * Creates a reflecter material
+ * @return the reflecter as material
+ */
+Material Reflecter(const Texture &kd, const Texture &ks);
+
+/**
+ * Creates a phong brdf material
+ * @return the phong brdf as material
+ */
+Material Brdf(const Texture &kd, const Texture &ks);
 
 #endif //TRABAJO3_MATERIAL_HPP

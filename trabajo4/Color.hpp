@@ -57,5 +57,6 @@ static const Color C_CYAN = {0, 1, 1};
 static const Color C_PURPLE = {1, 0, 1};
 static const Color C_YELLOW = {1, 1, 0};
 static const Color C_WHITE = {1, 1, 1};
+static const Color C_GREY = {0.5f, 0.5f, 0.5f};
 
 #endif //TRABAJO3_COLOR_HPP

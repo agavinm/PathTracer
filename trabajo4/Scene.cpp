@@ -30,6 +30,56 @@ HCoord getRay(const Camera &camera, float i, float j) {
 }
 
 Scene defaultScene(float ratio) {
+    Camera camera = createCamera(hPoint(-5, 0, 0), V_AX, V_AZ, ratio);
+
+    vector<LightPoint> lightPoints;
+    lightPoints.push_back({
+                                  C_WHITE,
+                                  hPoint(5, 5, 5)
+                          });
+
+    vector<Object> objects;
+
+    // BOX:
+    objects.push_back({
+                              Plane(hVector(-1, 0, 0), 5),
+                              Reflecter(colored(C_GREY), colored(C_BLACK))
+                      }); // FRONT
+    objects.push_back({
+                              Plane(hVector(0, 1, 0), 5),
+                              Reflecter(colored(C_GREEN), colored(C_BLACK))
+                      }); // RIGHT
+    objects.push_back({
+                              Plane(hVector(0, -1, 0), 5),
+                              Reflecter(colored(C_RED), colored(C_BLACK))
+                      }); // LEFT
+    objects.push_back({
+                              Plane(hVector(0, 0, 1), 5),
+                              Reflecter(colored(C_GREY), colored(C_BLACK))
+                      }); // DOWN
+    objects.push_back({
+                              Plane(hVector(0, 0, -1), 5),
+                              Reflecter(colored(C_GREY), colored(C_BLACK))
+                      }); // UP
+
+    // SPHERES:
+    objects.push_back({
+                              Sphere(hPoint(3, 3, -4), 1),
+                              Brdf(colored(C_BLUE), colored(C_GREEN))
+                      });
+    objects.push_back({
+                              Sphere(hPoint(3, -3, -3), 2),
+                              Reflecter(colored(C_BLUE), colored(C_GREEN))
+                      });
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .lightPoints = lightPoints
+    };
+}
+
+Scene testScene(float ratio) {
     Camera camera = createCamera(P_ZERO, V_AX, V_AZ, ratio);
 
     vector<LightPoint> lightPoints;
@@ -197,8 +247,8 @@ Scene plyScene(const string &scene, float ratio) { // TODO: Light points??
 Scene createScene(const string &scene, float ratio) {
     if (scene == "default")
         return defaultScene(ratio);
-    /*else if (scene == "TODO")
-        return */
+    else if (scene == "test")
+        return testScene(ratio);
     else
         return plyScene(scene, ratio);
 }

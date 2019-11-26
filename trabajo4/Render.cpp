@@ -56,7 +56,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                     // object
                     switch (intersection->material.type) {
                         case EMITTER: {
-                            color = color + getColor(intersection->material.texture, position + direction * dist);
+                            color = color + getColor(intersection->material.property.texture, position + direction * dist);
                             break;
                         }
                         default:
