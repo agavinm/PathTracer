@@ -15,9 +15,9 @@ Material Emitter(const Texture &texture) {
     };
 }
 
-Material Reflector(const Texture &kd, const Texture &ks) {
+Material Reflector(const Texture &kd, const Texture &ks, const float kp) {
     return Material {
             .type = REFLECTOR,
-            .property = {.reflectance = {.kd = kd, .ks = ks}}
+            .property = {.reflectance = {.kd = kd, .ks = ks, .kp = kp}}
     };
 }

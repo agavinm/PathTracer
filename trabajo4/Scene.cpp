@@ -43,33 +43,33 @@ Scene defaultScene(float ratio) {
     // BOX:
     objects.push_back({
                               Plane(hVector(-1, 0, 0), 5),
-                              Reflector(colored(C_GREY), colored(C_BLACK))
+                              Reflector(colored(C_GREY), colored(C_BLACK), 0.0f)
                       }); // FRONT
     objects.push_back({
                               Plane(hVector(0, 1, 0), 5),
-                              Reflector(colored(C_GREEN), colored(C_BLACK))
+                              Reflector(colored(C_GREEN), colored(C_BLACK), 0.0f)
                       }); // RIGHT
     objects.push_back({
                               Plane(hVector(0, -1, 0), 5),
-                              Reflector(colored(C_RED), colored(C_BLACK))
+                              Reflector(colored(C_RED), colored(C_BLACK), 0.0f)
                       }); // LEFT
     objects.push_back({
                               Plane(hVector(0, 0, 1), 5),
-                              Reflector(colored(C_GREY), colored(C_BLACK))
+                              Reflector(colored(C_GREY), colored(C_BLACK), 0.0f)
                       }); // DOWN
     objects.push_back({
                               Plane(hVector(0, 0, -1), 5),
-                              Reflector(colored(C_GREY), colored(C_BLACK))
+                              Reflector(colored(C_GREY), colored(C_BLACK), 0.0f)
                       }); // UP
 
     // SPHERES:
     objects.push_back({
                               Sphere(hPoint(3, 3, -4), 1),
-                              Reflector(colored(C_BLUE), colored(C_GREEN))
+                              Reflector(colored(C_BLUE), colored(C_GREEN), 1.0f)
                       });
     objects.push_back({
                               Sphere(hPoint(3, -3, -3), 2),
-                              Reflector(colored(C_BLUE), colored(C_GREEN))
+                              Reflector(colored(C_BLUE), colored(C_GREEN), 0.0f)
                       });
 
     return {

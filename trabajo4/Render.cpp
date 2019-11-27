@@ -73,14 +73,14 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
 
                                 // Russian roulette
                                 randomZeroToOne = zeroToOneDistribution(mt);
-                                pr[0] = maxKd + maxKs; // TODO sum???
+                                pr[0] = intersection->material.property.reflectance.kp;
                                 pr[1] = maxKs;
                                 pr[2] = maxKd;
                                 if (pr[0] + pr[1] + pr[2] > 0.9f) {
-                                    pr[0] = 0.45f;
-                                    pr[1] = (0.9f / (maxKd + maxKd + maxKs + maxKs));
-                                    pr[2] = pr[1] * maxKd;
-                                    pr[1] = pr[1] * maxKs;
+                                    pr[2] = (0.9f / (pr[0] + maxKs + maxKs));
+                                    pr[0] = pr[0] * pr[2];
+                                    pr[1] = maxKd * pr[2];
+                                    pr[2] = maxKs * pr[2];
                                 }
 
                                 if (randomZeroToOne < pr[0]) {
@@ -94,7 +94,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                                     //TODO
                                 }
                                 else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
-                                    pathColor = {0.01f, 0.01f, 0.01f}; // WARNING: ONLY IS A EXAMPLE
+                                    pathColor = {0.05f, 0.05f, 0.05f}; // WARNING: ONLY IS A EXAMPLE
                                     // Perfect refraction case (delta BTDF)
                                     //TODO
                                 }
