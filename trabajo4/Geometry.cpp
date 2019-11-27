@@ -77,6 +77,27 @@ Geometry Cuadric(float A, float B, float C, float D, float E, float F, float G, 
     };
 }
 
+HCoord normal(const Geometry &geometry, const HCoord &position) {
+    switch (geometry.type) {
+        case SPHERE: {
+            return norm(position - geometry.data.sphere.center);
+        }
+        case PLANE: {
+            return geometry.data.plane.normal;
+        }
+        case TRIANGLE: {
+            return geometry.data.triangle.plane.normal;
+        }
+        case CIRCLE: {
+            return geometry.data.circle.plane.normal;
+        }
+        case CUADRIC: {
+            // TODO
+            exit(6);
+        }
+    }
+}
+
 float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
     assert(mod(dir) < 1 + EPS && mod(dir) > 1 - EPS);
     switch (object.geometry.type) {

@@ -16,13 +16,13 @@
 
 enum MATERIAL_TYPE {
     EMITTER,
-    REFLECTOR
+    DELTA, // delta BRDF/BTDF
+    PHONG // Phong BRDF
 };
 
 struct Reflectance {
-    const Texture kd; // Diffuse (delta BTDF)
-    const Texture ks; // Specular (delta BRDF)
-    const float kp; // Phong (how Phong is it) (Phong BRDF)
+    const Texture kd; // Diffuse
+    const Texture ks; // Specular
 };
 
 typedef struct {
@@ -40,9 +40,21 @@ typedef struct {
 Material Emitter(const Texture &texture);
 
 /**
- * Creates a reflector material
- * @return the reflector as material
+ * Creates a Delta material
+ * @return the Delta material
  */
-Material Reflector(const Texture &kd, const Texture &ks, float kp);
+Material Delta(const Texture &kd, const Texture &ks);
+
+/**
+ * Creates a perfect diffuse Delta material
+ * @return the perfect diffuse Delta material
+ */
+Material Diffuse(const Texture &kd);
+
+/**
+ * Creates a Phong material
+ * @return the Phong material
+ */
+Material Phong(const Texture &kd, const Texture &ks);
 
 #endif //TRABAJO3_MATERIAL_HPP

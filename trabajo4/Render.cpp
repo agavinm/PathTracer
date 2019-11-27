@@ -37,6 +37,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                                                ((float) j + dist(mt)) / (float) height)); // should be a normalized ray
                 HCoord position = camera.origin;
 
+                Color pathColor = C_WHITE;
                 bool path = true;
                 while (path) {
                     // find nearest intersection
@@ -51,72 +52,53 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                     }
 
                     // Get color
-                    if (intersection == nullptr) {
+                    if (intersection == nullptr) { // Any light founded
+                        pathColor = C_BLACK;
                         path = false;
                     }
                     else {
                         position = position + direction * dist; // hit position
 
                         switch (intersection->material.type) {
-                            case EMITTER: {
-                                color = color + getColor(intersection->material.property.texture, position);
+                            case EMITTER: { // LIGHT
+                                pathColor = pathColor * getColor(intersection->material.property.texture, position);
                                 path = false;
                                 break;
                             }
-                            case REFLECTOR: {
-                                Color pathColor = C_BLACK;
+                            case DELTA: {
                                 uniform_real_distribution<float> zeroToOneDistribution(0.0f, 1.0f);
-                                float randomZeroToOne, maxKd, maxKs, pr[3];
+                                float randomZeroToOne, maxKd, maxKs, pr[2];
 
                                 maxKd = getColor(intersection->material.property.reflectance.kd, position).max();
                                 maxKs = getColor(intersection->material.property.reflectance.ks, position).max();
 
                                 // Russian roulette
                                 randomZeroToOne = zeroToOneDistribution(mt);
-                                pr[0] = intersection->material.property.reflectance.kp;
+                                pr[0] = maxKd;
                                 pr[1] = maxKs;
-                                pr[2] = maxKd;
-                                if (pr[0] + pr[1] + pr[2] > 0.9f) {
-                                    pr[2] = (0.9f / (pr[0] + maxKs + maxKs));
-                                    pr[0] = pr[0] * pr[2];
-                                    pr[1] = maxKd * pr[2];
-                                    pr[2] = maxKs * pr[2];
+                                if (pr[0] + pr[1] > 0.9f) {
+                                    pr[1] = (0.9f / (maxKd + maxKs));
+                                    pr[0] = maxKd * pr[1];
+                                    pr[1] = maxKs * pr[1];
                                 }
 
                                 if (randomZeroToOne < pr[0]) {
-                                    pathColor = {0.1f, 0.1f, 0.1f}; // WARNING: ONLY IS A EXAMPLE
-                                    // Phong BRDF case
-                                    //TODO
+                                    pathColor = pathColor * getColor(intersection->material.property.reflectance.kd, position);
+                                    // Perfect refraction case (delta BTDF)
+                                    direction = norm(hPoint(2.5f, 2.5f, 5) - position); // WARNING: ONLY A EXAMPLE, TODO: SNELL'S LAW
                                 }
                                 else if (randomZeroToOne < pr[0] + pr[1]) {
-                                    pathColor = {0.2f, 0.2f, 0.2f}; // WARNING: ONLY IS A EXAMPLE
+                                    pathColor = pathColor * getColor(intersection->material.property.reflectance.ks, position);
                                     // Perfect specular reflectance case (delta BRDF)
-                                    //TODO
-                                }
-                                else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
-                                    pathColor = {0.05f, 0.05f, 0.05f}; // WARNING: ONLY IS A EXAMPLE
-                                    // Perfect refraction case (delta BTDF)
-                                    //TODO
+                                    HCoord n = normal(intersection->geometry, position);
+                                    direction = -direction;
+                                    direction = direction - (direction - n * dot(direction, n)) * 2;
                                 }
                                 else {
                                     // Path deaths
+                                    pathColor = C_BLACK;
                                     path = false;
                                 }
-
-                                color = color + pathColor;
-
-                                // New random direction without going through the surface (+- 90º from object normal)
-                                for (int c = 0; c < 3; c++) {
-                                    randomZeroToOne = zeroToOneDistribution(mt);
-                                    if (direction.e[c] == 0.0f || (direction.e[c] < 0.0f && randomZeroToOne < 0.0f) ||
-                                            (direction.e[c] > 0.0f && randomZeroToOne > 0.0f)) {
-                                        direction.e[c] = randomZeroToOne;
-                                    }
-                                    else {
-                                        direction.e[c] = randomZeroToOne * -1.0f;
-                                    }
-                                }
-                                direction = norm(direction);
 
                                 break;
                             }
@@ -125,6 +107,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                         }
                     }
                 }
+                color = color + pathColor;
             }
 
             // save

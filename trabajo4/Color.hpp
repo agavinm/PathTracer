@@ -20,6 +20,8 @@ struct Color {
 
     Color operator+(const Color &right) const;
 
+    Color operator*(const Color &right) const;
+
     Color operator/(float s) const;
 
     Color operator*(float s) const;

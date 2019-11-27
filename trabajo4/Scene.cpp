@@ -32,63 +32,63 @@ HCoord getRay(const Camera &camera, float i, float j) {
 Scene defaultScene(float ratio) {
     Camera camera = createCamera(hPoint(-5, 0, 0), V_AX, V_AZ, ratio);
 
-    vector<LightPoint> lightPoints;
-    lightPoints.push_back({
-                                  C_WHITE,
-                                  hPoint(5, 5, 5)
-                          });
-
     vector<Object> objects;
+
+    // LIGHT:
+    objects.push_back({
+                              Triangle(hPoint(2.5f, 2.5f, 5), hPoint(2.5f, -2.5f, 5), hPoint(-2.5f, 2.5f, 5)),
+                              Emitter(colored(C_WHITE))
+                      });
 
     // BOX:
     objects.push_back({
                               Plane(hVector(-1, 0, 0), 5),
-                              Reflector(colored(C_GREY), colored(C_BLACK), 0.0f)
+                              Diffuse(colored(C_GREY))
                       }); // FRONT
     objects.push_back({
                               Plane(hVector(0, 1, 0), 5),
-                              Reflector(colored(C_GREEN), colored(C_BLACK), 0.0f)
+                              Diffuse(colored(C_GREEN))
                       }); // RIGHT
     objects.push_back({
                               Plane(hVector(0, -1, 0), 5),
-                              Reflector(colored(C_RED), colored(C_BLACK), 0.0f)
+                              Diffuse(colored(C_RED))
                       }); // LEFT
     objects.push_back({
                               Plane(hVector(0, 0, 1), 5),
-                              Reflector(colored(C_GREY), colored(C_BLACK), 0.0f)
+                              Diffuse(colored(C_GREY))
                       }); // DOWN
     objects.push_back({
                               Plane(hVector(0, 0, -1), 5),
-                              Reflector(colored(C_GREY), colored(C_BLACK), 0.0f)
+                              Diffuse(colored(C_GREY))
                       }); // UP
 
     // SPHERES:
     objects.push_back({
-                              Sphere(hPoint(3, 3, -4), 1),
-                              Reflector(colored(C_BLUE), colored(C_GREEN), 1.0f)
+                              Sphere(hPoint(3, 4, -4), 1),
+                              Delta(colored(C_BLUE), colored(C_GREEN)) // TODO: PHONG
                       });
     objects.push_back({
                               Sphere(hPoint(3, -3, -3), 2),
-                              Reflector(colored(C_BLUE), colored(C_GREEN), 0.0f)
+                              Delta(colored(C_BLUE), colored(C_GREEN))
                       });
 
     return {
             .camera = camera,
-            .objects = objects,
-            .lightPoints = lightPoints
+            .objects = objects
     };
 }
 
 Scene testScene(float ratio) {
     Camera camera = createCamera(P_ZERO, V_AX, V_AZ, ratio);
 
-    vector<LightPoint> lightPoints;
-    lightPoints.push_back({
-        C_WHITE,
-        hPoint(5, 0, -5)
-    });
-
     vector<Object> objects;
+
+    // LIGHT:
+    objects.push_back({
+                              Triangle(hPoint(2.5f, 2.5f, 5), hPoint(2.5f, -2.5f, 5), hPoint(-2.5f, 2.5f, 5)),
+                              Emitter(colored(C_WHITE))
+                      });
+
     objects.push_back({
                               Sphere(hPoint(10, 0, 0), 1),
                               Emitter(sin2D(C_RED))
@@ -119,8 +119,7 @@ Scene testScene(float ratio) {
 
     return {
         .camera = camera,
-        .objects = objects,
-        .lightPoints = lightPoints
+        .objects = objects
     };
 }
 

@@ -23,6 +23,14 @@ Color Color::operator+(const Color &right) const {
     };
 }
 
+Color Color::operator*(const Color &right) const {
+    return {
+            this->r * right.r,
+            this->g * right.g,
+            this->b * right.b
+    };
+}
+
 Color Color::operator/(float s) const {
     return {
             this->r / s,

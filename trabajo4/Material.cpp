@@ -15,9 +15,23 @@ Material Emitter(const Texture &texture) {
     };
 }
 
-Material Reflector(const Texture &kd, const Texture &ks, const float kp) {
+Material Delta(const Texture &kd, const Texture &ks) {
     return Material {
-            .type = REFLECTOR,
-            .property = {.reflectance = {.kd = kd, .ks = ks, .kp = kp}}
+            .type = DELTA,
+            .property = {.reflectance = {.kd = kd, .ks = ks}}
+    };
+}
+
+Material Diffuse(const Texture &kd) {
+    return Material {
+            .type = DELTA,
+            .property = {.reflectance = {.kd = kd, .ks = colored(C_BLACK)}}
+    };
+}
+
+Material Phong(const Texture &kd, const Texture &ks) {
+    return Material {
+            .type = PHONG,
+            .property = {.reflectance = {.kd = kd, .ks = ks}}
     };
 }

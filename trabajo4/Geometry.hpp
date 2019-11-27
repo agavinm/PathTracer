@@ -105,6 +105,14 @@ Geometry Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY);
  */
 Geometry Cuadric(float A, float B, float C, float D, float E, float F, float G, float H, float I, float J);
 
+/**
+ *
+ * @param geometry
+ * @param position
+ * @return the normal vector
+ */
+HCoord normal(const Geometry &geometry, const HCoord &position);
+
 // Objects
 
 struct Object {
