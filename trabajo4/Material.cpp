@@ -15,16 +15,9 @@ Material Emitter(const Texture &texture) {
     };
 }
 
-Material Reflecter(const Texture &kd, const Texture &ks) {
+Material Reflector(const Texture &kd, const Texture &ks) {
     return Material {
-            .type = REFLECTER,
-            .property = {.k = {.kd = kd, .ks = ks}}
-    };
-}
-
-Material Brdf(const Texture &kd, const Texture &ks) {
-    return Material {
-            .type = BRDF,
-            .property = {.k = {.kd = kd, .ks = ks}}
+            .type = REFLECTOR,
+            .property = {.reflectance = {.kd = kd, .ks = ks}}
     };
 }

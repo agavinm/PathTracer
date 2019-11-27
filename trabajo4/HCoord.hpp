@@ -12,7 +12,7 @@
 #include <ostream>
 
 struct HCoord {
-    const float e[4]; // Coordinates
+    float e[4]; // Coordinates
 
     float x() const; // x/w : +x goes inside the screen, -x goes outside the screen
     float y() const; // y/w : +y goes to the left, -y goes to the right

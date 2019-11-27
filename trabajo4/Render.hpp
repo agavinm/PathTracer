@@ -33,9 +33,4 @@ Image render(int width, int height, int ppp, const Scene &scene);
  */
 Image render(int width, int height, int ppp, const Scene &scene, int numThreads);
 
-
-// Testing TODO
-void calculatePath(const HCoord &origin, const HCoord &direction, const std::vector<Object> &objects,
-        std::vector<HCoord> &hits);
-
 #endif //TRABAJO4_RENDER_HPP

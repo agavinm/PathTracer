@@ -37,37 +37,98 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                                                ((float) j + dist(mt)) / (float) height)); // should be a normalized ray
                 HCoord position = camera.origin;
 
-                // find nearest intersection
-                const Object *intersection = nullptr;
-                float dist = INFINITY;
-                for (const Object &object : objects) {
-                    float obj_dist = intersect(position, direction, object);
-                    if (obj_dist > EPS && obj_dist < dist) {
-                        intersection = &object;
-                        dist = obj_dist;
-                    }
-                }
-
-                // get color
-                if (intersection == nullptr) {
-                    // no object
-                    // pixel += 0
-                } else {
-                    // object
-                    switch (intersection->material.type) {
-                        case EMITTER: {
-                            color = color + getColor(intersection->material.property.texture, position + direction * dist);
-                            break;
+                bool path = true;
+                while (path) {
+                    // find nearest intersection
+                    const Object *intersection = nullptr;
+                    float dist = INFINITY;
+                    for (const Object &object : objects) {
+                        float obj_dist = intersect(position, direction, object);
+                        if (obj_dist > EPS && obj_dist < dist) {
+                            intersection = &object;
+                            dist = obj_dist;
                         }
-                        default:
-                            exit(6);
+                    }
+
+                    // Get color
+                    if (intersection == nullptr) {
+                        path = false;
+                    }
+                    else {
+                        position = position + direction * dist; // hit position
+
+                        switch (intersection->material.type) {
+                            case EMITTER: {
+                                color = color + getColor(intersection->material.property.texture, position);
+                                path = false;
+                                break;
+                            }
+                            case REFLECTOR: {
+                                Color pathColor = C_BLACK;
+                                uniform_real_distribution<float> zeroToOneDistribution(0.0f, 1.0f);
+                                float randomZeroToOne, maxKd, maxKs, pr[3];
+
+                                maxKd = getColor(intersection->material.property.reflectance.kd, position).max();
+                                maxKs = getColor(intersection->material.property.reflectance.ks, position).max();
+
+                                // Russian roulette
+                                randomZeroToOne = zeroToOneDistribution(mt);
+                                pr[0] = maxKd + maxKs; // TODO sum???
+                                pr[1] = maxKs;
+                                pr[2] = maxKd;
+                                if (pr[0] + pr[1] + pr[2] > 0.9f) {
+                                    pr[0] = 0.45f;
+                                    pr[1] = (0.9f / (maxKd + maxKd + maxKs + maxKs));
+                                    pr[2] = pr[1] * maxKd;
+                                    pr[1] = pr[1] * maxKs;
+                                }
+
+                                if (randomZeroToOne < pr[0]) {
+                                    pathColor = {0.1f, 0.1f, 0.1f}; // WARNING: ONLY IS A EXAMPLE
+                                    // Phong BRDF case
+                                    //TODO
+                                }
+                                else if (randomZeroToOne < pr[0] + pr[1]) {
+                                    pathColor = {0.2f, 0.2f, 0.2f}; // WARNING: ONLY IS A EXAMPLE
+                                    // Perfect specular reflectance case (delta BRDF)
+                                    //TODO
+                                }
+                                else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
+                                    pathColor = {0.01f, 0.01f, 0.01f}; // WARNING: ONLY IS A EXAMPLE
+                                    // Perfect refraction case (delta BTDF)
+                                    //TODO
+                                }
+                                else {
+                                    // Path deaths
+                                    path = false;
+                                }
+
+                                color = color + pathColor;
+
+                                // New random direction without going through the surface (+- 90º from object normal)
+                                for (int c = 0; c < 3; c++) {
+                                    randomZeroToOne = zeroToOneDistribution(mt);
+                                    if (direction.e[c] == 0.0f || (direction.e[c] < 0.0f && randomZeroToOne < 0.0f) ||
+                                            (direction.e[c] > 0.0f && randomZeroToOne > 0.0f)) {
+                                        direction.e[c] = randomZeroToOne;
+                                    }
+                                    else {
+                                        direction.e[c] = randomZeroToOne * -1.0f;
+                                    }
+                                }
+                                direction = norm(direction);
+
+                                break;
+                            }
+                            default:
+                                exit(6);
+                        }
                     }
                 }
             }
 
             // save
             setPixel(image, i, j, color / (float) ppp);
-
         }
         if (last) progress.step((float) (j - j_ini) * 100.0f / (float) (j_end - j_ini));
     }
@@ -108,47 +169,4 @@ Image render(int width, int height, int ppp, const Scene &scene, int numThreads)
     progress.end();
 
     return image;
-}
-
-void calculatePath(const HCoord &origin, const HCoord &direction, const vector<Object> &objects,
-        vector<HCoord> &hits) {
-
-    // find nearest intersection
-    const Object *intersection = nullptr;
-    float dist = INFINITY;
-    for (const Object &object : objects) {
-        float obj_dist = intersect(origin, direction, object);
-        if (obj_dist > EPS && obj_dist < dist) {
-            intersection = &object;
-            dist = obj_dist;
-        }
-    }
-
-    if (intersection != nullptr) {
-        // Add intersection
-        HCoord intersectionPoint = origin + direction * dist;
-        hits.push_back(intersectionPoint);
-
-        // Bounce (perfect reflection)
-        if (intersection->geometry.type == SPHERE) {
-            HCoord normal = intersection->geometry.data.sphere.center - intersectionPoint;
-
-            HCoord directionResult = direction - normal * 2 * dot(direction, normal);
-            calculatePath(intersectionPoint, directionResult, objects, hits);
-        }
-
-        else if (intersection->geometry.type == TRIANGLE) {
-            HCoord normal = intersection->geometry.data.triangle.plane.normal - intersectionPoint;
-
-            HCoord directionResult = direction - normal * 2 * dot(direction, normal);
-            calculatePath(intersectionPoint, directionResult, objects, hits);
-        }
-
-        else if (intersection->geometry.type == PLANE) {
-            HCoord normal = intersection->geometry.data.plane.normal - intersectionPoint;
-
-            HCoord directionResult = direction - normal * 2 * dot(direction, normal);
-            calculatePath(intersectionPoint, directionResult, objects, hits);
-        }
-    }
 }
