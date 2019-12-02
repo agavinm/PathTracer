@@ -2,7 +2,7 @@
  * @file    Material.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
+ * @date    Diciembre 2019
  * @coms    Informática Gráfica - Trabajo recomendado 4
  ******************************************************************************/
 
@@ -15,23 +15,29 @@ Material Emitter(const Texture &texture) {
     };
 }
 
-Material Delta(const Texture &kd, const Texture &ks) {
+Material Reflector(const Texture &kd, const float n, const Texture &ks, const Texture &kdPhong, const Texture &ksPhong) {
     return Material {
-            .type = DELTA,
-            .property = {.reflectance = {.kd = kd, .ks = ks}}
+            .type = REFLECTOR,
+            .property = {.reflectance = {.kd = kd, .n = n, .ks = ks, .kdPhong = kdPhong, .ksPhong = ksPhong}}
     };
 }
 
-Material Diffuse(const Texture &kd) {
-    return Material {
-            .type = DELTA,
-            .property = {.reflectance = {.kd = kd, .ks = colored(C_BLACK)}}
-    };
+Material Diffuse(const Texture &kdPhong) {
+    return Reflector(colored(C_BLACK), 0, colored(C_BLACK), kdPhong, colored(C_BLACK));
 }
 
-Material Phong(const Texture &kd, const Texture &ks) {
-    return Material {
-            .type = PHONG,
-            .property = {.reflectance = {.kd = kd, .ks = ks}}
-    };
+Material Phong(const Texture &kdPhong, const Texture &ksPhong) {
+    return Reflector(colored(C_BLACK), 0, colored(C_BLACK), kdPhong, ksPhong);
+}
+
+Material Delta(const Texture &kd, const float n, const Texture &ks) {
+    return Reflector(kd, n, ks, colored(C_BLACK), colored(C_BLACK));
+}
+
+Material Refractor(const Texture &kd, const float n) {
+    return Reflector(kd, n, colored(C_BLACK), colored(C_BLACK), colored(C_BLACK));
+}
+
+Material Specular(const Texture &ks) {
+    return Reflector(colored(C_BLACK), 0, ks, colored(C_BLACK), colored(C_BLACK));
 }

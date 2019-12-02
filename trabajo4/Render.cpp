@@ -43,11 +43,13 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                     // find nearest intersection
                     const Object *intersection = nullptr;
                     float dist = INFINITY;
-                    for (const Object &object : objects) {
-                        float obj_dist = intersect(position, direction, object);
+                    unsigned long intersectionIndex;
+                    for (unsigned long objectIndex = 0; objectIndex < objects.size(); objectIndex++) {
+                        float obj_dist = intersect(position, direction, objects[objectIndex]);
                         if (obj_dist > EPS && obj_dist < dist) {
-                            intersection = &object;
+                            intersection = &objects[objectIndex];
                             dist = obj_dist;
+                            intersectionIndex = objectIndex;
                         }
                     }
 
@@ -58,6 +60,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                     }
                     else {
                         position = position + direction * dist; // hit position
+                        const HCoord n = normal(intersection->geometry, position);
 
                         switch (intersection->material.type) {
                             case EMITTER: { // LIGHT
@@ -65,37 +68,57 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                                 path = false;
                                 break;
                             }
-                            case DELTA: {
+                            case REFLECTOR: {
                                 uniform_real_distribution<float> zeroToOneDistribution(0.0f, 1.0f);
-                                float randomZeroToOne, maxKd, maxKs, pr[2];
+                                float randomZeroToOne, maxKd, maxKs, maxKdPhong, maxKsPhong, pr[3];
 
                                 maxKd = getColor(intersection->material.property.reflectance.kd, position).max();
                                 maxKs = getColor(intersection->material.property.reflectance.ks, position).max();
+                                maxKdPhong = getColor(intersection->material.property.reflectance.kdPhong, position).max();
+                                maxKsPhong = getColor(intersection->material.property.reflectance.ksPhong, position).max();
 
                                 // Russian roulette
                                 randomZeroToOne = zeroToOneDistribution(mt);
                                 pr[0] = maxKd;
                                 pr[1] = maxKs;
-                                if (pr[0] + pr[1] > 0.9f) {
-                                    pr[1] = (0.9f / (maxKd + maxKs));
+                                pr[2] = maxKdPhong + maxKsPhong;
+                                if (pr[0] + pr[1] + pr[2] > 0.9f) {
+                                    pr[1] = (0.9f / (pr[0] + pr[1] + pr[2]));
                                     pr[0] = maxKd * pr[1];
+                                    pr[2] = pr[2] * pr[1];
                                     pr[1] = maxKs * pr[1];
                                 }
 
-                                if (randomZeroToOne < pr[0]) {
+                                if (randomZeroToOne < pr[0]) { // Perfect refraction case (delta BTDF)
                                     pathColor = pathColor * getColor(intersection->material.property.reflectance.kd, position);
-                                    // Perfect refraction case (delta BTDF)
-                                    direction = norm(hPoint(2.5f, 2.5f, 5) - position); // WARNING: ONLY A EXAMPLE, TODO: SNELL'S LAW
+
+                                    float n1 = VACUUM_REFRACTIVE_INDEX;
+                                    bool objectFound = false;
+                                    for (unsigned long objectIndex = 0; !objectFound && objectIndex < objects.size(); objectIndex++) {
+                                        if (intersectionIndex != objectIndex && intersect(position, norm(position - P_ZERO),
+                                                objects[objectIndex]) == 0 && objects[objectIndex].material.type == REFLECTOR) {
+                                            n1 = objects[objectIndex].material.property.reflectance.n;
+                                            objectFound = true;
+                                        }
+                                    }
+
+                                    // https://en.wikipedia.org/wiki/Snell%27s_law
+                                    float r = n1 / intersection->material.property.reflectance.n;
+                                    float c = dot(-n, direction);
+                                    direction = norm(direction * r + n * (r * c - sqrt(1 - r * r * (1 - c * c))));
                                 }
-                                else if (randomZeroToOne < pr[0] + pr[1]) {
+                                else if (randomZeroToOne < pr[0] + pr[1]) { // Perfect specular reflectance case (delta BRDF)
                                     pathColor = pathColor * getColor(intersection->material.property.reflectance.ks, position);
-                                    // Perfect specular reflectance case (delta BRDF)
-                                    HCoord n = normal(intersection->geometry, position);
+
                                     direction = -direction;
                                     direction = direction - (direction - n * dot(direction, n)) * 2;
                                 }
-                                else {
-                                    // Path deaths
+                                else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) { // Perfect Phong case (Phong BRDF)
+                                    pathColor = pathColor * getColor(intersection->material.property.reflectance.kdPhong, position);
+
+                                    direction = norm(hPoint(2.5f, 2.5f, 5) - position); // WARNING: ONLY A EXAMPLE, TODO
+                                }
+                                else { // Path deaths
                                     pathColor = C_BLACK;
                                     path = false;
                                 }

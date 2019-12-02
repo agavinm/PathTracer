@@ -65,11 +65,15 @@ Scene defaultScene(float ratio) {
     // SPHERES:
     objects.push_back({
                               Sphere(hPoint(3, 4, -4), 1),
-                              Delta(colored(C_BLUE), colored(C_GREEN)) // TODO: PHONG
+                              Phong(colored(C_BLUE), colored(C_GREEN))
                       });
     objects.push_back({
                               Sphere(hPoint(3, -3, -3), 2),
-                              Delta(colored(C_BLUE), colored(C_GREEN))
+                              Delta(colored(C_WHITE), 1, colored(C_BLUE))
+                      });
+    objects.push_back({
+                              Sphere(hPoint(3, -3, -3), 1),
+                              Delta(colored(C_BLUE), 4.0f, colored(C_BLUE))
                       });
 
     return {
