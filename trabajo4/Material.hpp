@@ -91,5 +91,6 @@ Material Refractor(const Texture &kd, float n);
 Material Specular(const Texture &ks, float s);
 
 const float VACUUM_REFRACTIVE_INDEX = 1.0f;
+const float WATER_REFRACTIVE_INDEX = 1.330f;
 
 #endif //TRABAJO3_MATERIAL_HPP

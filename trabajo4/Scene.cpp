@@ -69,12 +69,12 @@ Scene defaultScene(float ratio) {
                       });
     objects.push_back({
                               Sphere(hPoint(3, -3, -3), 2),
-                              Delta(colored(C_WHITE), 1, colored(C_WHITE), 1)
+                              Delta(colored(C_WHITE), WATER_REFRACTIVE_INDEX, colored(C_BLACK), 1)
                       });
-    /*objects.push_back({
-                              Sphere(hPoint(3, -3, -3), 1),
-                              Delta(colored(C_BLUE), 4.0f, colored(C_BLUE), 1)
-                      });*/
+    objects.push_back({
+                              Sphere(hPoint(3, -3, -1.5f), 1),
+                              Phong(colored(C_BLUE), colored(C_GREEN), 5)
+                      });
 
     return {
             .camera = camera,
