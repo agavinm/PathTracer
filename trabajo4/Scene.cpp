@@ -71,10 +71,16 @@ Scene defaultScene(float ratio) {
                               Sphere(hPoint(3, -3, -3), 2),
                               Delta(colored(C_WHITE), WATER_REFRACTIVE_INDEX, colored(C_BLACK), 1)
                       });
+
+    // TESTING
     objects.push_back({
                               Sphere(hPoint(3, -3, -1.5f), 1),
                               Phong(colored(C_BLUE), colored(C_GREEN), 5)
                       });
+    /*objects.push_back({
+                              Triangle(hPoint(5,0,0), hPoint(3, -3, -3), hPoint(0,0,5)),
+                              Delta(colored(C_WHITE), VACUUM_REFRACTIVE_INDEX, colored(C_BLACK), 1)
+                      });*/
 
     return {
             .camera = camera,

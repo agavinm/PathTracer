@@ -43,13 +43,11 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                     // find nearest intersection
                     const Object *intersection = nullptr;
                     float dist = INFINITY;
-                    unsigned long intersectionIndex;
-                    for (unsigned long objectIndex = 0; objectIndex < objects.size(); objectIndex++) {
-                        float obj_dist = intersect(position, direction, objects[objectIndex]);
+                    for (const Object &object : objects) {
+                        float obj_dist = intersect(position, direction, object);
                         if (obj_dist > EPS && obj_dist < dist) {
-                            intersection = &objects[objectIndex];
+                            intersection = &object;
                             dist = obj_dist;
-                            intersectionIndex = objectIndex;
                         }
                     }
 
@@ -59,6 +57,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                         path = false;
                     }
                     else {
+                        HCoord origin = position;
                         position = position + direction * dist; // hit position
                         const HCoord n = normal(intersection->geometry, position);
 
@@ -91,14 +90,19 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
 
                                 if (randomZeroToOne < pr[0]) { // Perfect refraction case (delta BTDF)
                                     pathColor = pathColor * getColor(intersection->material.property.reflectance.kd, position);
+                                    HCoord intermediate = hPoint((origin.x() + position.x()) / 2.0f,
+                                            (origin.y() + position.y()) / 2.0f, (origin.z() + position.z()) / 2.0f);
 
                                     float n1 = VACUUM_REFRACTIVE_INDEX;
                                     bool objectFound = false;
                                     for (unsigned long objectIndex = 0; !objectFound && objectIndex < objects.size(); objectIndex++) {
-                                        if (intersectionIndex != objectIndex && intersect(position, norm(position - P_ZERO),
-                                                objects[objectIndex]) == 0 && objects[objectIndex].material.type == REFLECTOR) {
+                                        if (intersect(intermediate, norm(intermediate - P_ZERO), objects[objectIndex]) == 0 &&
+                                        objects[objectIndex].material.type == REFLECTOR) {
                                             n1 = objects[objectIndex].material.property.reflectance.n;
                                             objectFound = true;
+                                            if (n1 != VACUUM_REFRACTIVE_INDEX) {
+                                                cout << "heeh" << endl; //TODO algo raro pasa ya que nunca entra aquí
+                                            }
                                         }
                                     }
 
