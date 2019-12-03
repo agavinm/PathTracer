@@ -65,16 +65,16 @@ Scene defaultScene(float ratio) {
     // SPHERES:
     objects.push_back({
                               Sphere(hPoint(3, 4, -4), 1),
-                              Phong(colored(C_BLUE), colored(C_GREEN))
+                              Phong(colored(C_BLUE), colored(C_GREEN), 1)
                       });
     objects.push_back({
                               Sphere(hPoint(3, -3, -3), 2),
-                              Delta(colored(C_WHITE), 1, colored(C_BLUE))
+                              Delta(colored(C_WHITE), 1, colored(C_WHITE), 1)
                       });
-    objects.push_back({
+    /*objects.push_back({
                               Sphere(hPoint(3, -3, -3), 1),
-                              Delta(colored(C_BLUE), 4.0f, colored(C_BLUE))
-                      });
+                              Delta(colored(C_BLUE), 4.0f, colored(C_BLUE), 1)
+                      });*/
 
     return {
             .camera = camera,

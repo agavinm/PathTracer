@@ -105,18 +105,21 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                                     // https://en.wikipedia.org/wiki/Snell%27s_law
                                     float r = n1 / intersection->material.property.reflectance.n;
                                     float c = dot(-n, direction);
-                                    direction = norm(direction * r + n * (r * c - sqrt(1 - r * r * (1 - c * c))));
+                                    direction = norm(direction * r + n * (r * c - sqrt(1.0f - r * r * (1.0f - c * c))));
                                 }
                                 else if (randomZeroToOne < pr[0] + pr[1]) { // Perfect specular reflectance case (delta BRDF)
-                                    pathColor = pathColor * getColor(intersection->material.property.reflectance.ks, position);
-
                                     direction = -direction;
-                                    direction = direction - (direction - n * dot(direction, n)) * 2;
+                                    direction = direction - (direction - n * dot(direction, n)) * 2.0f;
+
+                                    pathColor = pathColor * getColor(intersection->material.property.reflectance.ks, position);
                                 }
                                 else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) { // Perfect Phong case (Phong BRDF)
-                                    pathColor = pathColor * getColor(intersection->material.property.reflectance.kdPhong, position);
-
                                     direction = norm(hPoint(2.5f, 2.5f, 5) - position); // WARNING: ONLY A EXAMPLE, TODO
+
+                                    pathColor = pathColor * (getColor(intersection->material.property.reflectance.kdPhong, position) / (float) M_PI
+                                            + getColor(intersection->material.property.reflectance.ksPhong, position)
+                                            * (intersection->material.property.reflectance.s + 2.0f) / (2.0f * (float) M_PI)
+                                            * pow(abs(dot(n, direction)), intersection->material.property.reflectance.s));
                                 }
                                 else { // Path deaths
                                     pathColor = C_BLACK;
