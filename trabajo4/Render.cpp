@@ -14,6 +14,7 @@
 #include "Render.hpp"
 #include "Progress.hpp"
 #include "Transform.hpp"
+#include "Material.hpp"
 
 using namespace std;
 
@@ -98,15 +99,38 @@ pair<Color, HCoord> refraction(const Scene &scene, const HCoord &origin, const H
     }
 }
 
-pair<Color, HCoord> phong(const HCoord &position, const HCoord &direction, const HCoord &n, const Object &intersection) {
+pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoord &direction, const HCoord &n,
+        const Object &intersection, mt19937 &mt) {
     pair<Color, HCoord> result;
+
+    HCoord Z = -direction;
+    Z = norm(Z - (Z - n * dot(Z, n)) * 2.0f);
+
+    HCoord Y = cross(Z, direction);
+    HCoord X = cross(Z, Y);
+
+    Transform to = changeToBase(X, Y, Z, position);
+    Transform from = changeFromBase(X, Y, Z, position);
+
+    uniform_real_distribution<float> dist(0.0f, 1.0f);
+
+    // TODO: Mejorar
+    float theta = acos(pow(dist(mt), (1.0f / (intersection.material.property.reflectance.s + 1.0f))));
+    float phi = 2.0f * (float) M_PI * dist(mt);
+
+    //result.second = hVector(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
+
+    result.second = hVector(cos(tan(theta)) + cos(theta) * cos(phi), cos(tan(theta)) + cos(theta) * sin(phi),
+            sin(tan(theta)) + sin(theta));
+
+    result.second = norm(from * result.second);
+
+    //result.second = norm(hPoint(2.5f, 2.5f, 5) - position); // WARNING: ONLY A EXAMPLE
 
     result.first = getColor(intersection.material.property.reflectance.kdPhong, position) / (float) M_PI
                    + getColor(intersection.material.property.reflectance.ksPhong, position)
                      * (intersection.material.property.reflectance.s + 2.0f) / (2.0f * (float) M_PI)
-                     * pow(abs(dot(n, direction)), intersection.material.property.reflectance.s);
-
-    result.second = norm(hPoint(2.5f, 2.5f, 5) - position); // WARNING: ONLY A EXAMPLE, TODO
+                     * pow(abs(dot(n, result.second)), intersection.material.property.reflectance.s);
 
     return result;
 }
@@ -191,7 +215,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
                                 }
                                 else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
                                     // Perfect Phong case (Phong BRDF)
-                                    result = phong(position, direction, n, *intersection);
+                                    result = phong(scene, position, direction, n, *intersection, mt);
                                 }
                                 else {
                                     // Path deaths
