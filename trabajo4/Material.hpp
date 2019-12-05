@@ -21,7 +21,6 @@ enum MATERIAL_TYPE {
 
 struct Reflectance {
     const Texture kd; // Refraction (delta BTDF)
-    const float n; // Refractive index (Snell's law)
     const Texture ks; // Specular (delta BRDF)
     const Texture kdPhong; //Phong BRDF
     const Texture ksPhong; // Phong BRDF
@@ -58,7 +57,7 @@ Material Emitter(const Texture &texture);
  * Creates a Reflector material
  * @return the Reflector material
  */
-Material Reflector(const Texture &kd, float n, const Texture &ks, float s, const Texture &kdPhong, const Texture &ksPhong);
+Material Reflector(const Texture &kd, const Texture &ks, float s, const Texture &kdPhong, const Texture &ksPhong);
 
 /**
  * Creates a perfect diffuse Delta material
@@ -76,21 +75,18 @@ Material Phong(const Texture &kdPhong, const Texture &ksPhong, float s);
  * Creates a perfect Delta material
  * @return the perfect Delta material
  */
-Material Delta(const Texture &kd, float n, const Texture &ks, float s);
+Material Delta(const Texture &kd, const Texture &ks, float s);
 
 /**
  * Creates a perfect Refractor material
  * @return the perfect Refractor material
  */
-Material Refractor(const Texture &kd, float n);
+Material Refractor(const Texture &kd);
 
 /**
  * Creates a perfect Specular material
  * @return the perfect Specular material
  */
-Material Specular(const Texture &ks, float s);
-
-const float VACUUM_REFRACTIVE_INDEX = 1.0f;
-const float WATER_REFRACTIVE_INDEX = 1.330f;
+Material Specular(const Texture &ks);
 
 #endif //TRABAJO3_MATERIAL_HPP

@@ -1,95 +1,47 @@
 /******************************************************************************
- * @file    Geometry.cpp
+ * @file    Object.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
+ * @date    Diciembre 2019
  * @coms    Informática Gráfica - Trabajo recomendado 4
  ******************************************************************************/
 
-#include "Geometry.hpp"
+#include "Object.hpp"
+#include "Transform.hpp"
+#include <cmath>
+#include <cassert>
 
-Geometry Sphere(const HCoord &center, float radius) {
+using namespace std;
+
+Object create3D(const Geometry &geometry, const Material &material, float refractiveIndex) {
+    assert(geometry.type == SPHERE);
+
     return {
-            .type=SPHERE,
-            .data={.sphere={
-                    .center=center,
-                    .radius=radius,
-            }},
+            .geometry = geometry,
+            .material = material,
+            .type = OBJECT_3D,
+            .n = refractiveIndex
     };
 }
 
-Geometry Plane(const HCoord &normal, float dist) {
+Object create2D(const Geometry &geometry, const Material &material) {
+    assert(geometry.type != SPHERE);
+
     return {
-            .type = PLANE,
-            .data={.plane={
-                    .normal = norm(normal),
-                    .dist = dist,
-            }},
+        .geometry = geometry,
+        .material = material,
+        .type = OBJECT_2D,
+        .n = VACUUM_REFRACTIVE_INDEX
     };
 }
 
-Geometry Triangle(const HCoord &point1, const HCoord &point2, const HCoord &point3) {
-    HCoord dirX = point2 - point1;
-    HCoord dirY = point3 - point1;
-    HCoord normal = norm(cross(dirX, dirY));
-    float dist = dot(P_ZERO - point1, normal);
-    return Geometry{
-            .type = TRIANGLE,
-            .data = {.triangle = {
-                    .plane = {
-                            .normal = normal,
-                            .dist = dist,
-                    },
-                    .point = point1,
-                    .dirX = dirX,
-                    .dirY = dirY,
-            }},
-    };
-}
-
-Geometry Circle(const HCoord &center, const HCoord &axisX, const HCoord &axisY) {
-    HCoord normal = norm(cross(axisX, axisY));
-    float dist = dot(P_ZERO - center, normal);
-
-    return Geometry{
-            .type = CIRCLE,
-            .data = {.circle = {
-                    .plane = {
-                            .normal = normal,
-                            .dist = dist,
-                    },
-                    .center = center,
-                    .axisX = axisX,
-                    .axisY = axisY,
-            }},
-    };
-}
-
-Geometry Cuadric(float A, float B, float C, float D, float E, float F, float G, float H, float I, float J) {
-    return Geometry{
-            .type = CUADRIC,
-            .data = {.cuadric = {
-                    A, B, C, D, E, F, G, H, I, J
-            }},
-    };
-}
-
-HCoord normal(const Geometry &geometry, const HCoord &position) {
-    switch (geometry.type) {
+bool isInside(const HCoord &point, const Object &object) {
+    assert(object.type == OBJECT_3D);
+    switch (object.geometry.type) {
         case SPHERE: {
-            return norm(position - geometry.data.sphere.center);
+            return mod(point - object.geometry.data.sphere.center) <= object.geometry.data.sphere.radius;
         }
-        case PLANE: {
-            return geometry.data.plane.normal;
-        }
-        case TRIANGLE: {
-            return geometry.data.triangle.plane.normal;
-        }
-        case CIRCLE: {
-            return geometry.data.circle.plane.normal;
-        }
-        case CUADRIC: {
-            // TODO
+        default: {
             exit(6);
         }
     }
@@ -102,22 +54,30 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
             GEOMETRY_SPHERE data = object.geometry.data.sphere;
 
 //            // Unoptimized
-//            HCoord normdir = norm(dir);
 //            HCoord ominusc = origin - data.center; // origin minus center
 //            float a = 1;
-//            float b = 2 * dot(normdir, ominusc);
+//            float b = 2 * dot(dir, ominusc);
 //            float c = dot(ominusc, ominusc) - data.radius * data.radius;
 //            float discriminant = b * b - 4 * a * c;
 //            if (discriminant < EPS)
 //                return INFINITY;
-//            float t = (-b + sqrt(discriminant)) / 2 / a;
-//            return t > -EPS ? t : INFINITY;
+//            float t1 = (-b + sqrt(discriminant)) / 2 / a;
+//            float t2 = (-b - sqrt(discriminant)) / 2 / a;
+//            if(t1<EPS) return t2;
+//            if(t2<EPS) return t1;
+//            return t1 < t2 ? t1 : t2;
 
             // Optimized
             HCoord ominusc = origin - data.center; // origin minus center
             float b = dot(dir, ominusc);
             float discriminant = b * b - dot(ominusc, ominusc) + data.radius * data.radius;
-            return discriminant < EPS ? INFINITY : -b - sqrt(discriminant);
+            if (discriminant < EPS) return INFINITY;
+            float t1 = -b + sqrt(discriminant);
+            float t2 = -b - sqrt(discriminant);
+            return t1 < EPS ? t2 :
+                   t2 < EPS ? t1 :
+                   t1 < t2 ? t1 :
+                   t2;
 
         }
         case PLANE: {

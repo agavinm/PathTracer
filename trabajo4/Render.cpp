@@ -14,13 +14,105 @@
 #include "Render.hpp"
 #include "Progress.hpp"
 #include "Transform.hpp"
-#include "Material.hpp"
-#include "Geometry.hpp"
 
 using namespace std;
 
-void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const vector<Object> &objects,
-                  const Camera &camera, bool last, Image &image, Progress &progress) {
+pair<Color, HCoord> reflection(const HCoord &position, HCoord direction, const HCoord &n, const Object &intersection) {
+    pair<Color, HCoord> result;
+
+    result.first = getColor(intersection.material.property.reflectance.ks, position);
+
+    direction = -direction;
+    result.second = norm(direction - (direction - n * dot(direction, n)) * 2.0f);
+
+    return result;
+}
+
+pair<Color, HCoord> refraction(const Scene &scene, const HCoord &origin, const HCoord &position, const HCoord &direction,
+        HCoord n, const Object &intersection) {
+    pair<Color, HCoord> result;
+
+    result.first = getColor(intersection.material.property.reflectance.kd, position);
+
+    HCoord intermediate = hPoint((origin.x() + position.x()) / 2.0f,
+                                 (origin.y() + position.y()) / 2.0f, (origin.z() + position.z()) / 2.0f);
+    float n1 = scene.refractiveIndex, n2 = scene.refractiveIndex;
+    const Object *o = nullptr;
+    bool insideOf_o = false;
+    for (unsigned long objectIndex = 0; !insideOf_o && objectIndex < scene.objects.size(); objectIndex++) {
+        o = &scene.objects[objectIndex];
+        if (o->material.type == REFLECTOR && o->type == OBJECT_3D && isInside(intermediate, *o)) {
+            // Ray is inside an object
+            n1 = o->n;
+            insideOf_o = true;
+        }
+    }
+    if (insideOf_o) {
+        // Ray is inside an object
+        n = -n;
+        switch (o->geometry.type) {
+            case SPHERE: {
+                if (mod(position - o->geometry.data.sphere.center) == o->geometry.data.sphere.radius) {
+                    // Ray will come out of the sphere
+                    bool objectFound = false;
+                    for (unsigned long objectIndex = 0; !objectFound && objectIndex < scene.objects.size(); objectIndex++) {
+                        const Object *outside = &scene.objects[objectIndex];
+                        if (outside->material.type == REFLECTOR && outside->type == OBJECT_3D &&
+                            isInside(position, *outside) && outside != o) {
+                            // Ray will enter an outside object
+                            n2 = outside->n;
+                            objectFound = true;
+                        }
+                    }
+                }
+                else {
+                    // Ray will enter another object
+                    n2 = intersection.n;
+                }
+
+                break;
+            }
+            default: {
+                exit(6);
+            }
+        }
+    }
+    else {
+        // Ray will enter an object
+        n2 = intersection.n;
+    }
+
+    // https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
+    float r = n1 / n2;
+    float c = dot(-n, direction);
+    float radicand = 1.0f - r * r * (1.0f - c * c);
+    if (radicand < 0.0f) {
+        // Only happens reflection because the sine of the angle of refraction is required to be greater than one.
+        // https://en.wikipedia.org/wiki/Snell%27s_law#Total_internal_reflection_and_critical_angle
+        return reflection(position, direction, n, intersection);
+    }
+    else {
+        result.second = norm(direction * r + n * (r * c - sqrt(1.0f - r * r * (1.0f - c * c))));
+
+        return result;
+    }
+}
+
+pair<Color, HCoord> phong(const HCoord &position, const HCoord &direction, const HCoord &n, const Object &intersection) {
+    pair<Color, HCoord> result;
+
+    result.first = getColor(intersection.material.property.reflectance.kdPhong, position) / (float) M_PI
+                   + getColor(intersection.material.property.reflectance.ksPhong, position)
+                     * (intersection.material.property.reflectance.s + 2.0f) / (2.0f * (float) M_PI)
+                     * pow(abs(dot(n, direction)), intersection.material.property.reflectance.s);
+
+    result.second = norm(hPoint(2.5f, 2.5f, 5) - position); // WARNING: ONLY A EXAMPLE, TODO
+
+    return result;
+}
+
+void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, bool last, Image &image,
+        Progress &progress) {
     // initialization of utilities
     random_device rd;
     mt19937 mt(rd());
@@ -33,9 +125,9 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
 
             for (int p = 0; p < ppp; ++p) {
                 // get initial ray
-                HCoord direction = norm(getRay(camera, ((float) i + dist(mt)) / (float) width,
+                HCoord direction = norm(getRay(scene.camera, ((float) i + dist(mt)) / (float) width,
                                                ((float) j + dist(mt)) / (float) height)); // should be a normalized ray
-                HCoord position = camera.origin;
+                HCoord position = scene.camera.origin;
 
                 Color pathColor = C_WHITE;
                 bool path = true;
@@ -43,7 +135,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                     // find nearest intersection
                     const Object *intersection = nullptr;
                     float dist = INFINITY;
-                    for (const Object &object : objects) {
+                    for (const Object &object : scene.objects) {
                         float obj_dist = intersect(position, direction, object);
                         if (obj_dist > EPS && obj_dist < dist) {
                             intersection = &object;
@@ -59,7 +151,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                     else {
                         HCoord origin = position;
                         position = position + direction * dist; // hit position
-                        const HCoord n = normal(intersection->geometry, position);
+                        HCoord n = normal(intersection->geometry, position);
 
                         switch (intersection->material.type) {
                             case EMITTER: { // LIGHT
@@ -81,59 +173,40 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const ve
                                 pr[0] = maxKd;
                                 pr[1] = maxKs;
                                 pr[2] = maxKdPhong + maxKsPhong;
-                                if (pr[0] + pr[1] + pr[2] > 0.9f) {
-                                    pr[1] = (0.9f / (pr[0] + pr[1] + pr[2]));
+                                if (pr[0] + pr[1] + pr[2] > 0.99f) {
+                                    pr[1] = (0.99f / (pr[0] + pr[1] + pr[2]));
                                     pr[0] = maxKd * pr[1];
                                     pr[2] = pr[2] * pr[1];
                                     pr[1] = maxKs * pr[1];
                                 }
 
-                                if (randomZeroToOne < pr[0]) { // Perfect refraction case (delta BTDF)
-                                    pathColor = pathColor * getColor(intersection->material.property.reflectance.kd, position);
-                                    HCoord intermediate = hPoint((origin.x() + position.x()) / 2.0f,
-                                            (origin.y() + position.y()) / 2.0f, (origin.z() + position.z()) / 2.0f);
-
-                                    float n1 = VACUUM_REFRACTIVE_INDEX;
-                                    bool objectFound = false;
-                                    for (unsigned long objectIndex = 0; !objectFound && objectIndex < objects.size(); objectIndex++) {
-                                        if (intersect(intermediate, norm(intermediate - P_ZERO), objects[objectIndex]) == 0 &&
-                                        objects[objectIndex].material.type == REFLECTOR) {
-                                            n1 = objects[objectIndex].material.property.reflectance.n;
-                                            objectFound = true;
-                                            if (n1 != VACUUM_REFRACTIVE_INDEX) {
-                                                cout << "heeh" << endl; //TODO algo raro pasa ya que nunca entra aquí
-                                            }
-                                        }
-                                    }
-
-                                    // https://en.wikipedia.org/wiki/Snell%27s_law
-                                    float r = n1 / intersection->material.property.reflectance.n;
-                                    float c = dot(-n, direction);
-                                    direction = norm(direction * r + n * (r * c - sqrt(1.0f - r * r * (1.0f - c * c))));
+                                pair<Color, HCoord> result;
+                                if (randomZeroToOne < pr[0]) {
+                                    // Perfect refraction case (delta BTDF)
+                                    result = refraction(scene, origin, position, direction, n, *intersection);
                                 }
-                                else if (randomZeroToOne < pr[0] + pr[1]) { // Perfect specular reflectance case (delta BRDF)
-                                    direction = -direction;
-                                    direction = direction - (direction - n * dot(direction, n)) * 2.0f;
-
-                                    pathColor = pathColor * getColor(intersection->material.property.reflectance.ks, position);
+                                else if (randomZeroToOne < pr[0] + pr[1]) {
+                                    // Perfect specular reflectance case (delta BRDF)
+                                    result = reflection(position, direction, n, *intersection);
                                 }
-                                else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) { // Perfect Phong case (Phong BRDF)
-                                    direction = norm(hPoint(2.5f, 2.5f, 5) - position); // WARNING: ONLY A EXAMPLE, TODO
-
-                                    pathColor = pathColor * (getColor(intersection->material.property.reflectance.kdPhong, position) / (float) M_PI
-                                            + getColor(intersection->material.property.reflectance.ksPhong, position)
-                                            * (intersection->material.property.reflectance.s + 2.0f) / (2.0f * (float) M_PI)
-                                            * pow(abs(dot(n, direction)), intersection->material.property.reflectance.s));
+                                else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
+                                    // Perfect Phong case (Phong BRDF)
+                                    result = phong(position, direction, n, *intersection);
                                 }
-                                else { // Path deaths
+                                else {
+                                    // Path deaths
                                     pathColor = C_BLACK;
                                     path = false;
                                 }
 
+                                pathColor = pathColor * result.first;
+                                direction = result.second;
+
                                 break;
                             }
-                            default:
+                            default: {
                                 exit(6);
+                            }
                         }
                     }
                 }
@@ -167,7 +240,7 @@ Image render(int width, int height, int ppp, const Scene &scene, int numThreads)
     int j_ini = 0, j_end = height / numThreads;
     for (int n = 0; n < numThreads; n++) {
 
-        threads[n] = thread(renderRegion, j_ini, j_end, width, height, ppp, ref(scene.objects), ref(scene.camera),
+        threads[n] = thread(renderRegion, j_ini, j_end, width, height, ppp, ref(scene),
                             n == numThreads - 1, ref(image), ref(progress));
 
         j_ini = j_end;

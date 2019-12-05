@@ -113,20 +113,4 @@ Geometry Cuadric(float A, float B, float C, float D, float E, float F, float G, 
  */
 HCoord normal(const Geometry &geometry, const HCoord &position);
 
-// Objects
-
-struct Object {
-    const Geometry geometry;
-    const Material material;
-};
-
-/**
- * Calculates the intersection between an object and a ray
- * @param origin origin of ray
- * @param dir direction of ray
- * @param object the object to check colision
- * @return the distance between the origin and the intersection, or INFINITY if not collided
- */
-float intersect(const HCoord &origin, const HCoord &dir, const Object &object);
-
 #endif //TRABAJO1_GEOMETRIC_HPP
