@@ -58,8 +58,5 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    //vector<HCoord> hits;
-    //calculatePath(P_ZERO, norm(hVector(10, 0, 0)), createScene(sceneName, (float) width / (float) height).objects, hits);
-
     return 0;
 }

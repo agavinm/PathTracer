@@ -31,6 +31,10 @@ Color Color::operator*(const Color &right) const {
     };
 }
 
+bool Color::operator>(const Color &right) const {
+    return this->r + this->g + this->b > right.r + right.g + right.b;
+}
+
 Color Color::operator/(float s) const {
     return {
             this->r / s,

@@ -16,14 +16,15 @@
 #include "Transform.hpp"
 #include "Material.hpp"
 
+#define spp 128
+
 using namespace std;
 
-pair<Color, HCoord> reflection(const HCoord &position, HCoord direction, const HCoord &n, const Object &intersection) {
+pair<Color, HCoord> reflection(const HCoord &position, const HCoord &direction, const HCoord &n, const Object &intersection) {
     pair<Color, HCoord> result;
 
     result.first = getColor(intersection.material.property.reflectance.ks, position);
 
-    direction = -direction;
     result.second = norm(direction - (direction - n * dot(direction, n)) * 2.0f);
 
     return result;
@@ -103,29 +104,30 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
         const Object &intersection, mt19937 &mt) {
     pair<Color, HCoord> result;
 
-    HCoord Z = -direction;
-    Z = norm(Z - (Z - n * dot(Z, n)) * 2.0f);
+    HCoord ref = norm(direction - (direction - n * dot(direction, n)) * 2.0f);
 
-    HCoord Y = cross(Z, direction);
-    HCoord X = cross(Z, Y);
+    HCoord Z;
+    HCoord Y;
+    HCoord X;
 
-    Transform to = changeToBase(X, Y, Z, position);
-    Transform from = changeFromBase(X, Y, Z, position);
+    if (abs(dot(direction, n)) < EPS) {
+        Z = -direction;
+        Y = n;
+        X = cross(Y, Z);
+    }
+    else {
+        X = norm(cross(direction, ref));
+        Y = ref;
+        Z = cross(Y, X);
+    }
 
     uniform_real_distribution<float> dist(0.0f, 1.0f);
 
-    // TODO: Mejorar
     float theta = acos(pow(dist(mt), (1.0f / (intersection.material.property.reflectance.s + 1.0f))));
     float phi = 2.0f * (float) M_PI * dist(mt);
 
-    //result.second = hVector(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
-
-    result.second = hVector(cos(tan(theta)) + cos(theta) * cos(phi), cos(tan(theta)) + cos(theta) * sin(phi),
-            sin(tan(theta)) + sin(theta));
-
-    result.second = norm(from * result.second);
-
-    //result.second = norm(hPoint(2.5f, 2.5f, 5) - position); // WARNING: ONLY A EXAMPLE
+    result.second = norm(changeFromBase(X, Y, Z, position) *
+            hVector(cos(phi) * sin(theta), cos(theta), sin(phi) * sin(theta)));
 
     result.first = getColor(intersection.material.property.reflectance.kdPhong, position) / (float) M_PI
                    + getColor(intersection.material.property.reflectance.ksPhong, position)
@@ -148,91 +150,95 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
             Color color = C_BLACK;
 
             for (int p = 0; p < ppp; ++p) {
-                // get initial ray
-                HCoord direction = norm(getRay(scene.camera, ((float) i + dist(mt)) / (float) width,
-                                               ((float) j + dist(mt)) / (float) height)); // should be a normalized ray
-                HCoord position = scene.camera.origin;
+                Color pathColor = C_BLACK;
 
-                Color pathColor = C_WHITE;
-                bool path = true;
-                while (path) {
-                    // find nearest intersection
-                    const Object *intersection = nullptr;
-                    float dist = INFINITY;
-                    for (const Object &object : scene.objects) {
-                        float obj_dist = intersect(position, direction, object);
-                        if (obj_dist > EPS && obj_dist < dist) {
-                            intersection = &object;
-                            dist = obj_dist;
-                        }
-                    }
+                // get initial ray (Monte Carlo), importance sampling
+                for (int s = 0; s < spp; ++s) {
+                    HCoord direction = norm(getRay(scene.camera, ((float) i + dist(mt)) / (float) width,
+                                                   ((float) j + dist(mt)) /
+                                                   (float) height)); // should be a normalized ray
+                    HCoord position = scene.camera.origin;
 
-                    // Get color
-                    if (intersection == nullptr) { // Any light founded
-                        pathColor = C_BLACK;
-                        path = false;
-                    }
-                    else {
-                        HCoord origin = position;
-                        position = position + direction * dist; // hit position
-                        HCoord n = normal(intersection->geometry, position);
-
-                        switch (intersection->material.type) {
-                            case EMITTER: { // LIGHT
-                                pathColor = pathColor * getColor(intersection->material.property.texture, position);
-                                path = false;
-                                break;
+                    Color sampleColor = C_WHITE;
+                    bool path = true;
+                    while (path) {
+                        // find nearest intersection
+                        const Object *intersection = nullptr;
+                        float dist = INFINITY;
+                        for (const Object &object : scene.objects) {
+                            float obj_dist = intersect(position, direction, object);
+                            if (obj_dist > EPS && obj_dist < dist) {
+                                intersection = &object;
+                                dist = obj_dist;
                             }
-                            case REFLECTOR: {
-                                uniform_real_distribution<float> zeroToOneDistribution(0.0f, 1.0f);
-                                float randomZeroToOne, maxKd, maxKs, maxKdPhong, maxKsPhong, pr[3];
+                        }
 
-                                maxKd = getColor(intersection->material.property.reflectance.kd, position).max();
-                                maxKs = getColor(intersection->material.property.reflectance.ks, position).max();
-                                maxKdPhong = getColor(intersection->material.property.reflectance.kdPhong, position).max();
-                                maxKsPhong = getColor(intersection->material.property.reflectance.ksPhong, position).max();
+                        // Get color
+                        if (intersection == nullptr) { // Any light founded
+                            sampleColor = C_BLACK;
+                            path = false;
+                        } else {
+                            HCoord origin = position;
+                            position = position + direction * dist; // hit position
+                            HCoord n = normal(intersection->geometry, position);
 
-                                // Russian roulette
-                                randomZeroToOne = zeroToOneDistribution(mt);
-                                pr[0] = maxKd;
-                                pr[1] = maxKs;
-                                pr[2] = maxKdPhong + maxKsPhong;
-                                if (pr[0] + pr[1] + pr[2] > 0.99f) {
-                                    pr[1] = (0.99f / (pr[0] + pr[1] + pr[2]));
-                                    pr[0] = maxKd * pr[1];
-                                    pr[2] = pr[2] * pr[1];
-                                    pr[1] = maxKs * pr[1];
-                                }
-
-                                pair<Color, HCoord> result;
-                                if (randomZeroToOne < pr[0]) {
-                                    // Perfect refraction case (delta BTDF)
-                                    result = refraction(scene, origin, position, direction, n, *intersection);
-                                }
-                                else if (randomZeroToOne < pr[0] + pr[1]) {
-                                    // Perfect specular reflectance case (delta BRDF)
-                                    result = reflection(position, direction, n, *intersection);
-                                }
-                                else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
-                                    // Perfect Phong case (Phong BRDF)
-                                    result = phong(scene, position, direction, n, *intersection, mt);
-                                }
-                                else {
-                                    // Path deaths
-                                    pathColor = C_BLACK;
+                            switch (intersection->material.type) {
+                                case EMITTER: { // LIGHT
+                                    sampleColor = sampleColor * getColor(intersection->material.property.texture, position);
                                     path = false;
+                                    break;
                                 }
+                                case REFLECTOR: {
+                                    uniform_real_distribution<float> zeroToOneDistribution(0.0f, 1.0f);
+                                    float randomZeroToOne, maxKd, maxKs, maxKdPhong, maxKsPhong, pr[3];
 
-                                pathColor = pathColor * result.first;
-                                direction = result.second;
+                                    maxKd = getColor(intersection->material.property.reflectance.kd, position).max();
+                                    maxKs = getColor(intersection->material.property.reflectance.ks, position).max();
+                                    maxKdPhong = getColor(intersection->material.property.reflectance.kdPhong,
+                                                          position).max();
+                                    maxKsPhong = getColor(intersection->material.property.reflectance.ksPhong,
+                                                          position).max();
 
-                                break;
-                            }
-                            default: {
-                                exit(6);
+                                    // Russian roulette
+                                    randomZeroToOne = zeroToOneDistribution(mt);
+                                    pr[0] = maxKd;
+                                    pr[1] = maxKs;
+                                    pr[2] = maxKdPhong + maxKsPhong;
+                                    if (pr[0] + pr[1] + pr[2] > 0.99f) {
+                                        pr[1] = (0.99f / (pr[0] + pr[1] + pr[2]));
+                                        pr[0] = maxKd * pr[1];
+                                        pr[2] = pr[2] * pr[1];
+                                        pr[1] = maxKs * pr[1];
+                                    }
+
+                                    pair<Color, HCoord> result;
+                                    if (randomZeroToOne < pr[0]) {
+                                        // Perfect refraction case (delta BTDF)
+                                        result = refraction(scene, origin, position, direction, n, *intersection);
+                                    } else if (randomZeroToOne < pr[0] + pr[1]) {
+                                        // Perfect specular reflectance case (delta BRDF)
+                                        result = reflection(position, -direction, n, *intersection);
+                                    } else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
+                                        // Perfect Phong case (Phong BRDF)
+                                        result = phong(scene, position, -direction, n, *intersection, mt);
+                                    } else {
+                                        // Path deaths
+                                        sampleColor = C_BLACK;
+                                        path = false;
+                                    }
+
+                                    sampleColor = sampleColor * result.first;
+                                    direction = result.second;
+
+                                    break;
+                                }
+                                default: {
+                                    exit(6);
+                                }
                             }
                         }
                     }
+                    if (sampleColor > pathColor) pathColor = sampleColor; // TODO: Coger rayo con más energía o se estropea la ruleta rusa?
                 }
                 color = color + pathColor;
             }
@@ -245,7 +251,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
 }
 
 Image render(int width, int height, int ppp, const Scene &scene) {
-    return render(width, height, ppp, scene, (int) thread::hardware_concurrency());
+    return render(width, height, ppp, scene, (int) thread::hardware_concurrency() + 2); // TODO: +2 para que trabajen más rato?
 }
 
 Image render(int width, int height, int ppp, const Scene &scene, int numThreads) {
