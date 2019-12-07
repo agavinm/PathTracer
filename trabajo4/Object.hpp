@@ -40,5 +40,6 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object);
 
 const float VACUUM_REFRACTIVE_INDEX = 1.0f;
 const float WATER_REFRACTIVE_INDEX = 1.330f;
-
+const float AMBER_REFRACTIVE_INDEX = 1.55f;
+const float LIQUID_HELIUM_REFRACTIVE_INDEX = 1.025;
 #endif //TRABAJO4_OBJECT_HPP

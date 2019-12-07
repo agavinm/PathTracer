@@ -78,6 +78,125 @@ Scene defaultScene(float ratio) {
     };
 }
 
+Scene specularScene(float ratio) {
+    Camera camera = createCamera(hPoint(-5, 0, 0), V_AX, V_AZ, ratio);
+
+    vector<Object> objects;
+
+    // LIGHT:
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, -1), 5),
+            Emitter(colored(C_WHITE))
+    )); // UP
+
+    // MIRROR
+    objects.push_back(create2D(
+            Triangle(hPoint(5, 0, 2), hPoint(5, 2, -2), hPoint(5, -2, -2)),
+            Specular(colored(C_WHITE))
+    )); // FRONT
+
+    // BOX:
+    objects.push_back(create2D(
+            Plane(hVector(-1, 0, 0), 5),
+            Diffuse(colored(C_GREY))
+    )); // FRONT
+    objects.push_back(create2D(
+            Plane(hVector(0, 1, 0), 5),
+            Diffuse(colored(C_GREEN))
+    )); // RIGHT
+    objects.push_back(create2D(
+            Plane(hVector(0, -1, 0), 5),
+            Diffuse(colored(C_RED))
+    )); // LEFT
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, 1), 5),
+            Diffuse(colored(C_GREY))
+    )); // DOWN
+
+    // SPHERES:
+    objects.push_back(create3D(
+            Sphere(hPoint(3, 4, -4), 1),
+            Phong(colored(C_BLUE), colored(C_GREEN), 2),
+            VACUUM_REFRACTIVE_INDEX
+    ));
+    objects.push_back(create3D(
+            Sphere(hPoint(3, -3, -3), 2),
+            Specular(colored(C_WHITE)),
+            VACUUM_REFRACTIVE_INDEX
+    ));
+    objects.push_back(create3D(
+            Sphere(hPoint(2, 3, 3), 1.5f),
+            Specular(colored(C_WHITE)),
+            VACUUM_REFRACTIVE_INDEX
+    ));
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 4.0f
+    };
+}
+
+Scene refractionScene(float ratio) {
+    Camera camera = createCamera(hPoint(-5, 0, 0), V_AX, V_AZ, ratio);
+
+    vector<Object> objects;
+
+    // LIGHT:
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, -1), 5),
+            Emitter(colored(C_WHITE))
+    )); // UP
+
+    // BOX:
+    objects.push_back(create2D(
+            Plane(hVector(-1, 0, 0), 5),
+            Diffuse(colored(C_GREY))
+    )); // FRONT
+    objects.push_back(create2D(
+            Plane(hVector(0, 1, 0), 5),
+            Diffuse(colored(C_GREEN))
+    )); // RIGHT
+    objects.push_back(create2D(
+            Plane(hVector(0, -1, 0), 5),
+            Diffuse(colored(C_RED))
+    )); // LEFT
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, 1), 5),
+            Diffuse(colored(C_GREY))
+    )); // DOWN
+
+    // SPHERES:
+    objects.push_back(create3D(
+            Sphere(hPoint(3, -3, -3), 1),
+            Phong(colored(C_GREEN), colored(C_YELLOW), 2),
+            VACUUM_REFRACTIVE_INDEX
+    ));
+    objects.push_back(create3D(
+            Sphere(hPoint(3, -3, -3), 2),
+            Refractor(colored(C_CYAN)),
+            LIQUID_HELIUM_REFRACTIVE_INDEX
+    ));
+    objects.push_back(create3D(
+            Sphere(hPoint(3, 2.5f, -2), 1.5f),
+            Phong(colored(C_BLUE), colored(C_GREEN), 2),
+            VACUUM_REFRACTIVE_INDEX
+    ));
+    objects.push_back(create3D(
+            Sphere(hPoint(3, 3, -3), 2),
+            Refractor(colored(C_YELLOW)),
+            AMBER_REFRACTIVE_INDEX
+    ));
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 4.0f
+    };
+}
+
 Scene testScene(float ratio) {
     Camera camera = createCamera(P_ZERO, V_AX, V_AZ, ratio);
 
@@ -252,6 +371,10 @@ Scene createScene(const string &scene, float ratio) {
         return defaultScene(ratio);
     else if (scene == "test")
         return testScene(ratio);
+    else if (scene == "specular")
+        return specularScene(ratio);
+    else if (scene == "refraction")
+        return refractionScene(ratio);
     else
         return plyScene(scene, ratio);
 }

@@ -22,8 +22,8 @@ void printUsage(const string &name) {
             << "       - .bmp" << endl
             << "OPTIONAL* <scene> can be a triangular .ply file or a predefined scene:" << endl
             << "       default" << endl
-            << "       scene2" << endl // TODO
-            << "       scene3" << endl; // TODO
+            << "       specular" << endl
+            << "       refraction" << endl;
 }
 
 int main(int argc, char *argv[]) {
