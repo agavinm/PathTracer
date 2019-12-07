@@ -197,6 +197,59 @@ Scene refractionScene(float ratio) {
     };
 }
 
+Scene circleScene(float ratio) {
+    Camera camera = createCamera(hPoint(-5, 0, 0), V_AX, V_AZ, ratio);
+
+    vector<Object> objects;
+
+    // LIGHT:
+    objects.push_back(create2D(
+            Circle(hPoint(2, 0, 5), V_AX*2, V_AY*2),
+            Emitter(colored(C_WHITE))
+    )); // UP
+
+    // BOX:
+    objects.push_back(create2D(
+            Plane(hVector(-1, 0, 0), 5),
+            Diffuse(colored(C_GREY))
+    )); // FRONT
+    objects.push_back(create2D(
+            Plane(hVector(0, 1, 0), 5),
+            Diffuse(colored(C_GREEN))
+    )); // RIGHT
+    objects.push_back(create2D(
+            Plane(hVector(0, -1, 0), 5),
+            Diffuse(colored(C_RED))
+    )); // LEFT
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, 1), 5),
+            Diffuse(colored(C_GREY))
+    )); // DOWN
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, -1), 5),
+            Diffuse(colored(C_GREY))
+    )); // UP
+
+    // SPHERES:
+    objects.push_back(create3D(
+            Sphere(hPoint(3, 2.5f, -2.5f), 1.5f),
+            Phong(colored(C_BLUE), colored(C_GREEN), 10),
+            VACUUM_REFRACTIVE_INDEX
+    ));
+    objects.push_back(create3D(
+            Sphere(hPoint(3, -3, -3), 2),
+            Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
+            WATER_REFRACTIVE_INDEX
+    ));
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 5.0f
+    };
+}
+
 Scene testScene(float ratio) {
     Camera camera = createCamera(P_ZERO, V_AX, V_AZ, ratio);
 
@@ -375,6 +428,8 @@ Scene createScene(const string &scene, float ratio) {
         return specularScene(ratio);
     else if (scene == "refraction")
         return refractionScene(ratio);
+    else if (scene == "circle")
+        return circleScene(ratio);
     else
         return plyScene(scene, ratio);
 }
