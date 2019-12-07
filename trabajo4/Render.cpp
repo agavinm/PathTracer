@@ -130,7 +130,7 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
     result.first = getColor(intersection.material.property.reflectance.kdPhong, position) / (float) M_PI
                    + getColor(intersection.material.property.reflectance.ksPhong, position)
                      * (intersection.material.property.reflectance.s + 2.0f) / (2.0f * (float) M_PI)
-                     * pow(abs(dot(n, result.second)), intersection.material.property.reflectance.s);
+                     * pow(abs(dot(ref, result.second)), intersection.material.property.reflectance.s);
 
     return result;
 }

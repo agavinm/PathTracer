@@ -61,7 +61,7 @@ Scene defaultScene(float ratio) {
     // SPHERES:
     objects.push_back(create3D(
                               Sphere(hPoint(3, 2.5f, -2.5f), 1.5f),
-                              Phong(colored(C_BLUE), colored(C_GREEN), 2),
+                              Phong(colored(C_BLUE), colored(C_GREEN), 10),
                               VACUUM_REFRACTIVE_INDEX
                       ));
     objects.push_back(create3D(
