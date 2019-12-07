@@ -35,10 +35,10 @@ Scene defaultScene(float ratio) {
     vector<Object> objects;
 
     // LIGHT:
-    objects.push_back(create2D(
+    /*objects.push_back(create2D(
                               Triangle(hPoint(2.5f, 2.5f, 5), hPoint(2.5f, -2.5f, 5), hPoint(-2.5f, 2.5f, 5)),
                               Emitter(colored(C_WHITE))
-                      ));
+                      ));*/
 
     // BOX:
     objects.push_back(create2D(
@@ -59,7 +59,7 @@ Scene defaultScene(float ratio) {
                       )); // DOWN
     objects.push_back(create2D(
                               Plane(hVector(0, 0, -1), 5),
-                              Diffuse(colored(C_GREY))
+                              Emitter(colored(C_WHITE))
                       )); // UP
 
     // SPHERES:

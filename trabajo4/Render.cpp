@@ -173,7 +173,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
                     }
 
                     if (intersection == nullptr) { // Any light founded
-                        colors.clear();
+                        colors.clear(); // TODO: Muchos rayos se van de la escena
                         path = false;
                     } else {
                         HCoord origin = position;
@@ -183,8 +183,8 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
                         switch (intersection->material.type) {
                             case EMITTER: { // LIGHT
                                 pathColor = getColor(intersection->material.property.texture, position);
-                                for (auto c = colors.rbegin(); c != colors.rend(); ++c ) {
-                                    pathColor = pathColor * (1.0f - c->first) + c->second * c->first;
+                                for (auto c = colors.rbegin(); c != colors.rend(); ++c) {
+                                    pathColor = pathColor * c->first + c->second * (1.0f - c->first);
                                 }
                                 path = false;
                                 colors.clear();
@@ -218,17 +218,17 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
                                     // Perfect refraction case (delta BTDF)
                                     result = refraction(scene, origin, position, direction, n, *intersection);
 
-                                    colors.emplace_back(pr[0], result.first);
+                                    colors.emplace_back(result.first.max(), result.first);
                                 } else if (randomZeroToOne < pr[0] + pr[1]) {
                                     // Perfect specular reflectance case (delta BRDF)
                                     result = reflection(position, -direction, n, *intersection);
 
-                                    colors.emplace_back(pr[1], result.first);
+                                    colors.emplace_back(result.first.max(), result.first);
                                 } else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
                                     // Perfect Phong case (Phong BRDF)
                                     result = phong(scene, position, -direction, n, *intersection, mt);
 
-                                    colors.emplace_back(pr[2], result.first);
+                                    colors.emplace_back(result.first.max(), result.first);
                                 } else {
                                     // Path deaths
                                     colors.clear();
