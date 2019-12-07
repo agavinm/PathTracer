@@ -135,6 +135,99 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
     return result;
 }
 
+Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt19937 &mt) {
+    Color color = C_WHITE;
+    float pathLength = 0.0f;
+
+    bool path = true;
+    while (path) {
+        // find nearest intersection
+        const Object *intersection = nullptr;
+        float dist = INFINITY;
+        for (const Object &object : scene.objects) {
+            float obj_dist = intersect(position, direction, object);
+            if (obj_dist > EPS && obj_dist < dist) {
+                intersection = &object;
+                dist = obj_dist;
+            }
+        }
+
+        if (intersection == nullptr) { // Any light founded
+            color = C_BLACK;
+        } else {
+            HCoord origin = position;
+            position = position + direction * dist; // hit position
+            HCoord n = normal(intersection->geometry, position);
+            pathLength += dist;
+
+            switch (intersection->material.type) {
+                case EMITTER: { // LIGHT
+                    color = color * getColor(intersection->material.property.texture, position) / (pathLength * pathLength);
+                    path = false;
+                    break;
+                }
+                case REFLECTOR: {
+                    uniform_real_distribution<float> zeroToOneDistribution(0.0f, 1.0f);
+                    float randomZeroToOne, maxKd, maxKs, maxKdPhong, maxKsPhong, pr[3];
+
+                    maxKd = getColor(intersection->material.property.reflectance.kd, position).max();
+                    maxKs = getColor(intersection->material.property.reflectance.ks, position).max();
+                    maxKdPhong = getColor(intersection->material.property.reflectance.kdPhong,
+                                          position).max();
+                    maxKsPhong = getColor(intersection->material.property.reflectance.ksPhong,
+                                          position).max();
+
+                    // Russian roulette
+                    randomZeroToOne = zeroToOneDistribution(mt);
+                    pr[0] = maxKd;
+                    pr[1] = maxKs;
+                    pr[2] = maxKdPhong + maxKsPhong;
+                    if (pr[0] + pr[1] + pr[2] > 0.99f) {
+                        pr[1] = (0.99f / (pr[0] + pr[1] + pr[2]));
+                        pr[0] = maxKd * pr[1];
+                        pr[2] = pr[2] * pr[1];
+                        pr[1] = maxKs * pr[1];
+                    }
+
+                    pair<Color, HCoord> result;
+                    if (randomZeroToOne < pr[0]) {
+                        // Perfect refraction case (delta BTDF)
+                        result = refraction(scene, origin, position, direction, n, *intersection);
+
+                        color = color * result.first * abs(dot(n, result.second));
+                    } else if (randomZeroToOne < pr[0] + pr[1]) {
+                        // Perfect specular reflectance case (delta BRDF)
+                        result = reflection(position, -direction, n, *intersection);
+
+                        color = color * result.first * abs(dot(n, result.second));
+                    } else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
+                        // Perfect Phong case (Phong BRDF)
+                        result = phong(scene, position, -direction, n, *intersection, mt);
+
+                        color = color * result.first * abs(dot(n, result.second));
+                    } else {
+                        // Path deaths
+                        color = C_BLACK;
+                    }
+                    direction = result.second;
+
+                    break;
+                }
+                default: {
+                    exit(6);
+                }
+            }
+        }
+
+        if (color.max() <= 0.0f) {
+            // avoid following paths with no light
+            path = false;
+        }
+    }
+
+    return color;
+}
+
 void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, bool last, Image &image,
         Progress &progress) {
     // initialization of utilities
@@ -154,97 +247,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
                                                (float) height)); // should be a normalized ray
                 HCoord position = scene.camera.origin;
 
-                Color pathColor = C_BLACK;
-
-                // Get color
-                vector<pair<float, Color>> colors;
-
-                bool path = true;
-                while (path) {
-                    // find nearest intersection
-                    const Object *intersection = nullptr;
-                    float dist = INFINITY;
-                    for (const Object &object : scene.objects) {
-                        float obj_dist = intersect(position, direction, object);
-                        if (obj_dist > EPS && obj_dist < dist) {
-                            intersection = &object;
-                            dist = obj_dist;
-                        }
-                    }
-
-                    if (intersection == nullptr) { // Any light founded
-                        colors.clear(); // TODO: Muchos rayos se van de la escena
-                        path = false;
-                    } else {
-                        HCoord origin = position;
-                        position = position + direction * dist; // hit position
-                        HCoord n = normal(intersection->geometry, position);
-
-                        switch (intersection->material.type) {
-                            case EMITTER: { // LIGHT
-                                pathColor = getColor(intersection->material.property.texture, position);
-                                for (auto c = colors.rbegin(); c != colors.rend(); ++c) {
-                                    pathColor = pathColor * c->first + c->second * (1.0f - c->first);
-                                }
-                                path = false;
-                                colors.clear();
-                                break;
-                            }
-                            case REFLECTOR: {
-                                uniform_real_distribution<float> zeroToOneDistribution(0.0f, 1.0f);
-                                float randomZeroToOne, maxKd, maxKs, maxKdPhong, maxKsPhong, pr[3];
-
-                                maxKd = getColor(intersection->material.property.reflectance.kd, position).max();
-                                maxKs = getColor(intersection->material.property.reflectance.ks, position).max();
-                                maxKdPhong = getColor(intersection->material.property.reflectance.kdPhong,
-                                                      position).max();
-                                maxKsPhong = getColor(intersection->material.property.reflectance.ksPhong,
-                                                      position).max();
-
-                                // Russian roulette
-                                randomZeroToOne = zeroToOneDistribution(mt);
-                                pr[0] = maxKd;
-                                pr[1] = maxKs;
-                                pr[2] = maxKdPhong + maxKsPhong;
-                                if (pr[0] + pr[1] + pr[2] > 0.99f) {
-                                    pr[1] = (0.99f / (pr[0] + pr[1] + pr[2]));
-                                    pr[0] = maxKd * pr[1];
-                                    pr[2] = pr[2] * pr[1];
-                                    pr[1] = maxKs * pr[1];
-                                }
-
-                                pair<Color, HCoord> result;
-                                if (randomZeroToOne < pr[0]) {
-                                    // Perfect refraction case (delta BTDF)
-                                    result = refraction(scene, origin, position, direction, n, *intersection);
-
-                                    colors.emplace_back(result.first.max(), result.first);
-                                } else if (randomZeroToOne < pr[0] + pr[1]) {
-                                    // Perfect specular reflectance case (delta BRDF)
-                                    result = reflection(position, -direction, n, *intersection);
-
-                                    colors.emplace_back(result.first.max(), result.first);
-                                } else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
-                                    // Perfect Phong case (Phong BRDF)
-                                    result = phong(scene, position, -direction, n, *intersection, mt);
-
-                                    colors.emplace_back(result.first.max(), result.first);
-                                } else {
-                                    // Path deaths
-                                    colors.clear();
-                                    path = false;
-                                }
-                                direction = result.second;
-
-                                break;
-                            }
-                            default: {
-                                exit(6);
-                            }
-                        }
-                    }
-                }
-                color = color + pathColor;
+                color = color + getLightFromRay(scene, position, direction, mt);
             }
 
             // save
@@ -288,5 +291,5 @@ Image render(int width, int height, int ppp, const Scene &scene, int numThreads)
 
     progress.end();
 
-    return image;
+    return gammaCurve(image, scene.gammaCorrection);
 }

@@ -2,7 +2,7 @@
  * @file    Image.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
+ * @date    Diciembre 2019
  * @coms    Informática Gráfica - Trabajo recomendado 4
  ******************************************************************************/
 
@@ -15,14 +15,16 @@ using namespace std;
 
 Image initImage(int width, int height) {
     return {
-            .width=width,
-            .height=height,
-            .pixels=vector<Color>(width * height),
+        .maxVal = 0.0f,
+        .width = width,
+        .height = height,
+        .pixels = vector<Color>(width * height)
     };
 }
 
 void setPixel(Image &image, int i, int j, Color pixel) {
     image.pixels[i + j * image.width] = pixel;
+    image.maxVal = max(pixel.max(), image.maxVal);
 }
 
 
@@ -38,10 +40,6 @@ static const char SPACE = ' ';
 void storePPM(const std::string &name, const Image &image, int resolution) {
     cout << "[INFO] Storing image as ppm " << name << endl;
 
-    float maxVal = 0;
-    for (auto pixel : image.pixels)
-        maxVal = max(pixel.max(), maxVal);
-
     // open output file stream
     ofstream fout(name);
     if (!fout.is_open()) {
@@ -54,8 +52,8 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
     fout << HEADER << endl;
 
     // write maxval (if not 1)
-    if (maxVal != 1.0f) {
-        fout << MAX_SPECIFICATION << maxVal << endl;
+    if (image.maxVal != 1.0f) {
+        fout << MAX_SPECIFICATION << image.maxVal << endl;
     }
 
     // write width/height
@@ -68,9 +66,9 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
     int r, g, b;
     for (int i = 0; i < image.width * image.height; i++) {
         // foreach pixel, compute
-        r = image.pixels[i].r * resolution / maxVal; // Red
-        g = image.pixels[i].g * resolution / maxVal; // Green
-        b = image.pixels[i].b * resolution / maxVal; // Blue
+        r = (int) (image.pixels[i].r / image.maxVal) * resolution; // Red
+        g = (int) (image.pixels[i].g / image.maxVal) * resolution; // Green
+        b = (int) (image.pixels[i].b / image.maxVal) * resolution; // Blue
         fout << r << SPACE << g << SPACE << b << string(5, SPACE);
     }
 }
@@ -78,10 +76,6 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
 void storeBMP(const std::string &name, const Image &image) {
     // adapted from https://stackoverflow.com/a/2654860
     cout << "[INFO] Storing image as bmp " << name << endl;
-
-    float maxVal = 0;
-    for (auto pixel : image.pixels)
-        maxVal = max(pixel.max(), maxVal);
 
 #define WRITE(A, F) F.write(reinterpret_cast<const char *>(A), sizeof(A))
 
@@ -120,11 +114,53 @@ void storeBMP(const std::string &name, const Image &image) {
         for (int i = 0; i < image.width; i++) {
             int x = i;
             int y = (image.height - 1) - j;
-            unsigned char r = (int) (image.pixels[x + y * image.width].r / maxVal * 255);
-            unsigned char g = (int) (image.pixels[x + y * image.width].g / maxVal * 255);
-            unsigned char b = (int) (image.pixels[x + y * image.width].b / maxVal * 255);
+            unsigned char r = (int) (image.pixels[x + y * image.width].r / image.maxVal * 255);
+            unsigned char g = (int) (image.pixels[x + y * image.width].g / image.maxVal * 255);
+            unsigned char b = (int) (image.pixels[x + y * image.width].b / image.maxVal * 255);
             f << b << g << r;
         }
         WRITE(padding, f);
     }
+}
+
+// Tone mapping operators
+
+Image equalizeAndClamp(const Image &image, float v) {
+    cout << "[INFO] equalizeAndClamp -> ";
+    return clampAndGammaCurve(image, v, 1);
+}
+
+Image clamping(const Image &image) {
+    cout << "[INFO] clamping -> ";
+    return clampAndGammaCurve(image, 1, 1);
+}
+
+Image equalization(const Image &image) {
+    cout << "[INFO] equalization -> ";
+    return clampAndGammaCurve(image, image.maxVal, 1);
+}
+
+Image gammaCurve(const Image &image, float gamma) {
+    cout << "[INFO] gammaCurve -> ";
+    return clampAndGammaCurve(image, image.maxVal, gamma);
+}
+
+Image clampAndGammaCurve(const Image &image, float v, float gamma) {
+    cout << "[INFO] Clamping image with v=" << v << " and applying gamma curve with gamma=" << gamma << endl;
+    Image imageOut = {
+            .maxVal = 1.0f,
+            .width = image.width,
+            .height = image.height,
+            .pixels = vector<Color>(image.width * image.height)
+    };
+
+    imageOut.pixels.resize(imageOut.width * imageOut.height); // Fix capacity
+    for (int i = 0; i < imageOut.width * imageOut.height; i++) {
+        // foreach pixel, compute
+        imageOut.pixels[i].r = image.pixels[i].r >= v ? 1.0f : pow(image.pixels[i].r / v, 1.0f / gamma);
+        imageOut.pixels[i].g = image.pixels[i].g >= v ? 1.0f : pow(image.pixels[i].g / v, 1.0f / gamma);
+        imageOut.pixels[i].b = image.pixels[i].b >= v ? 1.0f : pow(image.pixels[i].b / v, 1.0f / gamma);
+    }
+
+    return imageOut;
 }

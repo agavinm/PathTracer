@@ -47,6 +47,7 @@ struct Scene {
     const Camera camera;
     const std::vector<Object> objects;
     const float refractiveIndex;
+    const float gammaCorrection;
 };
 
 /**

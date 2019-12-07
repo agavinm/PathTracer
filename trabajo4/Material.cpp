@@ -22,22 +22,22 @@ Material Reflector(const Texture &kd, const Texture &ks, const float s, const Te
     };
 }
 
-Material Diffuse(const Texture &k) {
-    return Reflector(colored(C_BLACK), colored(C_BLACK), 1, k, k);
-}
-
 Material Phong(const Texture &kdPhong, const Texture &ksPhong, const float s) {
     return Reflector(colored(C_BLACK), colored(C_BLACK), s, kdPhong, ksPhong);
 }
 
-Material Delta(const Texture &kd, const Texture &ks, const float s) {
-    return Reflector(kd, ks, s, colored(C_BLACK), colored(C_BLACK));
+Material Diffuse(const Texture &k) {
+    return Phong(k, k, 1);
+}
+
+Material Delta(const Texture &kd, const Texture &ks) {
+    return Reflector(kd, ks, 1, colored(C_BLACK), colored(C_BLACK));
 }
 
 Material Refractor(const Texture &kd) {
-    return Reflector(kd, colored(C_BLACK), 1, colored(C_BLACK), colored(C_BLACK));
+    return Delta(kd, colored(C_BLACK));
 }
 
-Material Specular(const Texture &ks, const float s) {
-    return Reflector(colored(C_BLACK), ks, s, colored(C_BLACK), colored(C_BLACK));
+Material Specular(const Texture &ks) {
+    return Delta(colored(C_BLACK), ks);
 }

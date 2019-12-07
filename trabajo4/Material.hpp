@@ -60,22 +60,22 @@ Material Emitter(const Texture &texture);
 Material Reflector(const Texture &kd, const Texture &ks, float s, const Texture &kdPhong, const Texture &ksPhong);
 
 /**
- * Creates a perfect diffuse Delta material
- * @return the perfect diffuse Delta material
- */
-Material Diffuse(const Texture &k);
-
-/**
  * Creates a perfect Phong material
  * @return the perfect Phong material
  */
 Material Phong(const Texture &kdPhong, const Texture &ksPhong, float s);
 
 /**
+ * Creates a perfect diffuse Delta material
+ * @return the perfect diffuse Delta material
+ */
+Material Diffuse(const Texture &k);
+
+/**
  * Creates a perfect Delta material
  * @return the perfect Delta material
  */
-Material Delta(const Texture &kd, const Texture &ks, float s);
+Material Delta(const Texture &kd, const Texture &ks);
 
 /**
  * Creates a perfect Refractor material

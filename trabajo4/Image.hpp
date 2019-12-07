@@ -2,7 +2,7 @@
  * @file    Image.hpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
+ * @date    Diciembre 2019
  * @coms    Informática Gráfica - Trabajo recomendado 4
  ******************************************************************************/
 
@@ -21,6 +21,7 @@
  * pixels = width*height RGB pixel array (stored as floating point precision)
  */
 struct Image {
+    float maxVal;
     const int width, height;
     std::vector<Color> pixels;
 };
@@ -50,5 +51,17 @@ void setPixel(Image &image, int i, int j, Color pixel);
 void storePPM(const std::string &name, const Image &image, int resolution);
 
 void storeBMP(const std::string &name, const Image &image);
+
+// Tone mapping operators
+
+Image clamping(const Image &image);
+
+Image equalization(const Image &image);
+
+Image equalizeAndClamp(const Image &image, float v);
+
+Image gammaCurve(const Image &image, float gamma);
+
+Image clampAndGammaCurve(const Image &image, float v, float gamma);
 
 #endif //TRABAJO2_IMAGE_HPP

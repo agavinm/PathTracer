@@ -35,10 +35,10 @@ Scene defaultScene(float ratio) {
     vector<Object> objects;
 
     // LIGHT:
-    /*objects.push_back(create2D(
-                              Triangle(hPoint(2.5f, 2.5f, 5), hPoint(2.5f, -2.5f, 5), hPoint(-2.5f, 2.5f, 5)),
-                              Emitter(colored(C_WHITE))
-                      ));*/
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, -1), 5),
+            Emitter(colored(C_WHITE))
+    )); // UP
 
     // BOX:
     objects.push_back(create2D(
@@ -57,38 +57,24 @@ Scene defaultScene(float ratio) {
                               Plane(hVector(0, 0, 1), 5),
                               Diffuse(colored(C_GREY))
                       )); // DOWN
-    objects.push_back(create2D(
-                              Plane(hVector(0, 0, -1), 5),
-                              Emitter(colored(C_WHITE))
-                      )); // UP
 
     // SPHERES:
     objects.push_back(create3D(
-                              Sphere(hPoint(3, 4, -4), 1),
-                              Phong(colored(C_BLUE), colored(C_GREEN), 1),
+                              Sphere(hPoint(3, 2.5f, -2.5f), 1.5f),
+                              Phong(colored(C_BLUE), colored(C_GREEN), 2),
                               VACUUM_REFRACTIVE_INDEX
                       ));
     objects.push_back(create3D(
                               Sphere(hPoint(3, -3, -3), 2),
-                              Delta(colored(C_WHITE), colored(C_BLACK), 1),
+                              Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
                               WATER_REFRACTIVE_INDEX
                       ));
-
-    // TESTING
-    objects.push_back(create3D(
-                              Sphere(hPoint(3, -3, -3), 1),
-                              Phong(colored(C_BLUE), colored(C_GREEN), 5),
-                              VACUUM_REFRACTIVE_INDEX
-                      ));
-    /*objects.push_back(create2D(
-                              Triangle(hPoint(5,0,0), hPoint(3, -3, -3), hPoint(0,0,5)),
-                              Delta(colored(C_WHITE), VACUUM_REFRACTIVE_INDEX, colored(C_BLACK), 1)
-                      ));*/
 
     return {
             .camera = camera,
             .objects = objects,
-            .refractiveIndex = VACUUM_REFRACTIVE_INDEX
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 4.0f
     };
 }
 
@@ -134,7 +120,8 @@ Scene testScene(float ratio) {
     return {
         .camera = camera,
         .objects = objects,
-        .refractiveIndex = VACUUM_REFRACTIVE_INDEX
+        .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+        .gammaCorrection = 1.0f
     };
 }
 
@@ -255,7 +242,8 @@ Scene plyScene(const string &scene, float ratio) { // TODO: Light points??
     return {
             .camera = camera,
             .objects = objects,
-            .refractiveIndex = VACUUM_REFRACTIVE_INDEX
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 1.0f
     };
 }
 
