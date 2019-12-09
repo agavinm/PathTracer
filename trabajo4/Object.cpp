@@ -35,6 +35,10 @@ Object create2D(const Geometry &geometry, const Material &material) {
     };
 }
 
+LightPoint createLightPoint(const Color &color, const HCoord &position) {
+    return {.color = color,.position = position};
+}
+
 bool isInside(const HCoord &point, const Object &object) {
     assert(object.type == OBJECT_3D);
     switch (object.geometry.type) {
@@ -45,6 +49,20 @@ bool isInside(const HCoord &point, const Object &object) {
             exit(6);
         }
     }
+}
+
+
+pair<const Object *, float> intersect(const HCoord &origin, const HCoord &dir, const vector<Object> &objects) {
+    const Object *intersection = nullptr;
+    float dist = INFINITY;
+    for (const Object &object : objects) {
+        float obj_dist = intersect(origin, dir, object);
+        if (obj_dist > EPS && obj_dist < dist) {
+            intersection = &object;
+            dist = obj_dist;
+        }
+    }
+    return {intersection, dist};
 }
 
 float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {

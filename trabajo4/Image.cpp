@@ -15,7 +15,6 @@ using namespace std;
 
 Image initImage(int width, int height) {
     return {
-        .maxVal = 0.0f,
         .width = width,
         .height = height,
         .pixels = vector<Color>(width * height)
@@ -24,7 +23,13 @@ Image initImage(int width, int height) {
 
 void setPixel(Image &image, int i, int j, Color pixel) {
     image.pixels[i + j * image.width] = pixel;
-    image.maxVal = max(pixel.max(), image.maxVal);
+}
+
+float getMaxVal(const Image &image){
+    float maxVal = 0;
+    for (auto pixel : image.pixels)
+        maxVal = max(pixel.max(), maxVal);
+    return maxVal;
 }
 
 
@@ -52,8 +57,9 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
     fout << HEADER << endl;
 
     // write maxval (if not 1)
-    if (image.maxVal != 1.0f) {
-        fout << MAX_SPECIFICATION << image.maxVal << endl;
+    float maxVal = getMaxVal(image);
+    if (maxVal != 1.0f) {
+        fout << MAX_SPECIFICATION << maxVal << endl;
     }
 
     // write width/height
@@ -66,9 +72,9 @@ void storePPM(const std::string &name, const Image &image, int resolution) {
     int r, g, b;
     for (int i = 0; i < image.width * image.height; i++) {
         // foreach pixel, compute
-        r = (int) (image.pixels[i].r / image.maxVal) * resolution; // Red
-        g = (int) (image.pixels[i].g / image.maxVal) * resolution; // Green
-        b = (int) (image.pixels[i].b / image.maxVal) * resolution; // Blue
+        r = (int) (image.pixels[i].r / maxVal) * resolution; // Red
+        g = (int) (image.pixels[i].g / maxVal) * resolution; // Green
+        b = (int) (image.pixels[i].b / maxVal) * resolution; // Blue
         fout << r << SPACE << g << SPACE << b << string(5, SPACE);
     }
 }
@@ -109,14 +115,15 @@ void storeBMP(const std::string &name, const Image &image) {
     WRITE(info, f);
 
     // write data
+    float maxVal = getMaxVal(image);
     unsigned char padding[(4 - (image.width * 3) % 4) % 4];
     for (int j = 0; j < image.height; j++) {
         for (int i = 0; i < image.width; i++) {
             int x = i;
             int y = (image.height - 1) - j;
-            unsigned char r = (int) (image.pixels[x + y * image.width].r / image.maxVal * 255);
-            unsigned char g = (int) (image.pixels[x + y * image.width].g / image.maxVal * 255);
-            unsigned char b = (int) (image.pixels[x + y * image.width].b / image.maxVal * 255);
+            unsigned char r = (int) (image.pixels[x + y * image.width].r / maxVal * 255);
+            unsigned char g = (int) (image.pixels[x + y * image.width].g / maxVal * 255);
+            unsigned char b = (int) (image.pixels[x + y * image.width].b / maxVal * 255);
             f << b << g << r;
         }
         WRITE(padding, f);
@@ -137,18 +144,17 @@ Image clamping(const Image &image) {
 
 Image equalization(const Image &image) {
     cout << "[INFO] equalization -> ";
-    return clampAndGammaCurve(image, image.maxVal, 1);
+    return clampAndGammaCurve(image, getMaxVal(image), 1);
 }
 
 Image gammaCurve(const Image &image, float gamma) {
     cout << "[INFO] gammaCurve -> ";
-    return clampAndGammaCurve(image, image.maxVal, gamma);
+    return clampAndGammaCurve(image, getMaxVal(image), gamma);
 }
 
 Image clampAndGammaCurve(const Image &image, float v, float gamma) {
     cout << "[INFO] Clamping image with v=" << v << " and applying gamma curve with gamma=" << gamma << endl;
     Image imageOut = {
-            .maxVal = 1.0f,
             .width = image.width,
             .height = image.height,
             .pixels = vector<Color>(image.width * image.height)

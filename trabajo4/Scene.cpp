@@ -35,6 +35,9 @@ Scene defaultScene(float ratio) {
     vector<Object> objects;
 
     // LIGHT:
+    vector<LightPoint> lightPoints;
+    lightPoints.push_back(createLightPoint(C_WHITE,hPoint(2.5f,0,-4)));
+
     objects.push_back(create2D(
             Plane(hVector(0, 0, -1), 5),
             Emitter(colored(C_WHITE))
@@ -73,6 +76,7 @@ Scene defaultScene(float ratio) {
     return {
             .camera = camera,
             .objects = objects,
+            .lightPoints = lightPoints,
             .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 4.0f
     };
@@ -133,6 +137,7 @@ Scene specularScene(float ratio) {
     return {
             .camera = camera,
             .objects = objects,
+            .lightPoints = {},
             .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 4.0f
     };
@@ -192,6 +197,7 @@ Scene refractionScene(float ratio) {
     return {
             .camera = camera,
             .objects = objects,
+            .lightPoints = {},
             .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 4.0f
     };
@@ -245,6 +251,7 @@ Scene circleScene(float ratio) {
     return {
             .camera = camera,
             .objects = objects,
+            .lightPoints = {},
             .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 5.0f
     };
@@ -292,6 +299,7 @@ Scene testScene(float ratio) {
     return {
         .camera = camera,
         .objects = objects,
+            .lightPoints = {},
         .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
         .gammaCorrection = 1.0f
     };
@@ -414,6 +422,7 @@ Scene plyScene(const string &scene, float ratio) { // TODO: Light points??
     return {
             .camera = camera,
             .objects = objects,
+            .lightPoints = {},
             .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 1.0f
     };

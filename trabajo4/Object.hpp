@@ -23,6 +23,13 @@ struct Object {
     const float n; // Refractive index (Snell's law)
 };
 
+struct LightPoint {
+    const Color color; // color of light
+    const HCoord position; // position of light
+};
+
+LightPoint createLightPoint(const Color &color, const HCoord &position);
+
 Object create2D(const Geometry &geometry, const Material &material);
 
 Object create3D(const Geometry &geometry, const Material &material, float refractiveIndex);
@@ -37,6 +44,8 @@ bool isInside(const HCoord &point, const Object &object);
  * @return the distance between the origin and the intersection, or INFINITY if not collided
  */
 float intersect(const HCoord &origin, const HCoord &dir, const Object &object);
+
+std::pair<const Object *, float> intersect(const HCoord & origin, const HCoord &dir, const std::vector<Object> &objects);
 
 const float VACUUM_REFRACTIVE_INDEX = 1.0f;
 const float WATER_REFRACTIVE_INDEX = 1.330f;

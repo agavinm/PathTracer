@@ -137,20 +137,15 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
 
 Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt19937 &mt) {
     Color color = C_WHITE;
+    Color shadowColor = C_BLACK;
     float pathLength = 0.0f;
 
     bool path = true;
     while (path) {
         // find nearest intersection
-        const Object *intersection = nullptr;
-        float dist = INFINITY;
-        for (const Object &object : scene.objects) {
-            float obj_dist = intersect(position, direction, object);
-            if (obj_dist > EPS && obj_dist < dist) {
-                intersection = &object;
-                dist = obj_dist;
-            }
-        }
+        pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
+        const Object *intersection = object_dist.first;
+        float dist = object_dist.second;
 
         if (intersection == nullptr) { // Any light founded
             color = C_BLACK;
@@ -193,22 +188,32 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt1
                     if (randomZeroToOne < pr[0]) {
                         // Perfect refraction case (delta BTDF)
                         result = refraction(scene, origin, position, direction, n, *intersection);
-
-                        color = color * result.first * abs(dot(n, result.second));
                     } else if (randomZeroToOne < pr[0] + pr[1]) {
                         // Perfect specular reflectance case (delta BRDF)
                         result = reflection(position, direction, n, *intersection);
-
-                        color = color * result.first * abs(dot(n, result.second));
                     } else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
                         // Perfect Phong case (Phong BRDF)
                         result = phong(scene, position, direction, n, *intersection, mt);
-
-                        color = color * result.first * abs(dot(n, result.second));
                     } else {
                         // Path deaths
                         color = C_BLACK;
+                        break;
                     }
+
+
+                    color = color * result.first;
+
+                    // Shadow rays
+                    for (const LightPoint &lightPoint : scene.lightPoints) {
+                        HCoord lightVect = position - lightPoint.position;
+                        float lightDist = intersect(lightPoint.position, norm(lightVect), scene.objects).second;
+                        if (lightDist > mod(lightVect) - EPS) {
+                            float pathLightDist = dist + lightDist;
+                            shadowColor = shadowColor + lightPoint.color * color * abs(dot(n, norm(lightVect))) / (pathLightDist * pathLightDist);
+                        }
+                    }
+
+                    color = color * abs(dot(n, result.second));
                     direction = result.second;
 
                     break;
@@ -225,7 +230,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt1
         }
     }
 
-    return color;
+    return color + shadowColor;
 }
 
 void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, bool last, Image &image,
@@ -258,7 +263,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
 }
 
 Image render(int width, int height, int ppp, const Scene &scene) {
-    return render(width, height, ppp, scene, (int) thread::hardware_concurrency() + 2); // TODO: +2 para que trabajen más rato?
+    return render(width, height, ppp, scene, (int) thread::hardware_concurrency());
 }
 
 Image render(int width, int height, int ppp, const Scene &scene, int numThreads) {

@@ -21,7 +21,6 @@
  * pixels = width*height RGB pixel array (stored as floating point precision)
  */
 struct Image {
-    float maxVal;
     const int width, height;
     std::vector<Color> pixels;
 };

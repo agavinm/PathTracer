@@ -20,7 +20,7 @@ Texture colored(const Color &color) {
 }
 
 Texture colored(const VertexColor &color) {
-    return {
+    return Texture{
             .type = Texture::COLORED,
             .colorType = Texture::VERTEX_COLOR,
             .color = {.vertexColor = color}
@@ -37,7 +37,7 @@ Texture sin2D(const Color &color) {
 }
 
 Texture sin2D(const VertexColor &color) {
-    return {
+    return Texture{
             .type = Texture::SIN_2D,
             .colorType = Texture::VERTEX_COLOR,
             .color = {.vertexColor = color}
@@ -53,7 +53,7 @@ Texture sin22D(const Color &color) {
 }
 
 Texture sin22D(const VertexColor &color) {
-    return {
+    return Texture{
             .type = Texture::SIN2_2D,
             .colorType = Texture::VERTEX_COLOR,
             .color = {.vertexColor = color}
@@ -69,7 +69,7 @@ Texture sinCos2D(const Color &color) {
 }
 
 Texture sinCos2D(const VertexColor &color) {
-    return {
+    return Texture{
             .type = Texture::SIN_COS_2D,
             .colorType = Texture::VERTEX_COLOR,
             .color = {.vertexColor = color}
