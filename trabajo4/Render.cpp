@@ -23,7 +23,7 @@ pair<Color, HCoord> reflection(const HCoord &position, const HCoord &direction, 
 
     result.first = getColor(intersection.material.property.reflectance.ks, position);
 
-    result.second = norm(direction - (direction - n * dot(direction, n)) * 2.0f);
+    result.second = norm(direction - n * dot(direction, n) * 2.0f);
 
     return result;
 }
@@ -102,7 +102,7 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
         const Object &intersection, mt19937 &mt) {
     pair<Color, HCoord> result;
 
-    HCoord ref = norm(direction - (direction - n * dot(direction, n)) * 2.0f);
+    HCoord ref = reflection(position, direction, n, intersection).second;
 
     HCoord Z;
     HCoord Y;
@@ -197,12 +197,12 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt1
                         color = color * result.first * abs(dot(n, result.second));
                     } else if (randomZeroToOne < pr[0] + pr[1]) {
                         // Perfect specular reflectance case (delta BRDF)
-                        result = reflection(position, -direction, n, *intersection);
+                        result = reflection(position, direction, n, *intersection);
 
                         color = color * result.first * abs(dot(n, result.second));
                     } else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
                         // Perfect Phong case (Phong BRDF)
-                        result = phong(scene, position, -direction, n, *intersection, mt);
+                        result = phong(scene, position, direction, n, *intersection, mt);
 
                         color = color * result.first * abs(dot(n, result.second));
                     } else {
