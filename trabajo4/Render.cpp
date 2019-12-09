@@ -109,7 +109,7 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
     HCoord X;
 
     if (abs(dot(direction, n)) < EPS) {
-        Z = -direction;
+        Z = direction;
         Y = n;
         X = cross(Y, Z);
     }
