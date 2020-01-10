@@ -89,8 +89,14 @@ HCoord normal(const Geometry &geometry, const HCoord &position) {
             return geometry.data.circle.plane.normal;
         }
         case CUADRIC: {
-            // TODO
-            exit(6);
+            GEOMETRY_CUADRIC data = geometry.data.cuadric;
+
+            //http://skuld.bmsc.washington.edu/people/merritt/graphics/quadrics.html
+
+            float xn = 2*data.A*position.x() + data.D*position.y() + data.E*position.z() + data.G;
+            float yn = 2*data.B*position.y() + data.D*position.x() + data.F*position.z() + data.H;
+            float zn = 2*data.C*position.z() + data.E*position.x() + data.F*position.y() + data.I;
+            return norm(hVector(xn, yn, zn));
         }
     }
 }

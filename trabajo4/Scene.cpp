@@ -345,6 +345,59 @@ Scene mixScene(float ratio) {
     };
 }
 
+Scene dna(float ratio){
+    Camera camera = createCamera(hPoint(-200,0,0), V_AX, V_AZ, ratio);
+    vector<Object> objects;
+
+    // LIGHT:
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, -1), 100),
+            Emitter(colored(C_WHITE))
+    )); // UP
+
+    // BOX:
+    objects.push_back(create2D(
+            Plane(hVector(-1, 0, 0), 100),
+            Diffuse(colored(C_GREY))
+    )); // FRONT
+    objects.push_back(create2D(
+            Plane(hVector(0, 1, 0), 100),
+            Diffuse(colored(C_GREEN))
+    )); // RIGHT
+    objects.push_back(create2D(
+            Plane(hVector(0, -1, 0), 100),
+            Diffuse(colored(C_RED))
+    )); // LEFT
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, 1), 100),
+            Diffuse(colored(C_GREY))
+    )); // DOWN
+
+    for(int i=0;i<=100;i+=1){
+        objects.push_back({
+            Sphere(hPoint(-50*cos(i/5.),-50*sin(i/5.),i*2-100),5),
+            Diffuse(colored(C_PURPLE))
+        });
+    }
+
+    objects.push_back({
+       Cuadric(1,1,0,0,0,0,0,0,0,-40*40),
+       Diffuse(colored(C_WHITE))
+    });
+    objects.push_back({
+       Cuadric(0.1,-0.1,0,0,0,0,0,0,4,500),
+       Diffuse(colored(C_CYAN))
+    });
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .lightPoints = {},
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 4.5f
+    };
+}
+
 Scene onlyPlyScene(const string &filename, float ratio) {
     Camera camera = createCamera(P_ZERO, V_AX, V_AZ, ratio);
 
@@ -485,6 +538,8 @@ Scene createScene(const string &scene, float ratio) {
         return circleScene(ratio);
     else if (scene == "mix")
         return mixScene(ratio);
+    else if (scene=="dna")
+        return dna(ratio);
     else
         return onlyPlyScene(scene, ratio);
 }
