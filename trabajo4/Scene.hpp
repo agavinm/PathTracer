@@ -57,4 +57,11 @@ struct Scene {
  */
 Scene createScene(const std::string &scene, float ratio);
 
+/**
+ * Load the ply file into the objects array
+ * @param filename file to load
+ * @param objects array where the objects of the file will be appended
+ */
+void loadPly(const std::string &filename, std::vector<Object> &objects);
+
 #endif //TRABAJO4_SCENE_HPP

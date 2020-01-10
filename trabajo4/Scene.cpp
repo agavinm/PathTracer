@@ -299,21 +299,73 @@ Scene testScene(float ratio) {
     return {
         .camera = camera,
         .objects = objects,
-            .lightPoints = {},
+        .lightPoints = {},
         .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
         .gammaCorrection = 1.0f
     };
 }
 
-Scene plyScene(const string &scene, float ratio) { // TODO: Light points??
+Scene mixScene(float ratio) {
+    Camera camera = createCamera(hPoint(0,0,0), V_AX, V_AZ, ratio);
+
+    vector<Object> objects;
+
+    // LIGHT:
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, -1), 2),
+            Diffuse(colored(C_WHITE))
+    )); // UP
+
+    // BOX:
+    objects.push_back(create2D(
+            Plane(hVector(-1, 0, 0), 5),
+            Diffuse(colored(C_GREY))
+    )); // FRONT
+    objects.push_back(create2D(
+            Plane(hVector(0, 1, 0), 2),
+            Diffuse(colored(C_GREEN))
+    )); // RIGHT
+    objects.push_back(create2D(
+            Plane(hVector(0, -1, 0), 2),
+            Diffuse(colored(C_RED))
+    )); // LEFT
+    objects.push_back(create2D(
+            Plane(hVector(0, 0, 1), 2),
+            Diffuse(colored(C_GREY))
+    )); // DOWN
+
+    loadPly("../trabajo3/scenes/sceneDonutColored.ply", objects);
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .lightPoints = {},
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 4.0f
+    };
+}
+
+Scene onlyPlyScene(const string &filename, float ratio) {
     Camera camera = createCamera(P_ZERO, V_AX, V_AZ, ratio);
 
     vector<Object> objects;
 
-    ifstream file(scene);
+    loadPly(filename, objects);
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .lightPoints = {},
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 1.0f
+    };
+}
+
+void loadPly(const string &filename, vector<Object> &objects) {
+    ifstream file(filename);
     if (!file.is_open()) {
         // can't open, exit
-        cerr << "The file " << scene << " can't be opened to read." << endl;
+        cerr << "The file " << filename << " can't be opened to read." << endl;
         exit(1);
     }
 
@@ -383,7 +435,7 @@ Scene plyScene(const string &scene, float ratio) { // TODO: Light points??
             field = line.substr(0, line.find(' '));
             line.erase(0, field.length() + 1);
             if (stoi(field) != 3) {
-                cerr << scene << " file must be a triangular ply file" << endl;
+                cerr << filename << " file must be a triangular ply file" << endl;
                 exit(1);
             }
 
@@ -403,30 +455,22 @@ Scene plyScene(const string &scene, float ratio) { // TODO: Light points??
             HCoord vert[3] = {vertices[vertex1].first, vertices[vertex2].first,
                               vertices[vertex3].first};
 
-            if (color) {
-                objects.push_back({Triangle(vertices[vertex1].first, vertices[vertex2].first,
-                                            vertices[vertex3].first),
-                                   Emitter(colored(vertexColorDistanceWeightingSquare(col, vert)))});
-            } else {
-                objects.push_back({Triangle(vertices[vertex1].first, vertices[vertex2].first,
-                                            vertices[vertex3].first), Emitter(colored(C_WHITE))});
-            }
+            objects.push_back({
+                    Triangle(vertices[vertex1].first, vertices[vertex2].first,vertices[vertex3].first),
+                    color ? Emitter(colored(vertexColorDistanceWeightingSquare(col, vert)))
+                          : Emitter(colored(C_WHITE))
+                          // TODO: allow also diffuse (or make diffuse by default)
+            });
+            numFaces--;
         }
     }
 
-    if (!face || objects.size() != numFaces) {
-        cerr << scene << " file must be a triangular ply file" << endl;
+    if (!face || numFaces != 0) {
+        cerr << filename << " file must be a triangular ply file" << endl;
         exit(2);
     }
-
-    return {
-            .camera = camera,
-            .objects = objects,
-            .lightPoints = {},
-            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
-            .gammaCorrection = 1.0f
-    };
 }
+
 
 Scene createScene(const string &scene, float ratio) {
     if (scene == "default")
@@ -439,6 +483,8 @@ Scene createScene(const string &scene, float ratio) {
         return refractionScene(ratio);
     else if (scene == "circle")
         return circleScene(ratio);
+    else if (scene == "mix")
+        return mixScene(ratio);
     else
-        return plyScene(scene, ratio);
+        return onlyPlyScene(scene, ratio);
 }
