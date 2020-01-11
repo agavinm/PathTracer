@@ -64,4 +64,9 @@ Scene createScene(const std::string &scene, float ratio);
  */
 void loadPly(const std::string &filename, std::vector<Object> &objects);
 
+/**
+ * Prints available scenes
+ */
+void printScenes();
+
 #endif //TRABAJO4_SCENE_HPP

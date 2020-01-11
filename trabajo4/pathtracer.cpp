@@ -20,10 +20,8 @@ void printUsage(const string &name) {
             << "* <file name> needs to be one of" << endl
             << "       - .ppm" << endl
             << "       - .bmp" << endl
-            << "OPTIONAL* <scene> can be a triangular .ply file or a predefined scene:" << endl
-            << "       default" << endl
-            << "       specular" << endl
-            << "       refraction" << endl;
+            << "OPTIONAL* <scene> can be a triangular .ply file or a predefined scene." << endl;
+    printScenes();
 }
 
 int main(int argc, char *argv[]) {
