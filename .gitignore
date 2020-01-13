@@ -35,5 +35,8 @@
 .idea/
 .cmake-build-*/
 cmake-build-*/
-CMakeLists.txt
 .directory
+
+trabajo1/CMakeLists.txt
+trabajo2/CMakeLists.txt
+trabajo3/CMakeLists.txt
