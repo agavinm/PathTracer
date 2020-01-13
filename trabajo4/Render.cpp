@@ -14,7 +14,6 @@
 #include "Render.hpp"
 #include "Progress.hpp"
 #include "Transform.hpp"
-#include "Material.hpp"
 
 using namespace std;
 

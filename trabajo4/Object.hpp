@@ -13,7 +13,8 @@
 
 enum OBJECT_TYPE {
     OBJECT_2D,
-    OBJECT_3D
+    OBJECT_3D,
+    TRIANGULAR_PLY // Not real 3D objects
 };
 
 struct Object {
@@ -21,6 +22,9 @@ struct Object {
     const Material material;
     const OBJECT_TYPE type;
     const float n; // Refractive index (Snell's law)
+
+    // Only for TRIANGULAR_PLY
+    const std::vector<Object> triangles;
 };
 
 struct LightPoint {
@@ -34,6 +38,14 @@ Object create2D(const Geometry &geometry, const Material &material);
 
 Object create3D(const Geometry &geometry, const Material &material, float refractiveIndex);
 
+/**
+ * Triangular ply object is a triangle mesh without volume ("like a paper cover")
+ * @param geometry is the coverage sphere
+ * @param triangles
+ * @return Triangular ply object
+ */
+Object createTRIANGULAR_PLY(const Geometry &geometry, const std::vector<Object> &triangles);
+
 bool isInside(const HCoord &point, const Object &object);
 
 /**
@@ -46,6 +58,8 @@ bool isInside(const HCoord &point, const Object &object);
 float intersect(const HCoord &origin, const HCoord &dir, const Object &object);
 
 std::pair<const Object *, float> intersect(const HCoord & origin, const HCoord &dir, const std::vector<Object> &objects);
+
+std::pair<const Object *, float> triangularPlyIntersect(const HCoord &origin, const HCoord &dir, const Object &object);
 
 const float VACUUM_REFRACTIVE_INDEX = 1.0f;
 const float WATER_REFRACTIVE_INDEX = 1.330f;

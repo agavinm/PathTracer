@@ -276,63 +276,19 @@ defineScene(circle) {
     };
 }
 
-defineScene(test) {
-    Camera camera = createCamera(P_ZERO, V_AX, V_AZ, ratio);
-
-    vector<Object> objects;
-
-    // LIGHT:
-    objects.push_back({
-                              Triangle(hPoint(2.5f, 2.5f, 5), hPoint(2.5f, -2.5f, 5), hPoint(-2.5f, 2.5f, 5)),
-                              Emitter(colored(C_WHITE))
-                      });
-
-    objects.push_back({
-                              Sphere(hPoint(10, 0, 0), 1),
-                              Emitter(sin2D(C_RED))
-                      });
-    objects.push_back({
-                              Sphere(hPoint(5, 5, 0), 1),
-                              Emitter(sin22D(C_GREEN))
-                      });
-    objects.push_back({
-                              Plane(V_AZ, 10),
-                              Emitter(colored({0, 0, 1}))
-                      });
-    objects.push_back({
-                              Circle(hPoint(5, -5, 0), -V_AX, V_AZ * 2),
-                              Emitter(sinCos2D(C_WHITE))
-                      });
-
-    HCoord points[3] = {hPoint(10, 0, 0), hPoint(5, 5, 0), hPoint(5, 0, -5)};
-    Color colors[3] = {C_RED, C_BLUE, C_GREEN};
-    objects.push_back({
-                              Triangle(points[0], points[1], points[2]),
-                              Emitter(sinCos2D(vertexColorDistanceWeightingSquare(colors, points)))
-                      });
-    objects.push_back({
-                              Cuadric(-1, -1, 1, 0, 0, 0, 0, 0, 0, -1),
-                              Emitter(colored(C_CYAN))
-                      });
-
-    return {
-            .camera = camera,
-            .objects = objects,
-            .lightPoints = {},
-            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
-            .gammaCorrection = 1.0f
-    };
-}
-
 defineScene(mix) {
-    Camera camera = createCamera(hPoint(0, 0, 0), V_AX, V_AZ, ratio);
+    Camera camera = createCamera(hPoint(-5, 0, 0), V_AX, V_AZ, ratio);
 
     vector<Object> objects;
 
     // LIGHT:
+    vector<LightPoint> lightPoints;
+    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(-2.5f, 5, 0)));
+    lightPoints.push_back(createLightPoint(C_YELLOW, hPoint(-5, -5, 0)));
+
     objects.push_back(create2D(
-            Plane(hVector(0, 0, -1), 2),
-            Diffuse(colored(C_WHITE))
+            Plane(hVector(0, 0, -1), 5),
+            Emitter(colored(C_WHITE))
     )); // UP
 
     // BOX:
@@ -341,24 +297,26 @@ defineScene(mix) {
             Diffuse(colored(C_GREY))
     )); // FRONT
     objects.push_back(create2D(
-            Plane(hVector(0, 1, 0), 2),
+            Plane(hVector(0, 1, 0), 5),
             Diffuse(colored(C_GREEN))
     )); // RIGHT
     objects.push_back(create2D(
-            Plane(hVector(0, -1, 0), 2),
+            Plane(hVector(0, -1, 0), 5),
             Diffuse(colored(C_RED))
     )); // LEFT
     objects.push_back(create2D(
-            Plane(hVector(0, 0, 1), 2),
+            Plane(hVector(0, 0, 1), 5),
             Diffuse(colored(C_GREY))
     )); // DOWN
 
-    loadPly("../trabajo3/scenes/sceneDonutColored.ply", objects);
+    loadPly("../ply/figure.ply", objects, false);
+
+    loadPly("../ply/monkey.ply", objects, false);
 
     return {
             .camera = camera,
             .objects = objects,
-            .lightPoints = {},
+            .lightPoints = lightPoints,
             .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 4.0f
     };
@@ -393,20 +351,21 @@ defineScene(dna) {
     )); // DOWN
 
     for (int i = 0; i <= 100; i += 1) {
-        objects.push_back({
+        objects.push_back(create3D(
                                   Sphere(hPoint(-50 * cos(i / 5.), -50 * sin(i / 5.), i * 2 - 100), 5),
-                                  Diffuse(colored(C_PURPLE))
-                          });
+                                  Diffuse(colored(C_PURPLE)),
+                                  VACUUM_REFRACTIVE_INDEX
+                          ));
     }
 
-    objects.push_back({
+    objects.push_back(create2D(
                               Cuadric(1, 1, 0, 0, 0, 0, 0, 0, 0, -40 * 40),
                               Diffuse(colored(C_WHITE))
-                      });
-    objects.push_back({
+                      ));
+    objects.push_back(create2D(
                               Cuadric(0.1, -0.1, 0, 0, 0, 0, 0, 0, 4, 500),
                               Diffuse(colored(C_CYAN))
-                      });
+                      ));
 
     return {
             .camera = camera,
@@ -422,7 +381,7 @@ Scene onlyPlyScene(const string &filename, float ratio) {
 
     vector<Object> objects;
 
-    loadPly(filename, objects);
+    loadPly(filename, objects, true);
 
     return {
             .camera = camera,
@@ -433,7 +392,7 @@ Scene onlyPlyScene(const string &filename, float ratio) {
     };
 }
 
-void loadPly(const string &filename, vector<Object> &objects) {
+void loadPly(const string &filename, vector<Object> &objects, bool isEmmiter) {
     ifstream file(filename);
     if (!file.is_open()) {
         // can't open, exit
@@ -447,6 +406,9 @@ void loadPly(const string &filename, vector<Object> &objects) {
     int numVertices = 0, numFaces = 0, vertex1, vertex2, vertex3;
     unsigned char r, g, b;
     vector<pair<HCoord, Color>> vertices;
+    vector<Object> triangles;
+    float xMin = INFINITY, xMax = -INFINITY, yMin = INFINITY, yMax = -INFINITY, zMin = INFINITY, zMax = -INFINITY;
+
     while (getline(file, line)) {
         if (line.size() && line[line.size() - 1] == '\r') {
             line = line.substr(0, line.size() - 1);
@@ -499,6 +461,13 @@ void loadPly(const string &filename, vector<Object> &objects) {
                 vertices.emplace_back(hPoint(x, y, z), C_WHITE);
             }
 
+            xMin = min(xMin, x);
+            xMax = max(xMax, x);
+            yMin = min(yMin, y);
+            yMax = max(yMax, y);
+            zMin = min(zMin, z);
+            zMax = max(zMax, z);
+
             if (vertices.size() == numVertices) {
                 vertex = false;
                 face = true;
@@ -527,20 +496,35 @@ void loadPly(const string &filename, vector<Object> &objects) {
             HCoord vert[3] = {vertices[vertex1].first, vertices[vertex2].first,
                               vertices[vertex3].first};
 
-            objects.push_back({
-                                      Triangle(vertices[vertex1].first, vertices[vertex2].first, vertices[vertex3].first),
-                                      color ? Emitter(colored(vertexColorDistanceWeightingSquare(col, vert)))
-                                            : Emitter(colored(C_WHITE))
-                                      // TODO: allow also diffuse (or make diffuse by default)
-                              });
+            if (isEmmiter) {
+                triangles.push_back(create2D(
+                        Triangle(vertices[vertex1].first, vertices[vertex2].first, vertices[vertex3].first),
+                        color ? Emitter(colored(vertexColorDistanceWeightingSquare(col, vert)))
+                              : Emitter(colored(C_WHITE))
+                ));
+            }
+            else {
+                triangles.push_back(create2D(
+                        Triangle(vertices[vertex1].first, vertices[vertex2].first, vertices[vertex3].first),
+                        color ? Diffuse(colored(vertexColorDistanceWeightingSquare(col, vert)))
+                              : Diffuse(colored(C_WHITE))
+                ));
+            }
+
             numFaces--;
         }
     }
 
-    if (!face || numFaces != 0) {
+    if (!face || numFaces != 0 || triangles.empty()) {
         cerr << filename << " file must be a triangular ply file" << endl;
         exit(2);
     }
+
+    objects.push_back(createTRIANGULAR_PLY(
+            Sphere(hPoint((xMin + xMax) / 2.0f, (yMin + yMax) / 2.0f, (zMin + zMax) / 2.0f),
+                    mod(hPoint(xMax, yMax, zMax) - hPoint(xMin, yMin, zMin))),
+            triangles
+            ));
 }
 
 

@@ -13,6 +13,18 @@
 
 using namespace std;
 
+Object create2D(const Geometry &geometry, const Material &material) {
+    assert(geometry.type != SPHERE);
+
+    return {
+            .geometry = geometry,
+            .material = material,
+            .type = OBJECT_2D,
+            .n = VACUUM_REFRACTIVE_INDEX,
+            .triangles = vector<Object>()
+    };
+}
+
 Object create3D(const Geometry &geometry, const Material &material, float refractiveIndex) {
     assert(geometry.type == SPHERE);
 
@@ -20,18 +32,20 @@ Object create3D(const Geometry &geometry, const Material &material, float refrac
             .geometry = geometry,
             .material = material,
             .type = OBJECT_3D,
-            .n = refractiveIndex
+            .n = refractiveIndex,
+            .triangles = vector<Object>()
     };
 }
 
-Object create2D(const Geometry &geometry, const Material &material) {
-    assert(geometry.type != SPHERE);
+Object createTRIANGULAR_PLY(const Geometry &geometry, const std::vector<Object> &triangles) {
+    assert(geometry.type == SPHERE);
 
     return {
-        .geometry = geometry,
-        .material = material,
-        .type = OBJECT_2D,
-        .n = VACUUM_REFRACTIVE_INDEX
+            .geometry = geometry,
+            .material = triangles[0].material, // Not used
+            .type = TRIANGULAR_PLY,
+            .n = VACUUM_REFRACTIVE_INDEX,
+            .triangles = triangles
     };
 }
 
@@ -41,6 +55,7 @@ LightPoint createLightPoint(const Color &color, const HCoord &position) {
 
 bool isInside(const HCoord &point, const Object &object) {
     assert(object.type == OBJECT_3D);
+
     switch (object.geometry.type) {
         case SPHERE: {
             return mod(point - object.geometry.data.sphere.center) <= object.geometry.data.sphere.radius;
@@ -56,36 +71,34 @@ pair<const Object *, float> intersect(const HCoord &origin, const HCoord &dir, c
     const Object *intersection = nullptr;
     float dist = INFINITY;
     for (const Object &object : objects) {
-        float obj_dist = intersect(origin, dir, object);
+        float obj_dist;
+        pair<const Object *, float> ply;
+
+        if (object.type == TRIANGULAR_PLY) {
+            ply = triangularPlyIntersect(origin, dir, object);
+            obj_dist = ply.second;
+        }
+        else
+            obj_dist = intersect(origin, dir, object);
+
         if (obj_dist > EPS && obj_dist < dist) {
-            intersection = &object;
             dist = obj_dist;
+            if (object.type == TRIANGULAR_PLY)
+                intersection = ply.first;
+            else
+                intersection = &object;
         }
     }
     return {intersection, dist};
 }
 
-float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
+float intersect(const HCoord &origin, const HCoord &dir, const Geometry &geometry) {
     assert(mod(dir) < 1 + EPS && mod(dir) > 1 - EPS);
-    switch (object.geometry.type) {
+
+    switch (geometry.type) {
         case SPHERE: {
-            GEOMETRY_SPHERE data = object.geometry.data.sphere;
+            GEOMETRY_SPHERE data = geometry.data.sphere;
 
-//            // Unoptimized
-//            HCoord ominusc = origin - data.center; // origin minus center
-//            float a = 1;
-//            float b = 2 * dot(dir, ominusc);
-//            float c = dot(ominusc, ominusc) - data.radius * data.radius;
-//            float discriminant = b * b - 4 * a * c;
-//            if (discriminant < EPS)
-//                return INFINITY;
-//            float t1 = (-b + sqrt(discriminant)) / 2 / a;
-//            float t2 = (-b - sqrt(discriminant)) / 2 / a;
-//            if(t1<EPS) return t2;
-//            if(t2<EPS) return t1;
-//            return t1 < t2 ? t1 : t2;
-
-            // Optimized
             HCoord ominusc = origin - data.center; // origin minus center
             float b = dot(dir, ominusc);
             float discriminant = b * b - dot(ominusc, ominusc) + data.radius * data.radius;
@@ -99,13 +112,13 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
 
         }
         case PLANE: {
-            GEOMETRY_PLANE data = object.geometry.data.plane;
+            GEOMETRY_PLANE data = geometry.data.plane;
 
             float denom = dot(dir, data.normal);
             return denom == 0 ? INFINITY : -(dot(origin - P_ZERO, data.normal) + data.dist) / denom;
         }
         case TRIANGLE: {
-            GEOMETRY_TRIANGLE data = object.geometry.data.triangle;
+            GEOMETRY_TRIANGLE data = geometry.data.triangle;
 
             float denom = dot(dir, data.plane.normal);
             if (denom == 0)
@@ -119,7 +132,7 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
             return dist;
         }
         case CIRCLE: {
-            GEOMETRY_CIRCLE data = object.geometry.data.circle;
+            GEOMETRY_CIRCLE data = geometry.data.circle;
 
             float denom = dot(dir, data.plane.normal);
             if (denom == 0)
@@ -133,7 +146,7 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
             return dist;
         }
         case CUADRIC: {
-            GEOMETRY_CUADRIC data = object.geometry.data.cuadric;
+            GEOMETRY_CUADRIC data = geometry.data.cuadric;
 
             //http://skuld.bmsc.washington.edu/people/merritt/graphics/quadrics.html
             float Aq = data.A * dir.x() * dir.x() + data.B * dir.y() * dir.y() + data.C * dir.z() * dir.z() + data.D * dir.x() * dir.y() + data.E * dir.x() * dir.z() + data.F * dir.y() * dir.z();
@@ -163,4 +176,35 @@ float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
         default:
             exit(50);
     }
+}
+
+float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
+    if (object.type == TRIANGULAR_PLY) {
+        return triangularPlyIntersect(origin, dir, object).second;
+    }
+    else {
+        return intersect(origin, dir, object.geometry);
+    }
+}
+
+pair<const Object *, float> triangularPlyIntersect(const HCoord &origin, const HCoord &dir, const Object &object) {
+    assert(object.type == TRIANGULAR_PLY);
+
+    const Object *intersection = nullptr;
+    float dist = intersect(origin, dir, object.geometry);
+
+    if (dist != INFINITY) {
+        dist = INFINITY;
+
+        // Find nearest triangle
+        for (const Object &triangle : object.triangles) {
+            float obj_dist = intersect(origin, dir, triangle.geometry);
+            if (obj_dist > EPS && obj_dist < dist) {
+                dist = obj_dist;
+                intersection = &triangle;
+            }
+        }
+    }
+
+    return {intersection, dist};
 }

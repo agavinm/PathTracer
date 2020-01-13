@@ -61,8 +61,9 @@ Scene createScene(const std::string &scene, float ratio);
  * Load the ply file into the objects array
  * @param filename file to load
  * @param objects array where the objects of the file will be appended
+ * @param isEmmiter
  */
-void loadPly(const std::string &filename, std::vector<Object> &objects);
+void loadPly(const std::string &filename, std::vector<Object> &objects, bool isEmmiter);
 
 /**
  * Prints available scenes
