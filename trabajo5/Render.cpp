@@ -14,6 +14,7 @@
 #include "Render.hpp"
 #include "Progress.hpp"
 #include "Transform.hpp"
+#include "FotonMapping.hpp"
 
 using namespace std;
 
@@ -28,7 +29,7 @@ pair<Color, HCoord> reflection(const HCoord &position, const HCoord &direction, 
 }
 
 pair<Color, HCoord> refraction(const Scene &scene, const HCoord &origin, const HCoord &position, const HCoord &direction,
-        HCoord n, const Object &intersection) {
+                               HCoord n, const Object &intersection) {
     pair<Color, HCoord> result;
 
     result.first = getColor(intersection.material.property.reflectance.kd, position);
@@ -63,8 +64,7 @@ pair<Color, HCoord> refraction(const Scene &scene, const HCoord &origin, const H
                             objectFound = true;
                         }
                     }
-                }
-                else {
+                } else {
                     // Ray will enter another object
                     n2 = intersection.n;
                 }
@@ -75,8 +75,7 @@ pair<Color, HCoord> refraction(const Scene &scene, const HCoord &origin, const H
                 exit(6);
             }
         }
-    }
-    else {
+    } else {
         // Ray will enter an object
         n2 = intersection.n;
     }
@@ -89,8 +88,7 @@ pair<Color, HCoord> refraction(const Scene &scene, const HCoord &origin, const H
         // Only happens reflection because the sine of the angle of refraction is required to be greater than one.
         // https://en.wikipedia.org/wiki/Snell%27s_law#Total_internal_reflection_and_critical_angle
         return reflection(position, direction, n, intersection);
-    }
-    else {
+    } else {
         result.second = norm(direction * r + n * (r * c - sqrt(1.0f - r * r * (1.0f - c * c))));
 
         return result;
@@ -98,7 +96,7 @@ pair<Color, HCoord> refraction(const Scene &scene, const HCoord &origin, const H
 }
 
 pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoord &direction, const HCoord &n,
-        const Object &intersection, mt19937 &mt) {
+                          const Object &intersection, mt19937 &mt) {
     pair<Color, HCoord> result;
 
     HCoord ref = reflection(position, direction, n, intersection).second;
@@ -111,8 +109,7 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
         Z = direction;
         Y = n;
         X = cross(Y, Z);
-    }
-    else {
+    } else {
         X = norm(cross(direction, ref));
         Y = ref;
         Z = cross(Y, X);
@@ -124,7 +121,7 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
     float phi = 2.0f * (float) M_PI * dist(mt);
 
     result.second = norm(changeFromBase(X, Y, Z, position) *
-            hVector(cos(phi) * sin(theta), cos(theta), sin(phi) * sin(theta)));
+                         hVector(cos(phi) * sin(theta), cos(theta), sin(phi) * sin(theta)));
 
     result.first = getColor(intersection.material.property.reflectance.kdPhong, position) / (float) M_PI
                    + getColor(intersection.material.property.reflectance.ksPhong, position)
@@ -134,10 +131,10 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
     return result;
 }
 
-Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt19937 &mt) {
-    Color color = C_WHITE;
-    Color shadowColor = C_BLACK;
+void launchFoton(const LightPoint &lightPoint, HCoord direction, FotonMap &map, const Scene &scene, mt19937 &mt) {
+    Color color = lightPoint.color;
     float pathLength = 0.0f;
+    HCoord position = lightPoint.position;
 
     bool path = true;
     while (path) {
@@ -146,9 +143,11 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt1
         const Object *intersection = object_dist.first;
         float dist = object_dist.second;
 
-        if (intersection == nullptr) { // Any light founded
+        if (intersection == nullptr) {
+            // void: bye bye foton
             color = C_BLACK;
         } else {
+            // intersection with an object
             HCoord origin = position;
             position = position + direction * dist; // hit position
             HCoord n = normal(intersection->geometry, position);
@@ -156,9 +155,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt1
 
             switch (intersection->material.type) {
                 case EMITTER: { // LIGHT
-                    color = color * getColor(intersection->material.property.texture, position) / (pathLength * pathLength);
-                    path = false;
-                    break;
+                    throw invalid_argument("With fotonMapping emitters are not supported");
                 }
                 case REFLECTOR: {
                     uniform_real_distribution<float> zeroToOneDistribution(0.0f, 1.0f);
@@ -202,15 +199,8 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt1
 
                     color = color * result.first;
 
-                    // Shadow rays
-                    for (const LightPoint &lightPoint : scene.lightPoints) {
-                        HCoord lightVect = position - lightPoint.position;
-                        float lightDist = intersect(lightPoint.position, norm(lightVect), scene.objects).second;
-                        if (lightDist > mod(lightVect) - EPS) {
-                            float pathLightDist = dist + lightDist;
-                            shadowColor = shadowColor + lightPoint.color * color * abs(dot(n, norm(lightVect))) / (pathLightDist * pathLightDist);
-                        }
-                    }
+                    // save foton
+                    map.addFoton({position, direction, color});
 
                     color = color * abs(dot(n, result.second));
                     direction = result.second;
@@ -221,6 +211,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt1
                     exit(6);
                 }
             }
+
         }
 
         if (color.max() <= 0.0f) {
@@ -229,11 +220,58 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt1
         }
     }
 
-    return color + shadowColor;
 }
 
-void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, bool last, Image &image,
-        Progress &progress) {
+Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, const FotonMap &globalFotonMap, mt19937 &mt) {
+
+    // find nearest intersection
+    pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
+    const Object *intersection = object_dist.first;
+    float dist = object_dist.second;
+
+    if (intersection == nullptr) {
+        // void: nothing
+        return C_BLACK;
+    } else {
+        // found object
+        position = position + direction * dist; // hit position
+
+        // calculate light
+        return globalFotonMap.getColorFromMap(position, direction, dist);
+    }
+
+}
+
+void launchFotons(int fotons, const Scene &scene, bool last, Progress &progress, FotonMap &globalFotonMap) {
+    random_device rd;
+    mt19937 mt(rd());
+    uniform_real_distribution<float> dist(0.0f, nextafter(1.0f, MAXFLOAT));
+    uniform_int_distribution<> distInt(0, scene.lightPoints.size() - 1);
+
+    FotonMap localMap;
+
+    for (int i = 0; i < fotons; ++i) {
+        // launch each foton
+
+        // get random light
+        LightPoint point = scene.lightPoints.at(distInt(mt));
+
+        // get random direction
+        double theta = 2 * M_PI * dist(mt);
+        double phi = acos(1 - 2 * dist(mt));
+        HCoord direction = hVector(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
+
+        // launch
+        launchFoton(point, direction, localMap, scene, mt);
+
+        if (last) progress.step((float) i * 100.0f / (float) (fotons));
+    }
+
+    // finished, add to global map
+    globalFotonMap.addAll(localMap);
+}
+
+void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, const FotonMap &globalFotonMap, bool last, Image &image, Progress &progress) {
     // initialization of utilities
     random_device rd;
     mt19937 mt(rd());
@@ -251,7 +289,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
                                                (float) height)); // should be a normalized ray
                 HCoord position = scene.camera.origin;
 
-                color = color + getLightFromRay(scene, position, direction, mt);
+                color = color + getLightFromRay(scene, position, direction, globalFotonMap, mt);
             }
 
             // save
@@ -261,27 +299,48 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
     }
 }
 
-Image render(int width, int height, int ppp, const Scene &scene) {
-    return render(width, height, ppp, scene, (int) thread::hardware_concurrency());
+Image render(int width, int height, int ppp, int fotons, const Scene &scene) {
+    return render(width, height, ppp, fotons, scene, (int) thread::hardware_concurrency());
 }
 
-Image render(int width, int height, int ppp, const Scene &scene, int numThreads) {
+Image render(int width, int height, int ppp, int fotons, const Scene &scene, int numThreads) {
     assert(numThreads > 0);
+
+    cout << "[INFO] Creating FotonMap of " << fotons << " fotons (" << scene.objects.size()
+         << " objects) (" << numThreads << " threads)" << endl;
+
+    FotonMap globalFotonMap;
+
+    Progress progress;
+    progress.start("[INFO] FotonMapping");
+
+    thread threads[numThreads];
+
+    for (int n = 0; n < numThreads; n++) {
+
+        threads[n] = thread(launchFotons, ceil(fotons / numThreads), ref(scene),
+                            n == numThreads - 1, ref(progress), ref(globalFotonMap));
+    }
+
+    for (int n = 0; n < numThreads; n++) {
+        threads[n].join(); // wait thread n ends
+    }
+
+    progress.end();
+
+    //-----------------------------------
 
     cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << scene.objects.size()
          << " objects) (" << numThreads << " threads)" << endl;
 
-    Progress progress;
     progress.start("[INFO] Render");
 
     Image image = initImage(width, height);
 
-    thread threads[numThreads];
-
     int j_ini = 0, j_end = height / numThreads;
     for (int n = 0; n < numThreads; n++) {
 
-        threads[n] = thread(renderRegion, j_ini, j_end, width, height, ppp, ref(scene),
+        threads[n] = thread(renderRegion, j_ini, j_end, width, height, ppp, ref(scene), ref(globalFotonMap),
                             n == numThreads - 1, ref(image), ref(progress));
 
         j_ini = j_end;

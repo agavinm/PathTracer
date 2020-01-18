@@ -16,7 +16,7 @@ bool endsWith(const string &original, const string &suffix) {
 }
 
 void printUsage(const string &name) {
-    cout << "Usage: " << name << " <ppp> <width> <height> <file name> <scene>" << endl
+    cout << "Usage: " << name << " <ppp> <fotons> <width> <height> <file name> <scene>" << endl
             << "* <file name> needs to be one of" << endl
             << "       - .ppm" << endl
             << "       - .bmp" << endl
@@ -26,7 +26,7 @@ void printUsage(const string &name) {
 
 int main(int argc, char *argv[]) {
     // check enough arguments
-    if (argc < 5 || argc > 6) {
+    if (argc < 6 || argc > 7) {
         printUsage(argv[0]);
         return 0;
     }
@@ -34,22 +34,25 @@ int main(int argc, char *argv[]) {
     // rays
     int ppp = stoi(argv[1]);
 
+    //fotons
+    int fotons = stoi(argv[2]);
+
     // Image
-    int width = stoi(argv[2]);
-    int height = stoi(argv[3]);
+    int width = stoi(argv[3]);
+    int height = stoi(argv[4]);
 
     // Scene
     string sceneName = "default";
-    if (argc == 6) {
-        sceneName = argv[5];
+    if (argc == 7) {
+        sceneName = argv[6];
     }
     Scene scene = createScene(sceneName, (float) width / (float) height);
 
-    if (endsWith(argv[4], ".ppm")) {
-        storePPM(string(argv[4]), render(width, height, ppp, scene), 255);
+    if (endsWith(argv[5], ".ppm")) {
+        storePPM(string(argv[5]), render(width, height, ppp, fotons,  scene), 255);
     }
-    else if (endsWith(argv[4], ".bmp")) {
-        storeBMP(string(argv[4]), render(width, height, ppp, scene));
+    else if (endsWith(argv[5], ".bmp")) {
+        storeBMP(string(argv[5]), render(width, height, ppp, fotons, scene));
     }
     else {
         cerr << "Unknown output file extension" << endl;

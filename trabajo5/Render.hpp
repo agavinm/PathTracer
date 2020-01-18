@@ -17,20 +17,22 @@
  * @param width
  * @param height
  * @param ppp rays per pixel
+ * @param fotons number of fotons to launch (global, distributed randomly between lightpoints)
  * @param scene
  * @return the rendered image
  */
-Image render(int width, int height, int ppp, const Scene &scene);
+Image render(int width, int height, int ppp, int fotons, const Scene &scene);
 
 /**
  * Renders "objects" seen by "camera" into a width * height image.
  * @param width
  * @param height
  * @param ppp rays per pixel
+ * @param fotons number of fotons to launch (global, distributed randomly between lightpoints)
  * @param scene
  * @param numThreads parallel processing
  * @return the rendered image
  */
-Image render(int width, int height, int ppp, const Scene &scene, int numThreads);
+Image render(int width, int height, int ppp, int fotons, const Scene &scene, int numThreads);
 
 #endif //TRABAJO4_RENDER_HPP
