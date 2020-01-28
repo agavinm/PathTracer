@@ -136,6 +136,7 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, FotonMap &map, 
     float pathLength = 0.0f;
     HCoord position = lightPoint.position;
 
+    bool first = true; // first intersections is not saved
     bool path = true;
     while (path) {
         // find nearest intersection
@@ -200,7 +201,11 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, FotonMap &map, 
                     color = color * result.first;
 
                     // save foton
-                    map.addFoton({position, direction, color});
+                    if (first) {
+                        first = false;
+                    } else {
+                        map.addFoton({position, direction, color});
+                    }
 
                     color = color * abs(dot(n, result.second));
                     direction = result.second;
@@ -236,8 +241,19 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
         // found object
         position = position + direction * dist; // hit position
 
+        Color direct = C_BLACK;
+        // get direct light
+        for (const LightPoint &lightPoint : scene.lightPoints) {
+            HCoord lightVect = position - lightPoint.position;
+            float lightDist = intersect(lightPoint.position, norm(lightVect), scene.objects).second;
+            if (lightDist > mod(lightVect) - EPS) {
+                float pathLightDist = dist + lightDist;
+                direct = direct + lightPoint.color * getColor(intersection->material.property.texture, position) * abs(dot(normal(intersection->geometry, position), norm(lightVect))) / (pathLightDist * pathLightDist);
+            }
+        }
+
         // calculate light
-        return globalFotonMap.getColorFromMap(position, direction, dist);
+        return direct + globalFotonMap.getColorFromMap(position, direction, dist);
     }
 
 }

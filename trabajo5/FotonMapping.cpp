@@ -9,17 +9,19 @@ using namespace std;
 
 
 Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float dist) const {
+    const float SPHERE_SIZE = 0.1;
+
     int fotons = 0;
     Color color = C_BLACK;
     for(Foton foton : map){
         // only fotons near the element
-        // TODO: reduce 'sphere' size and return correct color
-        if(mod(foton.position-position) < 1 && dot(direction, foton.direction) >= 0){
+        if(mod(foton.position-position) <= SPHERE_SIZE && dot(direction, foton.direction) >= 0){
             fotons++;
             color = color + foton.color * dot(direction, foton.direction) / (foton.dist + dist);
         }
     }
-    return color / fotons;
+    // TODO: return correct color
+    return fotons == 0 ? color : color / fotons;
 }
 
 
