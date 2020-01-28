@@ -9,6 +9,7 @@
 #ifndef TRABAJO1_HCOORD_HPP
 #define TRABAJO1_HCOORD_HPP
 
+#include <vector>
 #include <ostream>
 
 struct HCoord {
@@ -48,6 +49,10 @@ struct HCoord {
      */
     HCoord operator*(float s) const;
 
+    /**
+     * @return the x,y,z element as a vector<float>
+     */
+    std::vector<float> as_vector() const;
 };
 
 /**

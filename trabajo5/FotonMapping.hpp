@@ -6,12 +6,14 @@
 #define TRABAJO5_FOTONMAPPING_HPP
 
 #include <mutex>
+#include "KDTree.hpp"
 
 struct Foton {
-    const HCoord position; // position of foton
-    const HCoord direction; // direction from where the foton came
-    const Color color; // color of the foton
-    const float dist; // distance to the light
+    HCoord position; // position of foton
+    HCoord direction; // direction from where the foton came
+    Color color; // color of the foton
+    float dist; // distance to the light
+    /* don't put these elements as constants, otherwise the KDTree can't work */
 };
 
 /**
@@ -19,16 +21,16 @@ struct Foton {
  */
 class FotonMap {
 
-    std::vector<Foton> map;
+    KDTree<Foton, 3> tree;
     std::mutex mtx;
 
 public:
 
-    void addAll(FotonMap &other);
+    void addAll(std::vector<Foton> &other);
 
     Color getColorFromMap(HCoord position, HCoord direction, float dist) const;
 
-    void addFoton(Foton foton);
+    void markToRead();
 };
 
 #endif //TRABAJO5_FOTONMAPPING_HPP

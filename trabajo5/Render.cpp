@@ -131,7 +131,7 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
     return result;
 }
 
-void launchFoton(const LightPoint &lightPoint, HCoord direction, FotonMap &map, const Scene &scene, mt19937 &mt) {
+void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &list, const Scene &scene, mt19937 &mt) {
     Color color = lightPoint.color;
     float pathLength = 0.0f;
     HCoord position = lightPoint.position;
@@ -204,7 +204,7 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, FotonMap &map, 
                     if (first) {
                         first = false;
                     } else {
-                        map.addFoton({position, direction, color});
+                        list.push_back({position, direction, color});
                     }
 
                     color = color * abs(dot(n, result.second));
@@ -264,7 +264,7 @@ void launchFotons(int fotons, const Scene &scene, bool last, Progress &progress,
     uniform_real_distribution<float> dist(0.0f, nextafter(1.0f, MAXFLOAT));
     uniform_int_distribution<> distInt(0, scene.lightPoints.size() - 1);
 
-    FotonMap localMap;
+    vector<Foton> fotonList;
 
     for (int i = 0; i < fotons; ++i) {
         // launch each foton
@@ -278,13 +278,13 @@ void launchFotons(int fotons, const Scene &scene, bool last, Progress &progress,
         HCoord direction = hVector(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
 
         // launch
-        launchFoton(point, direction, localMap, scene, mt);
+        launchFoton(point, direction, fotonList, scene, mt);
 
         if (last) progress.step((float) i * 100.0f / (float) (fotons));
     }
 
     // finished, add to global map
-    globalFotonMap.addAll(localMap);
+    globalFotonMap.addAll(fotonList);
 }
 
 void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, const FotonMap &globalFotonMap, bool last, Image &image, Progress &progress) {
@@ -322,8 +322,11 @@ Image render(int width, int height, int ppp, int fotons, const Scene &scene) {
 Image render(int width, int height, int ppp, int fotons, const Scene &scene, int numThreads) {
     assert(numThreads > 0);
 
-    cout << "[INFO] Creating FotonMap of " << fotons << " fotons (" << scene.objects.size()
-         << " objects) (" << numThreads << " threads)" << endl;
+    cout << "[INFO] Creating FotonMap of " << fotons << " fotons " <<
+         "(" << scene.objects.size() << " objects) " <<
+         "(" << numThreads << " threads) " <<
+         "(" << scene.lightPoints.size() << " lights)" <<
+         endl;
 
     FotonMap globalFotonMap;
 
@@ -341,6 +344,10 @@ Image render(int width, int height, int ppp, int fotons, const Scene &scene, int
     for (int n = 0; n < numThreads; n++) {
         threads[n].join(); // wait thread n ends
     }
+
+    progress.step(99.99f);
+
+    globalFotonMap.markToRead();
 
     progress.end();
 

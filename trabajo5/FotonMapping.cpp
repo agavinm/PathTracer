@@ -9,11 +9,14 @@ using namespace std;
 
 
 Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float dist) const {
-    const float SPHERE_SIZE = 0.1;
+    const float SPHERE_SIZE = 0.01;
 
     int fotons = 0;
     Color color = C_BLACK;
-    for(Foton foton : map){
+    list<const KDTree<Foton, 3>::Node *> list;
+    tree.find(position.as_vector(), SPHERE_SIZE, &list);
+    for(auto &node : list){
+        Foton foton = node->data();
         // only fotons near the element
         if(mod(foton.position-position) <= SPHERE_SIZE && dot(direction, foton.direction) >= 0){
             fotons++;
@@ -25,14 +28,14 @@ Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float dist) c
 }
 
 
-void FotonMap::addFoton(Foton foton) {
-    map.push_back(foton);
-}
-
-void FotonMap::addAll(FotonMap &other) {
+void FotonMap::addAll(vector<Foton> &other) {
     mtx.lock();
-    for(Foton foton : other.map){
-        map.push_back(foton); // because insert uses copy, and we don't have copy
+    for(Foton foton : other){
+        tree.store(foton.position.as_vector(), foton);
     }
     mtx.unlock();
+}
+
+void FotonMap::markToRead() {
+    tree.balance();
 }
