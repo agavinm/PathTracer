@@ -204,7 +204,7 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
                     if (first) {
                         first = false;
                     } else {
-                        list.push_back({position, direction, color});
+                        list.push_back({position, direction, color, pathLength, intersection});
                     }
 
                     color = color * abs(dot(n, result.second));
@@ -253,7 +253,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
         }
 
         // calculate light
-        return direct + globalFotonMap.getColorFromMap(position, direction, dist);
+        return direct + globalFotonMap.getColorFromMap(position, direction, dist, intersection);
     }
 
 }

@@ -8,8 +8,8 @@
 using namespace std;
 
 
-Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float dist) const {
-    const int ELEMENTS = 500;
+Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float distance, const Object *object) const {
+    const int ELEMENTS = 100;
 
     Color color = C_BLACK;
     vector<const KDTree<Foton, 3>::Node *> list;
@@ -17,9 +17,9 @@ Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float dist) c
     tree.find(position.as_vector(), ELEMENTS, list, radius);
     for(auto &node : list){
         Foton foton = node->data();
-        // only fotons near the element
-        if(dot(direction, foton.direction) >= 0){
-            color = color + foton.color * dot(direction, foton.direction) / (foton.dist + dist);
+        // only fotons near the element and from the same object
+        if(dot(direction, foton.direction) >= 0 && object == foton.object){
+            color = color + foton.color * dot(direction, foton.direction) / (foton.dist + distance);
         }
     }
     // color = total_light / area_sphere(pi*r^2)
@@ -36,5 +36,7 @@ void FotonMap::addAll(vector<Foton> &other) {
 }
 
 void FotonMap::markToRead() {
+    mtx.lock();
     tree.balance();
+    mtx.unlock();
 }

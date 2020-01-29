@@ -7,17 +7,27 @@
 
 #include <mutex>
 #include "KDTree.hpp"
+#include "Object.hpp"
 
 struct Foton {
     HCoord position; // position of foton
     HCoord direction; // direction from where the foton came
     Color color; // color of the foton
     float dist; // distance to the light
+    Object const *object; // Object of the foton
     /* don't put these elements as constants, otherwise the KDTree can't work */
 };
 
 /**
- * Currently implemented as a list of all fotons. Change to hashing, or something similar
+ * Container for the fotons.
+ *
+ * Usage:
+ * - foreach thread (concurrently):
+ * -     generate fotons
+ * -     call #addAll() to include them in a 'waiting list'
+ * - call #markToRead()
+ * - foreach thread (concurrently):
+ * -     call #getColorFromMap()
  */
 class FotonMap {
 
@@ -26,10 +36,28 @@ class FotonMap {
 
 public:
 
+    /**
+     * Adds all fotons to the 'waiting' list of the container.
+     * Can be called multiple times, and is thread-safe
+     * When finished adding all fotons, don't forget to call #markToRead()
+     * @param other list of foton to add
+     */
     void addAll(std::vector<Foton> &other);
 
-    Color getColorFromMap(HCoord position, HCoord direction, float dist) const;
+    /**
+     * Returns the color corresponding to the intersection.
+     * @param position of the intersection
+     * @param direction of where the intersection came
+     * @param distance from the intersection to the camera
+     * @param object object of intersection
+     * @return color of that intersection
+     */
+    Color getColorFromMap(HCoord position, HCoord direction, float distance, const Object *object) const;
 
+    /**
+     * When called, all fotons in the 'waiting' list are converted to a kdtree (removing any existing one) ready to be used with #getColorFromMap()
+     * After calling this, following calls to #addAll() or #markToRead() are untested
+     */
     void markToRead();
 };
 
