@@ -7,18 +7,19 @@
 
 using namespace std;
 
-
 Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float distance, const Object *object) const {
-    const int ELEMENTS = 100;
+    const int ELEMENTS = 500;
 
     Color color = C_BLACK;
     vector<const KDTree<Foton, 3>::Node *> list;
     float radius;
-    tree.find(position.as_vector(), ELEMENTS, list, radius);
-    for(auto &node : list){
+    // using find, if the tree don't exists an error is generated
+    map.find(object)->second.find(position.as_vector(), ELEMENTS, list, radius);
+    for (auto &node : list) {
         Foton foton = node->data();
-        // only fotons near the element and from the same object
-        if(dot(direction, foton.direction) >= 0 && object == foton.object){
+        // only fotons that will be reflected
+        // TODO: change this from the ugly diffuse (dot) to a valid from the object
+        if (dot(direction, foton.direction) >= 0) {
             color = color + foton.color * dot(direction, foton.direction) / (foton.dist + distance);
         }
     }
@@ -29,14 +30,18 @@ Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float distanc
 
 void FotonMap::addAll(vector<Foton> &other) {
     mtx.lock();
-    for(Foton foton : other){
-        tree.store(foton.position.as_vector(), foton);
+    for (Foton foton : other) {
+        // using [] if the tree don't exist, it is initialized
+        map[foton.object].store(foton.position.as_vector(), foton);
     }
     mtx.unlock();
 }
 
 void FotonMap::markToRead() {
     mtx.lock();
-    tree.balance();
+    for(auto tree : map){
+        // tree.second.balance(); // for some reason this doesn't work
+        map[tree.first].balance();
+    }
     mtx.unlock();
 }

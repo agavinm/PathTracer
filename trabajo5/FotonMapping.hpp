@@ -6,6 +6,7 @@
 #define TRABAJO5_FOTONMAPPING_HPP
 
 #include <mutex>
+#include <map>
 #include "KDTree.hpp"
 #include "Object.hpp"
 
@@ -14,7 +15,7 @@ struct Foton {
     HCoord direction; // direction from where the foton came
     Color color; // color of the foton
     float dist; // distance to the light
-    Object const *object; // Object of the foton
+    const Object *object; // Object of the foton
     /* don't put these elements as constants, otherwise the KDTree can't work */
 };
 
@@ -25,13 +26,12 @@ struct Foton {
  * - foreach thread (concurrently):
  * -     generate fotons
  * -     call #addAll() to include them in a 'waiting list'
- * - call #markToRead()
+ * - call #markToRead() to convert all the fotons in the waiting list to a kdtree
  * - foreach thread (concurrently):
- * -     call #getColorFromMap()
+ * -     call #getColorFromMap() as fast as a kdtree allows
  */
 class FotonMap {
-
-    KDTree<Foton, 3> tree;
+    std::map<const Object*, KDTree<Foton, 3>> map;
     std::mutex mtx;
 
 public:
@@ -59,6 +59,7 @@ public:
      * After calling this, following calls to #addAll() or #markToRead() are untested
      */
     void markToRead();
+
 };
 
 #endif //TRABAJO5_FOTONMAPPING_HPP

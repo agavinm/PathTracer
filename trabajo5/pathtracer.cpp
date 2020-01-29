@@ -25,6 +25,12 @@ void printUsage(const string &name) {
 }
 
 int main(int argc, char *argv[]) {
+#ifndef NDEBUG
+    // debug code
+    cout << "!!!!! USING SLOW DEBUG CODE !!!!!" << endl;
+#endif
+
+
     // check enough arguments
     if (argc < 6 || argc > 7) {
         printUsage(argv[0]);
