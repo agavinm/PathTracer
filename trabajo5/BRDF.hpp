@@ -5,6 +5,9 @@
 #ifndef TRABAJO5_BRDF_HPP
 #define TRABAJO5_BRDF_HPP
 
+#include "Scene.hpp"
+#include "HCoord.hpp"
+#include "Color.hpp"
 
 pair<Color, HCoord> reflection(const HCoord &position, const HCoord &direction, const HCoord &n, const Object &intersection);
 

@@ -4,11 +4,12 @@
 
 #include "Geometry.hpp"
 #include "FotonMapping.hpp"
+#include "BRDF.hpp"
 
 using namespace std;
 
 Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float distance, const Object *object) const {
-    const int ELEMENTS = 500;
+    const int ELEMENTS = 100;
 
     Color color = C_BLACK;
     vector<const KDTree<Foton, 3>::Node *> list;
@@ -18,10 +19,8 @@ Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float distanc
     for (auto &node : list) {
         Foton foton = node->data();
         // only fotons that will be reflected
-        // TODO: change this from the ugly diffuse (dot) to a valid from the object
-        if (dot(direction, foton.direction) >= 0) {
-            color = color + foton.color * dot(direction, foton.direction) / (foton.dist + distance);
-        }
+        float dist = distance + foton.dist;
+        color = color + foton.color * getBRDF(direction, -foton.direction, position, *object) / dist / dist;
     }
     // color = total_light / area_sphere(pi*r^2)
     return color / M_PI / radius / radius;

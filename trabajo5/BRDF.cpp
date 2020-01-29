@@ -126,34 +126,28 @@ pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoo
 
 
 EVENT getRandomEvent(const Object &object, const HCoord &position) {
-    float randomZeroToOne, maxKd, maxKs, maxKdPhong, maxKsPhong, pr[3];
 
-    maxKd = getColor(object.material.property.reflectance.kd, position).max();
-    maxKs = getColor(object.material.property.reflectance.ks, position).max();
-    maxKdPhong = getColor(object.material.property.reflectance.kdPhong,
-                          position).max();
-    maxKsPhong = getColor(object.material.property.reflectance.ksPhong,
-                          position).max();
+    float maxKd = getColor(object.material.property.reflectance.kd, position).max();
+    float maxKs = getColor(object.material.property.reflectance.ks, position).max();
+    float maxPhong = getColor(object.material.property.reflectance.kdPhong, position).max()
+                     + getColor(object.material.property.reflectance.ksPhong, position).max();
 
     // Russian roulette
-    randomZeroToOne = random_zero_one();
-    pr[0] = maxKd;
-    pr[1] = maxKs;
-    pr[2] = maxKdPhong + maxKsPhong;
-    if (pr[0] + pr[1] + pr[2] > 0.99f) {
-        pr[1] = (0.99f / (pr[0] + pr[1] + pr[2]));
-        pr[0] = maxKd * pr[1];
-        pr[2] = pr[2] * pr[1];
-        pr[1] = maxKs * pr[1];
+    if (maxKd + maxKs + maxPhong > 0.99f) {
+        float correction = 0.99f / (maxKd + maxKs + maxPhong);
+        maxKd *= correction;
+        maxKs *= correction;
+        maxPhong *= correction;
     }
 
-    if (randomZeroToOne < pr[0]) {
+    float randomZeroToOne = random_zero_one();
+    if ((randomZeroToOne -= maxKd) < 0) {
         // Perfect refraction case (delta BTDF)
         return REFRACTION;
-    } else if (randomZeroToOne < pr[0] + pr[1]) {
+    } else if ((randomZeroToOne -= maxKs) < 0) {
         // Perfect specular reflectance case (delta BRDF)
         return REFLECTION;
-    } else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
+    } else if ((randomZeroToOne -= maxPhong) < 0) {
         // Perfect Phong case (Phong BRDF)
         return PHONG;
     } else {
@@ -164,5 +158,27 @@ EVENT getRandomEvent(const Object &object, const HCoord &position) {
 
 Color getBRDF(const HCoord &in, const HCoord &out, const HCoord &position, const Object &object) {
 
-    return Color();
+    const float CONSIDER_EQUALS = 0.1;
+
+    switch (getRandomEvent(object, position)) {
+        case REFRACTION:
+            return dot(in, out) >= 1 - CONSIDER_EQUALS // if practically the same vector
+                   ? getColor(object.material.property.reflectance.kd, position) // valid
+                   : C_BLACK; // otherwise no
+        case REFLECTION:
+            return dot(in, out) <= -1 + CONSIDER_EQUALS // if practically the opposite vector
+                   ? getColor(object.material.property.reflectance.ks, position) // valid
+                   : C_BLACK; // otherwise no
+        case PHONG:
+            if(dot(in,out) >= 0){
+                // phong is valid only on the positive semisphere
+                return C_BLACK;
+            }
+            return getColor(object.material.property.reflectance.kdPhong, position) / (float) M_PI
+                   + getColor(object.material.property.reflectance.ksPhong, position)
+                     * (object.material.property.reflectance.s + 2.0f) / (2.0f * (float) M_PI)
+                     * pow(abs(dot(in, out)), object.material.property.reflectance.s);
+        case DEAD:
+            return C_BLACK;
+    }
 }
