@@ -9,22 +9,21 @@ using namespace std;
 
 
 Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float dist) const {
-    const float SPHERE_SIZE = 0.01;
+    const int ELEMENTS = 500;
 
-    int fotons = 0;
     Color color = C_BLACK;
-    list<const KDTree<Foton, 3>::Node *> list;
-    tree.find(position.as_vector(), SPHERE_SIZE, &list);
+    vector<const KDTree<Foton, 3>::Node *> list;
+    float radius;
+    tree.find(position.as_vector(), ELEMENTS, list, radius);
     for(auto &node : list){
         Foton foton = node->data();
         // only fotons near the element
-        if(mod(foton.position-position) <= SPHERE_SIZE && dot(direction, foton.direction) >= 0){
-            fotons++;
+        if(dot(direction, foton.direction) >= 0){
             color = color + foton.color * dot(direction, foton.direction) / (foton.dist + dist);
         }
     }
-    // TODO: return correct color
-    return fotons == 0 ? color : color / fotons;
+    // color = total_light / area_sphere(pi*r^2)
+    return color / M_PI / radius / radius;
 }
 
 

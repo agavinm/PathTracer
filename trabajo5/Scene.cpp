@@ -110,6 +110,7 @@ defineScene(noEmitters) {
     // LIGHT:
     vector<LightPoint> lightPoints;
     lightPoints.push_back(createLightPoint(C_WHITE, hPoint(2.5f, 0, -4)));
+    lightPoints.push_back(createLightPoint({1,0.5,0}, hPoint(2.5f, 2.5, 4.5)));
 
     // BOX:
     objects.push_back(create2D(
