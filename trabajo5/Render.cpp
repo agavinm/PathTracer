@@ -138,7 +138,6 @@ void launchFotons(int fotons, const Scene &scene, bool last, Progress &progress,
         double theta = 2 * M_PI * random_zero_one();
         double phi = acos(1 - 2 * random_zero_one());
         HCoord direction = hVector(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
-
         // launch
         launchFoton(point, direction, fotonList, scene);
 

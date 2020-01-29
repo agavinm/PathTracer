@@ -18,9 +18,9 @@ Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float distanc
     map.find(object)->second.find(position.as_vector(), ELEMENTS, list, radius);
     for (auto &node : list) {
         Foton foton = node->data();
-        // only fotons that will be reflected
         float dist = distance + foton.dist;
-        color = color + foton.color * getBRDF(direction, -foton.direction, position, *object) / dist / dist;
+        color = color +
+                foton.color * getBRDF(getRandomEvent(*object, position), direction, -foton.direction, position, *object) / dist / dist;
     }
     // color = total_light / area_sphere(pi*r^2)
     return color / M_PI / radius / radius;
