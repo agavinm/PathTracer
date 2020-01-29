@@ -17,19 +17,18 @@ bool endsWith(const string &original, const string &suffix) {
 
 void printUsage(const string &name) {
     cout << "Usage: " << name << " <ppp> <fotons> <width> <height> <file name> <scene>" << endl
-            << "* <file name> needs to be one of" << endl
-            << "       - .ppm" << endl
-            << "       - .bmp" << endl
-            << "OPTIONAL* <scene> can be a triangular .ply file or a predefined scene." << endl;
+         << "* <file name> needs to be one of" << endl
+         << "       - .ppm" << endl
+         << "       - .bmp" << endl
+         << "OPTIONAL* <scene> can be a triangular .ply file or a predefined scene." << endl;
     printScenes();
 }
 
 int main(int argc, char *argv[]) {
-#ifndef NDEBUG
+#ifdef USING_DEBUG
     // debug code
     cout << "!!!!! USING SLOW DEBUG CODE !!!!!" << endl;
 #endif
-
 
     // check enough arguments
     if (argc < 6 || argc > 7) {
@@ -55,12 +54,10 @@ int main(int argc, char *argv[]) {
     Scene scene = createScene(sceneName, (float) width / (float) height);
 
     if (endsWith(argv[5], ".ppm")) {
-        storePPM(string(argv[5]), render(width, height, ppp, fotons,  scene), 255);
-    }
-    else if (endsWith(argv[5], ".bmp")) {
+        storePPM(string(argv[5]), render(width, height, ppp, fotons, scene), 255);
+    } else if (endsWith(argv[5], ".bmp")) {
         storeBMP(string(argv[5]), render(width, height, ppp, fotons, scene));
-    }
-    else {
+    } else {
         cerr << "Unknown output file extension" << endl;
         return 1;
     }
