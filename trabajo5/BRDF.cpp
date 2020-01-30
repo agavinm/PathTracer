@@ -189,7 +189,6 @@ Color getBRDF(EVENT event, const HCoord &in, const HCoord &out, const HCoord &po
         case REFRACTION: {
             HCoord n = normal(object.geometry, position);
             HCoord refraction = refract(in, n, VACUUM_REFRACTIVE_INDEX / WATER_REFRACTIVE_INDEX);
-            // TODO: this
 
             return dot(refraction, out) >= 1 - CONSIDER_EQUALS // if practically the same vector
                    ? getColor(object.material.property.reflectance.kd, position) // valid

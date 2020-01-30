@@ -20,9 +20,12 @@
 
 using namespace std;
 
+float lightDistCoefficient(float dist) {
+    return 1 / (dist + 1) / (dist + 1);
+}
+
 void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &list, const Scene &scene) {
     Color color = lightPoint.color;
-    float pathLength = 0.0f;
     HCoord position = lightPoint.position;
 
     bool first = true; // first intersections is not saved
@@ -41,7 +44,9 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
             HCoord origin = position;
             position = position + direction * dist; // hit position
             HCoord n = normal(intersection->geometry, position);
-            pathLength += dist;
+
+            // update color
+            color = color * abs(dot(n, direction)) * lightDistCoefficient(dist);
 
             switch (intersection->material.type) {
                 case EMITTER: { // LIGHT
@@ -49,8 +54,16 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
                 }
                 case REFLECTOR: {
 
+                    // save foton
+                    if (first) {
+                        first = false;
+                    } else {
+                        list.push_back({position, direction, color, intersection});
+                    }
+
+                    // get BRDF & next ray of the event
                     pair<Color, HCoord> result;
-                    switch(getRandomEvent(*intersection, position)){
+                    switch (getRandomEvent(*intersection, position)) {
                         case REFRACTION:
                             result = refraction(scene, origin, position, direction, n, *intersection);
                             break;
@@ -67,14 +80,8 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
 
                     color = color * result.first;
 
-                    // save foton
-                    if (first) {
-                        first = false;
-                    } else {
-                        list.push_back({position, direction, color, pathLength, intersection});
-                    }
 
-                    color = color * abs(dot(n, result.second));
+                    //color = color * abs(dot(n, result.second));
                     direction = result.second;
 
                     break;
@@ -108,19 +115,26 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
         // found object
         position = position + direction * dist; // hit position
 
-        Color direct = C_BLACK;
         // get direct light
+        Color direct_total = C_BLACK;
         for (const LightPoint &lightPoint : scene.lightPoints) {
             HCoord lightVect = position - lightPoint.position;
-            float lightDist = intersect(lightPoint.position, norm(lightVect), scene.objects).second;
+            pair<const Object *, float> obj_dist = intersect(lightPoint.position, norm(lightVect), scene.objects);
+            const Object *object = obj_dist.first;
+            float lightDist = obj_dist.second;
             if (lightDist > mod(lightVect) - EPS) {
-                float pathLightDist = dist + lightDist;
-                direct = direct + lightPoint.color * getColor(intersection->material.property.texture, position) * abs(dot(normal(intersection->geometry, position), norm(lightVect))) / (pathLightDist * pathLightDist);
+                Color direct = lightPoint.color
+                               * getBRDF(getRandomEvent(*object, position), lightVect, -direction, position, *object)
+                               * abs(dot(normal(intersection->geometry, position), norm(lightVect)))
+                               * lightDistCoefficient(lightDist);
+
+                direct_total = direct_total + direct;
             }
         }
 
         // calculate light
-        return direct + globalFotonMap.getColorFromMap(position, direction, dist, intersection);
+        return (direct_total + globalFotonMap.getColorFromMap(position, direction, intersection))
+               * lightDistCoefficient(dist);
     }
 
 }
