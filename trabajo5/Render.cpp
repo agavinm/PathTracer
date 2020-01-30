@@ -20,13 +20,10 @@
 
 using namespace std;
 
-float lightDistCoefficient(float dist) {
-    return 1 / (dist + 1) / (dist + 1);
-}
-
 void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &list, const Scene &scene) {
     Color color = lightPoint.color;
     HCoord position = lightPoint.position;
+    float pathDist = 0;
 
     bool first = true; // first intersections is not saved
     bool path = true;
@@ -35,6 +32,8 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
         pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
         const Object *intersection = object_dist.first;
         float dist = object_dist.second;
+
+        pathDist += dist;
 
         if (intersection == nullptr) {
             // void: bye bye foton
@@ -46,7 +45,7 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
             HCoord n = normal(intersection->geometry, position);
 
             // update color
-            color = color * abs(dot(n, direction)) * lightDistCoefficient(dist);
+            color = color * abs(dot(n, direction));
 
             switch (intersection->material.type) {
                 case EMITTER: { // LIGHT
@@ -58,7 +57,7 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
                     if (first) {
                         first = false;
                     } else {
-                        list.push_back({position, direction, color, intersection});
+                        list.push_back({position, direction, color, pathDist, intersection});
                     }
 
                     // get BRDF & next ray of the event
@@ -106,14 +105,14 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
     // find nearest intersection
     pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
     const Object *intersection = object_dist.first;
-    float dist = object_dist.second;
+    float rayDist = object_dist.second;
 
     if (intersection == nullptr) {
         // void: nothing
         return C_BLACK;
     } else {
         // found object
-        position = position + direction * dist; // hit position
+        position = position + direction * rayDist; // hit position
 
         // get direct light
         Color direct_total = C_BLACK;
@@ -123,18 +122,18 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
             const Object *object = obj_dist.first;
             float lightDist = obj_dist.second;
             if (lightDist > mod(lightVect) - EPS) {
+                float pathDist = lightDist + rayDist;
                 Color direct = lightPoint.color
                                * getBRDF(getRandomEvent(*object, position), lightVect, -direction, position, *object)
                                * abs(dot(normal(intersection->geometry, position), norm(lightVect)))
-                               * lightDistCoefficient(lightDist);
+                               / (pathDist * pathDist) ;
 
                 direct_total = direct_total + direct;
             }
         }
 
         // calculate light
-        return (direct_total + globalFotonMap.getColorFromMap(position, direction, intersection))
-               * lightDistCoefficient(dist);
+        return direct_total + globalFotonMap.getColorFromMap(position, direction, rayDist, intersection);
     }
 
 }

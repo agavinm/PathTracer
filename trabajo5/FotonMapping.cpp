@@ -10,7 +10,7 @@
 
 using namespace std;
 
-Color FotonMap::getColorFromMap(HCoord position, HCoord direction, const Object *object) const {
+Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float distance, const Object *object) const {
     const int ELEMENTS = 100;
 
     Color color = C_BLACK;
@@ -20,8 +20,11 @@ Color FotonMap::getColorFromMap(HCoord position, HCoord direction, const Object 
     map.find(object)->second.find(position.as_vector(), ELEMENTS, list, radius);
     for (auto &node : list) {
         Foton foton = node->data();
+        float pathDist = foton.dist + distance;
         color = color +
-                foton.color * getBRDF(getRandomEvent(*object, position), direction, -foton.direction, position, *object);
+                foton.color
+                * getBRDF(getRandomEvent(*object, position), direction, -foton.direction, position, *object)
+                / (pathDist * pathDist);
     }
 
     return color / M_PI / radius / radius; // color = total_light / area_sphere(pi*r^2)
