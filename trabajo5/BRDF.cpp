@@ -2,17 +2,14 @@
 // Created by abeln on 29/01/2020.
 //
 
-#include "FotonMapping.hpp"
 #include "Transform.hpp"
 #include "Progress.hpp"
 #include "Render.hpp"
-#include <iostream>
-#include <random>
 #include <cmath>
-#include <cassert>
-#include <thread>
 #include "BRDF.hpp"
 #include "Random.hpp"
+
+using namespace std;
 
 /**
  * Reflects a vector from another, like a two-sides mirror
@@ -32,8 +29,9 @@ HCoord reflect(const HCoord &in, const HCoord &n) {
  * @return
  */
 HCoord refract(const HCoord &in, HCoord n, float refractionIndex) {
+
     // https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
-    float c = dot(-n, in);
+    float c = -dot(n, in);
     if (c < 0) {
         // the ray comes from the inside, the refraction index is the opposite
         refractionIndex = 1 / refractionIndex;

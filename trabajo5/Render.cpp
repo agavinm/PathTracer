@@ -17,71 +17,88 @@
 #include "FotonMapping.hpp"
 #include "BRDF.hpp"
 #include "Random.hpp"
+#include "Material.hpp"
 
 using namespace std;
 
-void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &list, const Scene &scene) {
-    Color color = lightPoint.color;
-    HCoord position = lightPoint.position;
-    float pathDist = 0;
+/**
+ * Number of bounces where the map will be used.
+ *  2 for normal foton mapping
+ *  0-1 for no special first bounce
+ *  infinity for no foton mapping (path tracing)
+ */
+const int MAP_AT = 2;
 
-    bool first = true; // first intersections is not saved
+void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &list, const Scene &scene) {
+    Color fotonFactor = lightPoint.color;
+    HCoord position = lightPoint.position;
+    float fotonDist = 0;
+
+    int bounce = 1;
     bool path = true;
     while (path) {
         // find nearest intersection
         pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
         const Object *intersection = object_dist.first;
-        float dist = object_dist.second;
+        float stepDist = object_dist.second;
 
-        pathDist += dist;
+        fotonDist += stepDist;
 
         if (intersection == nullptr) {
             // void: bye bye foton
-            color = C_BLACK;
+            fotonFactor = C_BLACK;
         } else {
             // intersection with an object
             HCoord origin = position;
-            position = position + direction * dist; // hit position
+            position = position + direction * stepDist; // hit position
             HCoord n = normal(intersection->geometry, position);
-
-            // update color
-            color = color * abs(dot(n, direction));
 
             switch (intersection->material.type) {
                 case EMITTER: { // LIGHT
-                    throw invalid_argument("With fotonMapping emitters are not supported");
+                    //throw invalid_argument("With fotonMapping emitters are not supported");
+                    // the foton die
+                    path = false;
                 }
                 case REFLECTOR: {
-
-                    // save foton
-                    if (first) {
-                        first = false;
-                    } else {
-                        list.push_back({position, direction, color, pathDist, intersection});
-                    }
 
                     // get BRDF & next ray of the event
                     pair<Color, HCoord> result;
                     switch (getRandomEvent(*intersection, position)) {
                         case REFRACTION:
                             result = refraction(scene, origin, position, direction, n, *intersection);
+
+                            fotonFactor = fotonFactor * abs(dot(n, direction));
                             break;
                         case REFLECTION:
                             result = reflection(position, direction, n, *intersection);
+
+                            fotonFactor = fotonFactor * abs(dot(n, direction));
                             break;
                         case PHONG:
+                            // save foton
+                            if (bounce >= MAP_AT) {
+                                list.push_back({position, direction, fotonFactor, fotonDist, intersection});
+                            }
+
                             result = phong(scene, position, direction, n, *intersection);
                             break;
                         case DEAD:
-                            color = C_BLACK;
+                            // save foton
+                            if (bounce >= MAP_AT) {
+                                list.push_back({position, direction, fotonFactor, fotonDist, intersection});
+                            }
+
+                            fotonFactor = C_BLACK;
+                            path = false;
                             break;
                     }
 
-                    color = color * result.first;
+                    if (path) {
+                        fotonFactor = fotonFactor * result.first;
 
-
-                    //color = color * abs(dot(n, result.second));
-                    direction = result.second;
+                        //color = color * abs(dot(n, result.second));
+                        direction = result.second;
+                    }
 
                     break;
                 }
@@ -92,7 +109,9 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
 
         }
 
-        if (color.max() <= 0.0f) {
+        bounce++;
+
+        if (fotonFactor.max() <= 0.0f) {
             // avoid following paths with no light
             path = false;
         }
@@ -100,41 +119,117 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
 
 }
 
+bool isLightVisible(const LightPoint &lightPoint, HCoord position, const vector<Object> &objects) {
+    HCoord lightVect = position - lightPoint.position;
+    float lightDist = intersect(lightPoint.position, norm(lightVect), objects).second;
+    return lightDist >= mod(lightVect) - EPS;
+}
+
 Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, const FotonMap &globalFotonMap) {
 
-    // find nearest intersection
-    pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
-    const Object *intersection = object_dist.first;
-    float rayDist = object_dist.second;
+    Color rayFactor = C_WHITE;
+    Color direct_total = C_BLACK;
+    float rayDist = 0;
 
-    if (intersection == nullptr) {
-        // void: nothing
-        return C_BLACK;
-    } else {
-        // found object
-        position = position + direction * rayDist; // hit position
+    int bounce = 1;
+    bool path = true;
+    while (path) {
+        // find nearest intersection
+        pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
+        const Object *intersection = object_dist.first;
+        float dist = object_dist.second;
 
-        // get direct light
-        Color direct_total = C_BLACK;
-        for (const LightPoint &lightPoint : scene.lightPoints) {
-            HCoord lightVect = position - lightPoint.position;
-            pair<const Object *, float> obj_dist = intersect(lightPoint.position, norm(lightVect), scene.objects);
-            const Object *object = obj_dist.first;
-            float lightDist = obj_dist.second;
-            if (lightDist > mod(lightVect) - EPS) {
-                float pathDist = lightDist + rayDist;
-                Color direct = lightPoint.color
-                               * getBRDF(getRandomEvent(*object, position), lightVect, -direction, position, *object)
-                               * abs(dot(normal(intersection->geometry, position), norm(lightVect)))
-                               / (pathDist * pathDist) ;
+        rayDist += dist;
 
-                direct_total = direct_total + direct;
+        if (intersection == nullptr) {
+            // void: bye bye ray
+            rayFactor = C_BLACK;
+            path = false;
+        } else {
+            // intersection with an object
+            HCoord origin = position;
+            position = position + direction * dist; // hit position
+            HCoord n = normal(intersection->geometry, position);
+
+            switch (intersection->material.type) {
+                case EMITTER: { // LIGHT
+                    rayFactor = rayFactor * getColor(intersection->material.property.texture, position)
+                                / (rayDist * rayDist);
+                    path = false;
+                }
+                case REFLECTOR: {
+
+                    // get BRDF & next ray of the event
+                    pair<Color, HCoord> result;
+                    switch (getRandomEvent(*intersection, position)) {
+                        case REFRACTION:
+                            result = refraction(scene, origin, position, direction, n, *intersection);
+                            rayFactor = rayFactor * abs(dot(n, direction));
+                            break;
+                        case REFLECTION:
+                            result = reflection(position, direction, n, *intersection);
+                            rayFactor = rayFactor * abs(dot(n, direction));
+                            break;
+                        case PHONG:
+
+                            // get direct light
+                            for (const LightPoint &lightPoint : scene.lightPoints) {
+                                // foreach light
+                                if (isLightVisible(lightPoint, position, scene.objects)) {
+                                    // if visible, compute path light
+                                    HCoord lightVect = position - lightPoint.position;
+                                    float pathDist = mod(lightVect) + rayDist;
+                                    Color direct = lightPoint.color
+                                                   * getBRDF(PHONG, lightVect, -direction, position, *intersection)
+                                                   * abs(dot(n, lightVect))
+                                                   * rayFactor
+                                                   / (pathDist * pathDist);
+
+                                    direct_total = direct_total + direct;
+                                }
+                            }
+
+                            if (bounce >= MAP_AT - 1) {
+                                // get light from map
+                                rayFactor = rayFactor * globalFotonMap.getColorFromMap(position, direction, rayDist, intersection);
+                                path = false;
+                            } else {
+                                result = phong(scene, position, direction, n, *intersection);
+                            }
+
+                            break;
+                        case DEAD:
+                            rayFactor = C_BLACK;
+                            path = false;
+                            break;
+                    }
+
+                    if (path) {
+                        rayFactor = rayFactor * result.first;
+
+                        direction = result.second;
+                    }
+
+                    break;
+                }
+                default: {
+                    exit(6);
+                }
             }
+
+            bounce++;
+
         }
 
-        // calculate light
-        return direct_total + globalFotonMap.getColorFromMap(position, direction, rayDist, intersection);
+        if (rayFactor.max() <= 0.0f) {
+            // avoid following paths with no light
+            path = false;
+        }
     }
+
+    // calculate light
+    return direct_total + rayFactor;
+
 
 }
 
@@ -198,28 +293,33 @@ Image render(int width, int height, int ppp, int fotons, const Scene &scene, int
          "(" << scene.lightPoints.size() << " lights)" <<
          endl;
 
-    FotonMap globalFotonMap;
-
     Progress progress;
-    progress.start("[INFO] FotonMapping");
-
     thread threads[numThreads];
 
-    for (int n = 0; n < numThreads; n++) {
+    FotonMap globalFotonMap;
 
-        threads[n] = thread(launchFotons, ceil(fotons / numThreads), ref(scene),
-                            n == numThreads - 1, ref(progress), ref(globalFotonMap));
+    if (not scene.lightPoints.empty()) {
+
+        progress.start("[INFO] FotonMapping");
+
+        for (int n = 0; n < numThreads; n++) {
+            threads[n] = thread(launchFotons, ceil(fotons / numThreads), ref(scene),
+                                n == numThreads - 1, ref(progress), ref(globalFotonMap));
+        }
+
+        for (int n = 0; n < numThreads; n++) {
+            threads[n].join(); // wait thread n ends
+        }
+
+        progress.step(99.99f);
+
+        globalFotonMap.markToRead();
+
+        progress.end();
+
+    } else {
+        cout << "[INFO] No lightpoints, skipped fotonMapping" << endl;
     }
-
-    for (int n = 0; n < numThreads; n++) {
-        threads[n].join(); // wait thread n ends
-    }
-
-    progress.step(99.99f);
-
-    globalFotonMap.markToRead();
-
-    progress.end();
 
     //-----------------------------------
 

@@ -141,11 +141,12 @@ defineScene(noEmitters) {
             Specular(colored(C_WHITE)),
             VACUUM_REFRACTIVE_INDEX
     ));
+
     objects.push_back(create3D(
             Sphere(hPoint(3, -3, -3), 2),
 //            Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
             Refractor(colored(C_WHITE)),
-            WATER_REFRACTIVE_INDEX
+            LIQUID_HELIUM_REFRACTIVE_INDEX
     ));
 
     return {
