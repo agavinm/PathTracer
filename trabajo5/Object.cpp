@@ -13,9 +13,7 @@
 
 using namespace std;
 
-Object create2D(const Geometry &geometry, const Material &material) {
-    assert(geometry.type != SPHERE);
-
+Object createObject(const Geometry &geometry, const Material &material) {
     return {
             .geometry = geometry,
             .material = material,
@@ -25,9 +23,7 @@ Object create2D(const Geometry &geometry, const Material &material) {
     };
 }
 
-Object create3D(const Geometry &geometry, const Material &material, float refractiveIndex) {
-    assert(geometry.type == SPHERE);
-
+Object createObject(const Geometry &geometry, const Material &material, float refractiveIndex) {
     return {
             .geometry = geometry,
             .material = material,

@@ -58,36 +58,36 @@ defineScene(default) {
     vector<LightPoint> lightPoints;
     lightPoints.push_back(createLightPoint(C_WHITE, hPoint(2.5f, 0, -4)));
 
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, -1), 5),
             Emitter(colored(C_WHITE))
     )); // UP
 
     // BOX:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(-1, 0, 0), 5),
             Diffuse(colored(C_GREY))
     )); // FRONT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 1, 0), 5),
             Diffuse(colored(C_GREEN))
     )); // RIGHT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, -1, 0), 5),
             Diffuse(colored(C_RED))
     )); // LEFT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, 1), 5),
             Diffuse(colored(C_GREY))
     )); // DOWN
 
     // SPHERES:
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, 2.5f, -2.5f), 1.5f),
             Phong(colored(C_BLUE), colored(C_GREEN), 10),
             VACUUM_REFRACTIVE_RATIO
     ));
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
             Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
             WATER_REFRACTIVE_RATIO
@@ -108,40 +108,47 @@ defineScene(noEmitters) {
 
     // LIGHT:
     vector<LightPoint> lightPoints;
-    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(2.5f, 0, -4)));
+    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(2.5f, 0, -3)));
     lightPoints.push_back(createLightPoint({1, 0.5, 0}, hPoint(2.5f, 2.5, 4.5)));
 
     // BOX:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, -1), 5),
             Emitter(colored(C_WHITE))
     )); // UP
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(-1, 0, 0), 5),
             Diffuse(colored(C_GREY))
     )); // FRONT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 1, 0), 5),
             Diffuse(colored(C_GREEN))
     )); // RIGHT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, -1, 0), 5),
             Diffuse(colored(C_RED))
     )); // LEFT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, 1), 5),
             Diffuse(colored(C_GREY))
     )); // DOWN
 
+    // water
+    objects.push_back(createObject(
+            Plane(hVector(0, 0, 1), 3.5),
+            Delta(colored(C_WHITE), colored({0.6, 0.6, 1})),
+            WATER_REFRACTIVE_RATIO
+    ));
+
     // SPHERES:
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, 2.5f, -2.5f), 1.5f),
 //            Phong(colored(C_BLUE), colored(C_GREEN), 10),
             Specular(colored(C_WHITE)),
             VACUUM_REFRACTIVE_RATIO
     ));
 
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
 //            Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
             Refractor(colored(C_WHITE)),
@@ -152,7 +159,8 @@ defineScene(noEmitters) {
             .camera = camera,
             .objects = objects,
             .lightPoints = lightPoints,
-            .gammaCorrection = 2.0f,
+            .gammaCorrection = 3.0f,
+            .clampCorrection = 25.0f
     };
 }
 
@@ -162,47 +170,47 @@ defineScene(specular) {
     vector<Object> objects;
 
     // LIGHT:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, -1), 5),
             Emitter(colored(C_WHITE))
     )); // UP
 
     // MIRROR
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Triangle(hPoint(5, 0, 2), hPoint(5, 2, -2), hPoint(5, -2, -2)),
             Specular(colored(C_WHITE))
     )); // FRONT
 
     // BOX:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(-1, 0, 0), 5),
             Diffuse(colored(C_GREY))
     )); // FRONT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 1, 0), 5),
             Diffuse(colored(C_GREEN))
     )); // RIGHT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, -1, 0), 5),
             Diffuse(colored(C_RED))
     )); // LEFT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, 1), 5),
             Diffuse(colored(C_GREY))
     )); // DOWN
 
     // SPHERES:
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, 4, -4), 1),
             Phong(colored(C_BLUE), colored(C_GREEN), 2),
             VACUUM_REFRACTIVE_RATIO
     ));
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
             Specular(colored(C_WHITE)),
             VACUUM_REFRACTIVE_RATIO
     ));
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(2, 3, 3), 1.5f),
             Specular(colored(C_WHITE)),
             VACUUM_REFRACTIVE_RATIO
@@ -222,46 +230,46 @@ defineScene(refraction) {
     vector<Object> objects;
 
     // LIGHT:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, -1), 5),
             Emitter(colored(C_WHITE))
     )); // UP
 
     // BOX:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(-1, 0, 0), 5),
             Diffuse(colored(C_GREY))
     )); // FRONT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 1, 0), 5),
             Diffuse(colored(C_GREEN))
     )); // RIGHT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, -1, 0), 5),
             Diffuse(colored(C_RED))
     )); // LEFT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, 1), 5),
             Diffuse(colored(C_GREY))
     )); // DOWN
 
     // SPHERES:
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 1),
             Phong(colored(C_GREEN), colored(C_YELLOW), 2),
             VACUUM_REFRACTIVE_RATIO
     ));
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
             Refractor(colored(C_CYAN)),
             LIQUID_HELIUM_REFRACTIVE_RATIO
     ));
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, 2.5f, -2), 1.5f),
             Phong(colored(C_BLUE), colored(C_GREEN), 2),
             VACUUM_REFRACTIVE_RATIO
     ));
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, 3, -3), 2),
             Refractor(colored(C_YELLOW)),
             AMBER_REFRACTIVE_RATIO
@@ -281,40 +289,40 @@ defineScene(circle) {
     vector<Object> objects;
 
     // LIGHT:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Circle(hPoint(2, 0, 5), V_AX * 2, V_AY * 2),
             Emitter(colored(C_WHITE))
     )); // UP
 
     // BOX:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(-1, 0, 0), 5),
             Diffuse(colored(C_GREY))
     )); // FRONT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 1, 0), 5),
             Diffuse(colored(C_GREEN))
     )); // RIGHT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, -1, 0), 5),
             Diffuse(colored(C_RED))
     )); // LEFT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, 1), 5),
             Diffuse(colored(C_GREY))
     )); // DOWN
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, -1), 5),
             Diffuse(colored(C_GREY))
     )); // UP
 
     // SPHERES:
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, 2.5f, -2.5f), 1.5f),
             Phong(colored(C_BLUE), colored(C_GREEN), 10),
             VACUUM_REFRACTIVE_RATIO
     ));
-    objects.push_back(create3D(
+    objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
             Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
             WATER_REFRACTIVE_RATIO
@@ -338,25 +346,25 @@ defineScene(mix) {
     lightPoints.push_back(createLightPoint(C_WHITE, hPoint(-2.5f, 5, 0)));
     lightPoints.push_back(createLightPoint(C_YELLOW, hPoint(-5, -5, 0)));
 
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, -1), 5),
             Emitter(colored(C_WHITE))
     )); // UP
 
     // BOX:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(-1, 0, 0), 5),
             Diffuse(colored(C_GREY))
     )); // FRONT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 1, 0), 5),
             Diffuse(colored(C_GREEN))
     )); // RIGHT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, -1, 0), 5),
             Diffuse(colored(C_RED))
     )); // LEFT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, 1), 5),
             Diffuse(colored(C_GREY))
     )); // DOWN
@@ -378,42 +386,42 @@ defineScene(dna) {
     vector<Object> objects;
 
     // LIGHT:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, -1), 100),
             Emitter(colored(C_WHITE))
     )); // UP
 
     // BOX:
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(-1, 0, 0), 100),
             Diffuse(colored(C_GREY))
     )); // FRONT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 1, 0), 100),
             Diffuse(colored(C_GREEN))
     )); // RIGHT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, -1, 0), 100),
             Diffuse(colored(C_RED))
     )); // LEFT
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Plane(hVector(0, 0, 1), 100),
             Diffuse(colored(C_GREY))
     )); // DOWN
 
     for (int i = 0; i <= 100; i += 1) {
-        objects.push_back(create3D(
+        objects.push_back(createObject(
                 Sphere(hPoint(-50 * cos(i / 5.), -50 * sin(i / 5.), i * 2 - 100), 5),
                 Diffuse(colored(C_PURPLE)),
                 VACUUM_REFRACTIVE_RATIO
         ));
     }
 
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Cuadric(1, 1, 0, 0, 0, 0, 0, 0, 0, -40 * 40),
             Diffuse(colored(C_WHITE))
     ));
-    objects.push_back(create2D(
+    objects.push_back(createObject(
             Cuadric(0.1, -0.1, 0, 0, 0, 0, 0, 0, 4, 500),
             Diffuse(colored(C_CYAN))
     ));
@@ -546,13 +554,13 @@ void loadPly(const string &filename, vector<Object> &objects, bool isEmmiter) {
                               vertices[vertex3].first};
 
             if (isEmmiter) {
-                triangles.push_back(create2D(
+                triangles.push_back(createObject(
                         Triangle(vertices[vertex1].first, vertices[vertex2].first, vertices[vertex3].first),
                         color ? Emitter(colored(vertexColorDistanceWeightingSquare(col, vert)))
                               : Emitter(colored(C_WHITE))
                 ));
             } else {
-                triangles.push_back(create2D(
+                triangles.push_back(createObject(
                         Triangle(vertices[vertex1].first, vertices[vertex2].first, vertices[vertex3].first),
                         color ? Diffuse(colored(vertexColorDistanceWeightingSquare(col, vert)))
                               : Diffuse(colored(C_WHITE))

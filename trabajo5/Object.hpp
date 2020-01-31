@@ -34,9 +34,9 @@ struct LightPoint {
 
 LightPoint createLightPoint(const Color &color, const HCoord &position);
 
-Object create2D(const Geometry &geometry, const Material &material);
+Object createObject(const Geometry &geometry, const Material &material);
 
-Object create3D(const Geometry &geometry, const Material &material, float refractiveIndex);
+Object createObject(const Geometry &geometry, const Material &material, float refractiveIndex);
 
 /**
  * Triangular ply object is a triangle mesh without volume ("like a paper cover")
