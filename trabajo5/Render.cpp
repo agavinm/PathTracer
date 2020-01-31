@@ -30,86 +30,78 @@ using namespace std;
 const int MAP_AT = 2;
 
 void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &list, const Scene &scene) {
+
+    // intialize path
     Color fotonFactor = lightPoint.color;
     HCoord position = lightPoint.position;
-    float fotonDist = 0;
 
     int bounce = 1;
     bool path = true;
     while (path) {
+
         // find nearest intersection
         pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
         const Object *intersection = object_dist.first;
         float stepDist = object_dist.second;
 
-        fotonDist += stepDist;
-
         if (intersection == nullptr) {
-            // void: bye bye foton
-            fotonFactor = C_BLACK;
+            // no intersection, the foton is discarded
+            path = false;
         } else {
             // intersection with an object
-            HCoord origin = position;
+
+            // get properties of bounce
             position = position + direction * stepDist; // hit position
             HCoord n = normal(intersection->geometry, position);
 
+            // update factor with the geometry component
+            fotonFactor = fotonFactor * abs(dot(n, direction));
+
+            // check material
             switch (intersection->material.type) {
-                case EMITTER: { // LIGHT
-                    //throw invalid_argument("With fotonMapping emitters are not supported");
-                    // the foton die
+                case EMITTER: {
+                    // LIGHT, the foton dies
                     path = false;
+                    break;
                 }
                 case REFLECTOR: {
+                    // a reflector (a non-emitter)
 
                     // get BRDF & next ray of the event
-                    pair<Color, HCoord> result;
-                    switch (getRandomEvent(*intersection, position)) {
-                        case REFRACTION:
-                            result = refraction(scene, origin, position, direction, n, *intersection);
+                    EVENT event = getRandomEvent(*intersection, position);
+                    HCoord nextDirection = getNewDirection(event, position, direction, *intersection);
 
-                            fotonFactor = fotonFactor * abs(dot(n, direction));
-                            break;
-                        case REFLECTION:
-                            result = reflection(position, direction, n, *intersection);
+                    if (event == PHONG_DIFFUSE || event == PHONG_SPECULAR) {
+                        // only on phong cases
 
-                            fotonFactor = fotonFactor * abs(dot(n, direction));
-                            break;
-                        case PHONG:
-                            // save foton
-                            if (bounce >= MAP_AT) {
-                                list.push_back({position, direction, fotonFactor, fotonDist, intersection});
-                            }
+                        if (bounce >= MAP_AT) {
+                            // ready to save foton in map
+                            list.push_back({position, direction, fotonFactor, intersection});
+                        }
+                    }
 
-                            result = phong(scene, position, direction, n, *intersection);
-                            break;
-                        case DEAD:
-                            // save foton
-                            if (bounce >= MAP_AT) {
-                                list.push_back({position, direction, fotonFactor, fotonDist, intersection});
-                            }
-
-                            fotonFactor = C_BLACK;
-                            path = false;
-                            break;
+                    if (event == DEAD) {
+                        // if the event is to kill, the foton dies
+                        path = false;
                     }
 
                     if (path) {
-                        fotonFactor = fotonFactor * result.first;
+                        // if the path is still active, prepare for next bounce
+                        bounce++;
 
-                        //color = color * abs(dot(n, result.second));
-                        direction = result.second;
+                        // update factor with the brdf
+                        fotonFactor = fotonFactor
+                                      * getBRDF(event, direction, nextDirection, position, *intersection);
+
+                        // next direction
+                        direction = nextDirection;
                     }
 
                     break;
                 }
-                default: {
-                    exit(6);
-                }
             }
 
         }
-
-        bounce++;
 
         if (fotonFactor.max() <= 0.0f) {
             // avoid following paths with no light
@@ -119,105 +111,114 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
 
 }
 
-bool isLightVisible(const LightPoint &lightPoint, HCoord position, const vector<Object> &objects) {
+bool isLightVisible(const LightPoint &lightPoint, const HCoord &position, const vector<Object> &objects) {
     HCoord lightVect = position - lightPoint.position;
     float lightDist = intersect(lightPoint.position, norm(lightVect), objects).second;
     return lightDist >= mod(lightVect) - EPS;
 }
 
+/**
+ * Returns the light towards a ray
+ * @param scene the scene to use
+ * @param position position of start of the ray
+ * @param direction direction of the ray, from 'position' towards the scene
+ * @param globalFotonMap fotonmap to use for fotonmapping
+ * @return the ray color
+ */
 Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, const FotonMap &globalFotonMap) {
 
-    Color rayFactor = C_WHITE;
-    Color direct_total = C_BLACK;
-    float rayDist = 0;
+    // intialize
+    Color rayFactor = C_WHITE; // the color factor (product of brdf and cosines along the path)
+    Color directTotal = C_BLACK; // the direct light computed at each step
+    int bounce = 1; // number of bounces
+    bool path = true; // to stop looping
 
-    int bounce = 1;
-    bool path = true;
     while (path) {
+
         // find nearest intersection
         pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
         const Object *intersection = object_dist.first;
         float dist = object_dist.second;
 
-        rayDist += dist;
-
         if (intersection == nullptr) {
-            // void: bye bye ray
+            // no intersection, return the 'void color'
             rayFactor = C_BLACK;
             path = false;
+
         } else {
             // intersection with an object
-            HCoord origin = position;
-            position = position + direction * dist; // hit position
-            HCoord n = normal(intersection->geometry, position);
 
+            // get properties of bounce
+            position = position + direction * dist; // update position with hit
+            HCoord n = normal(intersection->geometry, position); // normal of hit point
+
+            // check material
             switch (intersection->material.type) {
-                case EMITTER: { // LIGHT
-                    rayFactor = rayFactor * getColor(intersection->material.property.texture, position)
-                                / (rayDist * rayDist);
-                    path = false;
+                case EMITTER: {
+                    // LIGHT, end of path
+                    rayFactor = rayFactor
+                                * getColor(intersection->material.property.texture, position); // update factor with light color
+                    path = false; // end
+                    break;
                 }
                 case REFLECTOR: {
+                    // a reflector (a non-emitter)
 
                     // get BRDF & next ray of the event
-                    pair<Color, HCoord> result;
-                    switch (getRandomEvent(*intersection, position)) {
-                        case REFRACTION:
-                            result = refraction(scene, origin, position, direction, n, *intersection);
-                            rayFactor = rayFactor * abs(dot(n, direction));
-                            break;
-                        case REFLECTION:
-                            result = reflection(position, direction, n, *intersection);
-                            rayFactor = rayFactor * abs(dot(n, direction));
-                            break;
-                        case PHONG:
+                    EVENT event = getRandomEvent(*intersection, position);
+                    HCoord nextDirection = getNewDirection(event, position, direction, *intersection);
 
-                            // get direct light
-                            for (const LightPoint &lightPoint : scene.lightPoints) {
-                                // foreach light
-                                if (isLightVisible(lightPoint, position, scene.objects)) {
-                                    // if visible, compute path light
-                                    HCoord lightVect = position - lightPoint.position;
-                                    float pathDist = mod(lightVect) + rayDist;
-                                    Color direct = lightPoint.color
-                                                   * getBRDF(PHONG, lightVect, -direction, position, *intersection)
-                                                   * abs(dot(n, lightVect))
-                                                   * rayFactor
-                                                   / (pathDist * pathDist);
+                    if (event == PHONG_DIFFUSE || event == PHONG_SPECULAR) {
+                        // only on phong cases
 
-                                    direct_total = direct_total + direct;
-                                }
+                        // get direct light
+                        for (const LightPoint &lightPoint : scene.lightPoints) {
+                            // foreach light
+                            if (isLightVisible(lightPoint, position, scene.objects)) {
+
+                                // if visible, compute path light
+                                HCoord lightVect = position - lightPoint.position;
+                                float lightDist = mod(lightVect);
+                                Color direct = lightPoint.color
+                                               * getBRDF(event, lightVect, -direction, position, *intersection)
+                                               * abs(dot(n, lightVect))
+                                               * rayFactor
+                                               / (lightDist * lightDist);
+
+                                directTotal = directTotal + direct;
                             }
+                        }
 
-                            if (bounce >= MAP_AT - 1) {
-                                // get light from map
-                                rayFactor = rayFactor * globalFotonMap.getColorFromMap(position, direction, rayDist, intersection);
-                                path = false;
-                            } else {
-                                result = phong(scene, position, direction, n, *intersection);
-                            }
-
-                            break;
-                        case DEAD:
-                            rayFactor = C_BLACK;
+                        if (bounce >= MAP_AT - 1) {
+                            // get light from map
+                            rayFactor = rayFactor
+                                        * globalFotonMap.getColorFromMap(position, direction, intersection)
+                                        * abs(dot(n, direction));
                             path = false;
-                            break;
+                        }
+                    }
+
+                    if (event == DEAD) {
+                        // if the event is to kill, the path ends
+                        rayFactor = C_BLACK;
+                        path = false;
                     }
 
                     if (path) {
-                        rayFactor = rayFactor * result.first;
+                        // if the path is still active, prepare for next bounce
+                        bounce++;
 
-                        direction = result.second;
+                        // update factor with the brdf and the geometry component
+                        rayFactor = rayFactor
+                                    * getBRDF(event, direction, nextDirection, position, *intersection)
+                                    * abs(dot(n, direction));
+
+                        // next direction
+                        direction = nextDirection;
                     }
-
                     break;
                 }
-                default: {
-                    exit(6);
-                }
             }
-
-            bounce++;
 
         }
 
@@ -227,9 +228,8 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
         }
     }
 
-    // calculate light
-    return direct_total + rayFactor;
-
+    // return light
+    return rayFactor + directTotal / bounce;
 
 }
 

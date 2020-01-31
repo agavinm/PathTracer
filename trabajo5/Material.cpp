@@ -27,7 +27,7 @@ Material Phong(const Texture &kdPhong, const Texture &ksPhong, const float s) {
 }
 
 Material Diffuse(const Texture &k) {
-    return Phong(k, k, 1);
+    return Phong(k, colored(C_BLACK), 1);
 }
 
 Material Delta(const Texture &kd, const Texture &ks) {

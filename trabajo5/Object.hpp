@@ -21,7 +21,7 @@ struct Object {
     const Geometry geometry;
     const Material material;
     const OBJECT_TYPE type;
-    const float n; // Refractive index (Snell's law)
+    const float refractionRatio; // Refractive index (Snell's law)
 
     // Only for TRIANGULAR_PLY
     const std::vector<Object> triangles;
@@ -61,8 +61,8 @@ std::pair<const Object *, float> intersect(const HCoord & origin, const HCoord &
 
 std::pair<const Object *, float> triangularPlyIntersect(const HCoord &origin, const HCoord &dir, const Object &object);
 
-const float VACUUM_REFRACTIVE_INDEX = 1.0f;
-const float WATER_REFRACTIVE_INDEX = 1.330f;
-const float AMBER_REFRACTIVE_INDEX = 1.55f;
-const float LIQUID_HELIUM_REFRACTIVE_INDEX = 1.025;
+const float VACUUM_REFRACTIVE_RATIO = 1 / 1.0f;
+const float WATER_REFRACTIVE_RATIO =  1 / 1.330f;
+const float AMBER_REFRACTIVE_RATIO = 1 / 1.55f;
+const float LIQUID_HELIUM_REFRACTIVE_RATIO = 1 / 1.025;
 #endif //TRABAJO4_OBJECT_HPP

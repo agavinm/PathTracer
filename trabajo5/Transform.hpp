@@ -34,6 +34,8 @@ Transform inverse(const Transform &t);
 // Constants
 static const float EPS = 1e-6;
 
+#define SIMILAR(a,b) ( ((a) < (b) + EPS) && ((a) > (b) - EPS))
+
 
 // Declarations:
 

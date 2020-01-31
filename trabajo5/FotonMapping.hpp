@@ -14,7 +14,6 @@ struct Foton {
     HCoord position; // position of foton
     HCoord direction; // direction from where the foton came
     Color color; // color of the foton
-    float dist; // distance from the light to the foton
     const Object *object; // Object of the foton
     /* don't put these elements as constants, otherwise the KDTree can't work */
 };
@@ -51,7 +50,7 @@ public:
      * @param object object of intersection
      * @return color of that intersection
      */
-    Color getColorFromMap(HCoord position, HCoord direction, float distance, const Object *object) const;
+    Color getColorFromMap(HCoord position, HCoord direction, const Object *object) const;
 
     /**
      * When called, all fotons in the 'waiting' list are converted to a kdtree (removing any existing one) ready to be used with #getColorFromMap()

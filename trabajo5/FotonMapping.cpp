@@ -10,7 +10,7 @@
 
 using namespace std;
 
-Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float distance, const Object *object) const {
+Color FotonMap::getColorFromMap(HCoord position, HCoord direction, const Object *object) const {
     const int ELEMENTS = 100;
 
     Color color = C_BLACK;
@@ -20,14 +20,13 @@ Color FotonMap::getColorFromMap(HCoord position, HCoord direction, float distanc
     map.find(object)->second.find(position.as_vector(), ELEMENTS, list, radius);
     for (auto &node : list) {
         Foton foton = node->data();
-        float pathDist = foton.dist + distance;
         color = color +
                 foton.color
-                * getBRDF(getRandomEvent(*object, position), direction, -foton.direction, position, *object)
-                / (pathDist * pathDist);
+                * getBRDF(PHONG_DIFFUSE, direction, -foton.direction, position, *object);
     }
 
-    return color / M_PI / radius / radius; // color = total_light / area_sphere(pi*r^2)
+    return color / M_PI / radius / radius // color = total_light / area_sphere(pi*r^2)
+    / 5000; // magic number by testing
 }
 
 
@@ -42,7 +41,7 @@ void FotonMap::addAll(vector<Foton> &other) {
 
 void FotonMap::markToRead() {
     mtx.lock();
-    for(auto tree : map){
+    for (auto tree : map) {
         // tree.second.balance(); // for some reason this doesn't work
         map[tree.first].balance();
     }
