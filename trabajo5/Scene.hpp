@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <math.h>
 #include "Object.hpp"
 
 // Camera
@@ -47,7 +48,8 @@ struct Scene {
     const Camera camera;
     const std::vector<Object> objects;
     const std::vector<LightPoint> lightPoints;
-    const float gammaCorrection;
+    const float gammaCorrection {NAN};
+    const float clampCorrection {NAN};
 };
 
 /**

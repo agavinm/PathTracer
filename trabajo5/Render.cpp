@@ -347,5 +347,21 @@ Image render(int width, int height, int ppp, int fotons, const Scene &scene, int
 
     progress.end();
 
-    return gammaCurve(image, scene.gammaCorrection);
+    if (isnan(scene.clampCorrection)) {
+        if (isnan(scene.gammaCorrection)) {
+            // none
+            return equalization(image);
+        } else {
+            // gamma only
+            return gammaCurve(image, scene.gammaCorrection);
+        }
+    } else {
+        if (isnan(scene.gammaCorrection)) {
+            // clamp only
+            return equalizeAndClamp(image, scene.clampCorrection);
+        } else {
+            // clamp and gamma
+            return clampAndGammaCurve(image, scene.clampCorrection, scene.gammaCorrection);
+        }
+    }
 }

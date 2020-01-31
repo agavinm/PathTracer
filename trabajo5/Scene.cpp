@@ -152,7 +152,7 @@ defineScene(noEmitters) {
             .camera = camera,
             .objects = objects,
             .lightPoints = lightPoints,
-            .gammaCorrection = 2.0f
+            .gammaCorrection = 2.0f,
     };
 }
 

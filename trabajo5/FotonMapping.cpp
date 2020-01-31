@@ -12,6 +12,7 @@ using namespace std;
 
 Color FotonMap::getColorFromMap(HCoord position, HCoord direction, const Object *object) const {
     const int ELEMENTS = 100;
+    const int k = 10; // kernel
 
     Color color = C_BLACK;
     vector<const KDTree<Foton, 3>::Node *> list;
@@ -25,8 +26,9 @@ Color FotonMap::getColorFromMap(HCoord position, HCoord direction, const Object 
                 * getBRDF(PHONG_DIFFUSE, direction, -foton.direction, position, *object);
     }
 
-    return color / M_PI / radius / radius // color = total_light / area_sphere(pi*r^2)
-    / 5000; // magic number by testing
+    return color / ELEMENTS // average color
+           / (M_PI * radius * radius) // color = total_light / area_circle(pi*r^2)
+           / k; // kernel
 }
 
 
