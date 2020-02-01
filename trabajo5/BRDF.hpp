@@ -1,9 +1,13 @@
-//
-// Created by abeln on 29/01/2020.
-//
+/******************************************************************************
+ * @file    BRDF.hpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
+ ******************************************************************************/
 
-#ifndef TRABAJO5_BRDF_HPP
-#define TRABAJO5_BRDF_HPP
+#ifndef TRABAJO4_BRDF_HPP
+#define TRABAJO4_BRDF_HPP
 
 #include "Scene.hpp"
 #include "HCoord.hpp"
@@ -26,4 +30,4 @@ EVENT getRandomEvent(const Object &object, const HCoord &position);
 
 Color getBRDF(EVENT event, const HCoord &in, const HCoord &out, const HCoord &position, const Object &object);
 
-#endif //TRABAJO5_BRDF_HPP
+#endif //TRABAJO4_BRDF_HPP

@@ -2,8 +2,8 @@
  * @file    Material.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Diciembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
  ******************************************************************************/
 
 #include "Material.hpp"

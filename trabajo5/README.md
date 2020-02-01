@@ -1,5 +1,4 @@
-# Trabajo recomendado 4
-Trabajo recomendado 4
+# Informática Gráfica - Trabajo 4: Path tracer
 
 Pthread compilation:  
  - https://stackoverflow.com/questions/1620918/cmake-and-libpthread  

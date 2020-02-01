@@ -1,13 +1,17 @@
-//
-// Created by abeln on 29/01/2020.
-//
+/******************************************************************************
+ * @file    Random.hpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
+ ******************************************************************************/
 
-#ifndef TRABAJO5_RANDOM_HPP
-#define TRABAJO5_RANDOM_HPP
+#ifndef TRABAJO4_RANDOM_HPP
+#define TRABAJO4_RANDOM_HPP
 
 
 float random_zero_one();
 
 int random_zero_n(int n);
 
-#endif //TRABAJO5_RANDOM_HPP
+#endif //TRABAJO4_RANDOM_HPP

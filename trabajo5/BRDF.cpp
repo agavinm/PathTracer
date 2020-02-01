@@ -1,12 +1,14 @@
-//
-// Created by abeln on 29/01/2020.
-//
+/******************************************************************************
+ * @file    BRDF.cpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
+ ******************************************************************************/
 
 #include "Transform.hpp"
-#include "Progress.hpp"
 #include "Render.hpp"
 #include <cmath>
-#include <assert.h>
 #include "BRDF.hpp"
 #include "Random.hpp"
 
@@ -30,12 +32,11 @@ HCoord reflect(const HCoord &in, const HCoord &n) {
  * @return
  */
 HCoord refract(const HCoord &in, HCoord n, float refractionIndex) {
-
     // https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
     float c = -dot(n, in);
     if (c < 0) {
         // the ray comes from the inside, the refraction index is the opposite
-        refractionIndex = 1 / refractionIndex;
+        refractionIndex = 1.0f / refractionIndex;
         c = -c;
         n = -n;
     }
@@ -166,7 +167,6 @@ EVENT getRandomEvent(const Object &object, const HCoord &position) {
  * @return the factor (color) of the bounce
  */
 Color getBRDF(EVENT event, const HCoord &in, const HCoord &out, const HCoord &position, const Object &object) {
-
     switch (event) {
         case REFRACTION: {
             return getColor(object.material.property.reflectance.kd, position);
@@ -175,7 +175,7 @@ Color getBRDF(EVENT event, const HCoord &in, const HCoord &out, const HCoord &po
             return getColor(object.material.property.reflectance.ks, position);
         }
         case PHONG_DIFFUSE: {
-            return getColor(object.material.property.reflectance.kdPhong, position);
+            return getColor(object.material.property.reflectance.kdPhong, position) / (float) M_PI;
         }
         case PHONG_SPECULAR: {
             return getColor(object.material.property.reflectance.ksPhong, position)

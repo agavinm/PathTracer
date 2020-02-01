@@ -2,8 +2,8 @@
  * @file    Object.hpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Diciembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
  ******************************************************************************/
 
 #ifndef TRABAJO4_OBJECT_HPP
@@ -61,8 +61,13 @@ std::pair<const Object *, float> intersect(const HCoord & origin, const HCoord &
 
 std::pair<const Object *, float> triangularPlyIntersect(const HCoord &origin, const HCoord &dir, const Object &object);
 
-const float VACUUM_REFRACTIVE_RATIO = 1 / 1.0f;
-const float WATER_REFRACTIVE_RATIO =  1 / 1.330f;
-const float AMBER_REFRACTIVE_RATIO = 1 / 1.55f;
-const float LIQUID_HELIUM_REFRACTIVE_RATIO = 1 / 1.025;
+const float VACUUM_REFRACTIVE_INDEX = 1.0f;
+const float WATER_REFRACTIVE_INDEX = 1.330f;
+const float AMBER_REFRACTIVE_INDEX = 1.55f;
+const float LIQUID_HELIUM_REFRACTIVE_INDEX = 1.025f;
+
+const float VACUUM_REFRACTIVE_RATIO = 1.0f / 1.0f;
+const float WATER_REFRACTIVE_RATIO =  1.0f / 1.330f;
+const float AMBER_REFRACTIVE_RATIO = 1.0f / 1.55f;
+const float LIQUID_HELIUM_REFRACTIVE_RATIO = 1.0f / 1.025f;
 #endif //TRABAJO4_OBJECT_HPP

@@ -1,9 +1,9 @@
 /******************************************************************************
- * @file    pathtracer.cpp
+ * @file    main.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 5: Photon mapping
  ******************************************************************************/
 
 #include <iostream>

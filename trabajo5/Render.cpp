@@ -2,19 +2,18 @@
  * @file    Render.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 5: Photon mapping
  ******************************************************************************/
 
 #include <thread>
 #include <cassert>
 #include <cmath>
-#include <random>
 #include <iostream>
 #include "Render.hpp"
 #include "Progress.hpp"
 #include "Transform.hpp"
-#include "FotonMapping.hpp"
+#include "PhotonMapping.hpp"
 #include "BRDF.hpp"
 #include "Random.hpp"
 #include "Material.hpp"
@@ -23,29 +22,27 @@ using namespace std;
 
 /**
  * Number of bounces where the map will be used.
- *  2 for normal foton mapping
+ *  2 for normal photon mapping
  *  0-1 for no special first bounce
- *  infinity for no foton mapping (path tracing)
+ *  infinity for no photon mapping (path tracing)
  */
 const int MAP_AT = 2;
 
-void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &list, const Scene &scene) {
-
+void launchPhoton(const LightPoint &lightPoint, HCoord direction, vector<Photon> &list, const Scene &scene) {
     // intialize path
-    Color fotonFactor = lightPoint.color;
+    Color photonFactor = lightPoint.color;
     HCoord position = lightPoint.position;
 
     int bounce = 1;
     bool path = true;
     while (path) {
-
         // find nearest intersection
         pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
         const Object *intersection = object_dist.first;
         float stepDist = object_dist.second;
 
         if (intersection == nullptr) {
-            // no intersection, the foton is discarded
+            // no intersection, the photon is discarded
             path = false;
         } else {
             // intersection with an object
@@ -55,12 +52,12 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
             HCoord n = normal(intersection->geometry, position);
 
             // update factor with the geometry component
-            fotonFactor = fotonFactor * abs(dot(n, direction));
+            photonFactor = photonFactor * abs(dot(n, direction));
 
             // check material
             switch (intersection->material.type) {
                 case EMITTER: {
-                    // LIGHT, the foton dies
+                    // LIGHT, the photon dies
                     path = false;
                     break;
                 }
@@ -75,13 +72,13 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
                         // only on phong cases
 
                         if (bounce >= MAP_AT) {
-                            // ready to save foton in map
-                            list.push_back({position, direction, fotonFactor, intersection});
+                            // ready to save photon in map
+                            list.push_back({position, direction, photonFactor, intersection});
                         }
                     }
 
                     if (event == DEAD) {
-                        // if the event is to kill, the foton dies
+                        // if the event is to kill, the photon dies
                         path = false;
                     }
 
@@ -90,7 +87,7 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
                         bounce++;
 
                         // update factor with the brdf
-                        fotonFactor = fotonFactor
+                        photonFactor = photonFactor
                                       * getBRDF(event, direction, nextDirection, position, *intersection);
 
                         // next direction
@@ -103,7 +100,7 @@ void launchFoton(const LightPoint &lightPoint, HCoord direction, vector<Foton> &
 
         }
 
-        if (fotonFactor.max() <= 0.0f) {
+        if (photonFactor.max() <= 0.0f) {
             // avoid following paths with no light
             path = false;
         }
@@ -122,11 +119,10 @@ bool isLightVisible(const LightPoint &lightPoint, const HCoord &position, const 
  * @param scene the scene to use
  * @param position position of start of the ray
  * @param direction direction of the ray, from 'position' towards the scene
- * @param globalFotonMap fotonmap to use for fotonmapping
+ * @param globalPhotonMap photonmap to use for photonmapping
  * @return the ray color
  */
-Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, const FotonMap &globalFotonMap) {
-
+Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, const PhotonMap &globalPhotonMap) {
     // intialize
     Color rayFactor = C_WHITE; // the color factor (product of brdf and cosines along the path)
     Color directTotal = C_BLACK; // the direct light computed at each step
@@ -134,9 +130,8 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
     bool path = true; // to stop looping
 
     while (path) {
-
         // find nearest intersection
-        pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
+        pair<const Object*, float> object_dist = intersect(position, direction, scene.objects);
         const Object *intersection = object_dist.first;
         float dist = object_dist.second;
 
@@ -192,7 +187,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
                         if (bounce >= MAP_AT - 1) {
                             // get light from map
                             rayFactor = rayFactor
-                                        * globalFotonMap.getColorFromMap(position, direction, intersection)
+                                        * globalPhotonMap.getColorFromMap(position, direction, intersection)
                                         * abs(dot(n, direction));
                             path = false;
                         }
@@ -229,15 +224,15 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
     }
 
     // return light
-    return rayFactor + directTotal / bounce;
+    return rayFactor + directTotal / (float) bounce;
 
 }
 
-void launchFotons(int fotons, const Scene &scene, bool last, Progress &progress, FotonMap &globalFotonMap) {
-    vector<Foton> fotonList;
+void launchPhotons(int photons, const Scene &scene, bool last, Progress &progress, PhotonMap &globalPhotonMap) {
+    vector<Photon> photonList;
 
-    for (int i = 0; i < fotons; ++i) {
-        // launch each foton
+    for (int i = 0; i < photons; ++i) {
+        // launch each photon
 
         // get random light
         LightPoint point = scene.lightPoints.at(random_zero_n(scene.lightPoints.size() - 1));
@@ -247,17 +242,16 @@ void launchFotons(int fotons, const Scene &scene, bool last, Progress &progress,
         double phi = acos(1 - 2 * random_zero_one());
         HCoord direction = hVector(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
         // launch
-        launchFoton(point, direction, fotonList, scene);
+        launchPhoton(point, direction, photonList, scene);
 
-        if (last) progress.step((float) i * 100.0f / (float) (fotons));
+        if (last) progress.step((float) i * 100.0f / (float) (photons));
     }
 
     // finished, add to global map
-    globalFotonMap.addAll(fotonList);
+    globalPhotonMap.addAll(photonList);
 }
 
-void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, const FotonMap &globalFotonMap, bool last, Image &image, Progress &progress) {
-
+void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, const PhotonMap &globalPhotonMap, bool last, Image &image, Progress &progress) {
     for (int j = j_ini; j < j_end; ++j) {
         for (int i = 0; i < width; ++i) {
             // foreach pixel
@@ -270,7 +264,7 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
                                                (float) height)); // should be a normalized ray
                 HCoord position = scene.camera.origin;
 
-                color = color + getLightFromRay(scene, position, direction, globalFotonMap);
+                color = color + getLightFromRay(scene, position, direction, globalPhotonMap);
             }
 
             // save
@@ -280,14 +274,14 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
     }
 }
 
-Image render(int width, int height, int ppp, int fotons, const Scene &scene) {
-    return render(width, height, ppp, fotons, scene, (int) thread::hardware_concurrency());
+Image render(int width, int height, int ppp, int photons, const Scene &scene) {
+    return render(width, height, ppp, photons, scene, (int) thread::hardware_concurrency());
 }
 
-Image render(int width, int height, int ppp, int fotons, const Scene &scene, int numThreads) {
+Image render(int width, int height, int ppp, int photons, const Scene &scene, int numThreads) {
     assert(numThreads > 0);
 
-    cout << "[INFO] Creating FotonMap of " << fotons << " fotons " <<
+    cout << "[INFO] Creating PhotonMap of " << photons << " photons " <<
          "(" << scene.objects.size() << " objects) " <<
          "(" << numThreads << " threads) " <<
          "(" << scene.lightPoints.size() << " lights)" <<
@@ -296,15 +290,14 @@ Image render(int width, int height, int ppp, int fotons, const Scene &scene, int
     Progress progress;
     thread threads[numThreads];
 
-    FotonMap globalFotonMap;
+    PhotonMap globalPhotonMap;
 
-    if (not scene.lightPoints.empty()) {
-
-        progress.start("[INFO] FotonMapping");
+    if (!scene.lightPoints.empty()) {
+        progress.start("[INFO] PhotonMapping");
 
         for (int n = 0; n < numThreads; n++) {
-            threads[n] = thread(launchFotons, ceil(fotons / numThreads), ref(scene),
-                                n == numThreads - 1, ref(progress), ref(globalFotonMap));
+            threads[n] = thread(launchPhotons, ceil(photons / numThreads), ref(scene),
+                                n == numThreads - 1, ref(progress), ref(globalPhotonMap));
         }
 
         for (int n = 0; n < numThreads; n++) {
@@ -313,12 +306,12 @@ Image render(int width, int height, int ppp, int fotons, const Scene &scene, int
 
         progress.step(99.99f);
 
-        globalFotonMap.markToRead();
+        globalPhotonMap.markToRead();
 
         progress.end();
 
     } else {
-        cout << "[INFO] No lightpoints, skipped fotonMapping" << endl;
+        cout << "[INFO] No lightpoints, skipped photonMapping" << endl;
     }
 
     //-----------------------------------
@@ -332,8 +325,7 @@ Image render(int width, int height, int ppp, int fotons, const Scene &scene, int
 
     int j_ini = 0, j_end = height / numThreads;
     for (int n = 0; n < numThreads; n++) {
-
-        threads[n] = thread(renderRegion, j_ini, j_end, width, height, ppp, ref(scene), ref(globalFotonMap),
+        threads[n] = thread(renderRegion, j_ini, j_end, width, height, ppp, ref(scene), ref(globalPhotonMap),
                             n == numThreads - 1, ref(image), ref(progress));
 
         j_ini = j_end;

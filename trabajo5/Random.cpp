@@ -1,6 +1,10 @@
-//
-// Created by abeln on 29/01/2020.
-//
+/******************************************************************************
+ * @file    Random.cpp
+ * @author  Andrés Gavín Murillo, 716358
+ * @author  Abel Naya Forcano, 544125
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
+ ******************************************************************************/
 
 #include "Random.hpp"
 #include <random>
