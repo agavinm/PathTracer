@@ -18,7 +18,7 @@ Object createObject(const Geometry &geometry, const Material &material) {
             .geometry = geometry,
             .material = material,
             .type = OBJECT_2D,
-            .refractionRatio = VACUUM_REFRACTIVE_RATIO,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .triangles = vector<Object>()
     };
 }
@@ -28,7 +28,7 @@ Object createObject(const Geometry &geometry, const Material &material, float re
             .geometry = geometry,
             .material = material,
             .type = OBJECT_3D,
-            .refractionRatio = refractiveIndex,
+            .refractiveIndex = refractiveIndex,
             .triangles = vector<Object>()
     };
 }
@@ -40,7 +40,7 @@ Object createTRIANGULAR_PLY(const Geometry &geometry, const std::vector<Object> 
             .geometry = geometry,
             .material = triangles[0].material, // Not used
             .type = TRIANGULAR_PLY,
-            .refractionRatio = VACUUM_REFRACTIVE_RATIO,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .triangles = triangles
     };
 }

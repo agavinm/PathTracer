@@ -85,18 +85,19 @@ defineScene(default) {
     objects.push_back(createObject(
             Sphere(hPoint(3, 2.5f, -2.5f), 1.5f),
             Phong(colored(C_BLUE), colored(C_GREEN), 10),
-            VACUUM_REFRACTIVE_RATIO
+            VACUUM_REFRACTIVE_INDEX
     ));
     objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
             Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
-            WATER_REFRACTIVE_RATIO
+            WATER_REFRACTIVE_INDEX
     ));
 
     return {
             .camera = camera,
             .objects = objects,
             .lightPoints = lightPoints,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 4.0f
     };
 }
@@ -137,7 +138,7 @@ defineScene(noEmitters) {
     objects.push_back(createObject(
             Plane(hVector(0, 0, 1), 3.5),
             Delta(colored(C_WHITE), colored({0.6, 0.6, 1})),
-            WATER_REFRACTIVE_RATIO
+            WATER_REFRACTIVE_INDEX
     ));
 
     // SPHERES:
@@ -145,20 +146,21 @@ defineScene(noEmitters) {
             Sphere(hPoint(3, 2.5f, -2.5f), 1.5f),
 //            Phong(colored(C_BLUE), colored(C_GREEN), 10),
             Specular(colored(C_WHITE)),
-            VACUUM_REFRACTIVE_RATIO
+            VACUUM_REFRACTIVE_INDEX
     ));
 
     objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
 //            Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
             Refractor(colored(C_WHITE)),
-            WATER_REFRACTIVE_RATIO
+            WATER_REFRACTIVE_INDEX
     ));
 
     return {
             .camera = camera,
             .objects = objects,
             .lightPoints = lightPoints,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 3.0f,
             .clampCorrection = 25.0f
     };
@@ -203,23 +205,24 @@ defineScene(specular) {
     objects.push_back(createObject(
             Sphere(hPoint(3, 4, -4), 1),
             Phong(colored(C_BLUE), colored(C_GREEN), 2),
-            VACUUM_REFRACTIVE_RATIO
+            VACUUM_REFRACTIVE_INDEX
     ));
     objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
             Specular(colored(C_WHITE)),
-            VACUUM_REFRACTIVE_RATIO
+            VACUUM_REFRACTIVE_INDEX
     ));
     objects.push_back(createObject(
             Sphere(hPoint(2, 3, 3), 1.5f),
             Specular(colored(C_WHITE)),
-            VACUUM_REFRACTIVE_RATIO
+            VACUUM_REFRACTIVE_INDEX
     ));
 
     return {
             .camera = camera,
             .objects = objects,
             .lightPoints = {},
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 4.0f
     };
 }
@@ -257,28 +260,29 @@ defineScene(refraction) {
     objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 1),
             Phong(colored(C_GREEN), colored(C_YELLOW), 2),
-            VACUUM_REFRACTIVE_RATIO
+            VACUUM_REFRACTIVE_INDEX
     ));
     objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
             Refractor(colored(C_CYAN)),
-            LIQUID_HELIUM_REFRACTIVE_RATIO
+            LIQUID_HELIUM_REFRACTIVE_INDEX
     ));
     objects.push_back(createObject(
             Sphere(hPoint(3, 2.5f, -2), 1.5f),
             Phong(colored(C_BLUE), colored(C_GREEN), 2),
-            VACUUM_REFRACTIVE_RATIO
+            VACUUM_REFRACTIVE_INDEX
     ));
     objects.push_back(createObject(
             Sphere(hPoint(3, 3, -3), 2),
             Refractor(colored(C_YELLOW)),
-            AMBER_REFRACTIVE_RATIO
+            AMBER_REFRACTIVE_INDEX
     ));
 
     return {
             .camera = camera,
             .objects = objects,
             .lightPoints = {},
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 4.0f
     };
 }
@@ -320,18 +324,19 @@ defineScene(circle) {
     objects.push_back(createObject(
             Sphere(hPoint(3, 2.5f, -2.5f), 1.5f),
             Phong(colored(C_BLUE), colored(C_GREEN), 10),
-            VACUUM_REFRACTIVE_RATIO
+            VACUUM_REFRACTIVE_INDEX
     ));
     objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 2),
             Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
-            WATER_REFRACTIVE_RATIO
+            WATER_REFRACTIVE_INDEX
     ));
 
     return {
             .camera = camera,
             .objects = objects,
             .lightPoints = {},
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 5.0f
     };
 }
@@ -377,6 +382,7 @@ defineScene(mix) {
             .camera = camera,
             .objects = objects,
             .lightPoints = lightPoints,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 4.0f
     };
 }
@@ -413,7 +419,7 @@ defineScene(dna) {
         objects.push_back(createObject(
                 Sphere(hPoint(-50 * cos(i / 5.), -50 * sin(i / 5.), i * 2 - 100), 5),
                 Diffuse(colored(C_PURPLE)),
-                VACUUM_REFRACTIVE_RATIO
+                VACUUM_REFRACTIVE_INDEX
         ));
     }
 
@@ -430,6 +436,7 @@ defineScene(dna) {
             .camera = camera,
             .objects = objects,
             .lightPoints = {},
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 4.5f
     };
 }
@@ -445,6 +452,7 @@ Scene onlyPlyScene(const string &filename, float ratio) {
             .camera = camera,
             .objects = objects,
             .lightPoints = {},
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .gammaCorrection = 1.0f
     };
 }

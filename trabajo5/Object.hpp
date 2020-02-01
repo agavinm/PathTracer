@@ -21,7 +21,7 @@ struct Object {
     const Geometry geometry;
     const Material material;
     const OBJECT_TYPE type;
-    const float refractionRatio; // Refractive index (Snell's law)
+    const float refractiveIndex; // Refractive index (Snell's law)
 
     // Only for TRIANGULAR_PLY
     const std::vector<Object> triangles;
@@ -65,9 +65,4 @@ const float VACUUM_REFRACTIVE_INDEX = 1.0f;
 const float WATER_REFRACTIVE_INDEX = 1.330f;
 const float AMBER_REFRACTIVE_INDEX = 1.55f;
 const float LIQUID_HELIUM_REFRACTIVE_INDEX = 1.025f;
-
-const float VACUUM_REFRACTIVE_RATIO = 1.0f / 1.0f;
-const float WATER_REFRACTIVE_RATIO =  1.0f / 1.330f;
-const float AMBER_REFRACTIVE_RATIO = 1.0f / 1.55f;
-const float LIQUID_HELIUM_REFRACTIVE_RATIO = 1.0f / 1.025f;
 #endif //TRABAJO4_OBJECT_HPP

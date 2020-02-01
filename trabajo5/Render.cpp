@@ -26,12 +26,13 @@ using namespace std;
  *  0-1 for no special first bounce
  *  infinity for no photon mapping (path tracing)
  */
-const int MAP_AT = 2;
+const int MAP_AT = 2; // TODO
 
 void launchPhoton(const LightPoint &lightPoint, HCoord direction, vector<Photon> &list, const Scene &scene) {
     // intialize path
     Color photonFactor = lightPoint.color;
     HCoord position = lightPoint.position;
+    stack<const Object*> refractionStack;
 
     int bounce = 1;
     bool path = true;
@@ -66,7 +67,8 @@ void launchPhoton(const LightPoint &lightPoint, HCoord direction, vector<Photon>
 
                     // get BRDF & next ray of the event
                     EVENT event = getRandomEvent(*intersection, position);
-                    HCoord nextDirection = getNewDirection(event, position, direction, *intersection);
+                    HCoord nextDirection = getNewDirection(event, position, direction, *intersection,
+                            refractionStack, scene.refractiveIndex);
 
                     if (event == PHONG_DIFFUSE || event == PHONG_SPECULAR) {
                         // only on phong cases
@@ -128,6 +130,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
     Color directTotal = C_BLACK; // the direct light computed at each step
     int bounce = 1; // number of bounces
     bool path = true; // to stop looping
+    stack<const Object*> refractionStack;
 
     while (path) {
         // find nearest intersection
@@ -161,7 +164,8 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
 
                     // get BRDF & next ray of the event
                     EVENT event = getRandomEvent(*intersection, position);
-                    HCoord nextDirection = getNewDirection(event, position, direction, *intersection);
+                    HCoord nextDirection = getNewDirection(event, position, direction, *intersection,
+                            refractionStack, scene.refractiveIndex);
 
                     if (event == PHONG_DIFFUSE || event == PHONG_SPECULAR) {
                         // only on phong cases
@@ -251,7 +255,8 @@ void launchPhotons(int photons, const Scene &scene, bool last, Progress &progres
     globalPhotonMap.addAll(photonList);
 }
 
-void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, const PhotonMap &globalPhotonMap, bool last, Image &image, Progress &progress) {
+void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene,
+        const PhotonMap &globalPhotonMap, bool last, Image &image, Progress &progress) {
     for (int j = j_ini; j < j_end; ++j) {
         for (int i = 0; i < width; ++i) {
             // foreach pixel

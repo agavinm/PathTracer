@@ -12,6 +12,7 @@
 #include "Scene.hpp"
 #include "HCoord.hpp"
 #include "Color.hpp"
+#include <stack>
 
 /**
  * Represents one of the possible events of the render equation
@@ -24,7 +25,8 @@ enum EVENT {
     DEAD
 };
 
-HCoord getNewDirection(EVENT event, const HCoord &position, const HCoord &direction, const Object &object);
+HCoord getNewDirection(EVENT event, const HCoord &position, const HCoord &direction, const Object &object,
+        std::stack<const Object*> &refractionStack, float sceneRefractiveIndex);
 
 EVENT getRandomEvent(const Object &object, const HCoord &position);
 

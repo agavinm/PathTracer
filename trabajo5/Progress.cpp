@@ -19,7 +19,7 @@ void Progress::start(const std::string &prefix) {
 
 void Progress::step(float currentStep) {
     using namespace std;
-    cout << "\r" << this->prefix << " progress : " << fixed << setprecision(2) << setw(6) << currentStep << "%" << flush;
+    cout << "\r" << this->prefix << " progress : " << fixed << setprecision(3) << currentStep << "%" << flush;
 }
 
 void Progress::end() {

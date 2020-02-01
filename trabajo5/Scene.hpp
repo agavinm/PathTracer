@@ -48,6 +48,7 @@ struct Scene {
     const Camera camera;
     const std::vector<Object> objects;
     const std::vector<LightPoint> lightPoints;
+    const float refractiveIndex;
     const float gammaCorrection {NAN};
     const float clampCorrection {NAN};
 };

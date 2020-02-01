@@ -28,25 +28,39 @@ HCoord reflect(const HCoord &in, const HCoord &n) {
  * Refracts a vector from another, like water
  * @param in input vector, like 'entering water'
  * @param n normal of water surface to air
- * @param refractionIndex the refraction index from water/air (aka normal_negative / normal_positive)
  * @return
  */
-HCoord refract(const HCoord &in, HCoord n, float refractionIndex) {
+HCoord refract(const HCoord &in, HCoord n, stack<const Object*> &refractionStack,
+        float sceneRefractiveIndex, const Object* object) {
     // https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
-    float c = -dot(n, in);
+    float c = -dot(n, in), refractionRatio;
     if (c < 0) {
-        // the ray comes from the inside, the refraction index is the opposite
-        refractionIndex = 1.0f / refractionIndex;
+        // the normal and the ray have the same direction
         c = -c;
         n = -n;
     }
-    float radicand = 1.0f - refractionIndex * refractionIndex * (1.0f - c * c);
+
+    if (refractionStack.empty() || object == refractionStack.top()) {
+        // the ray comes from the inside, the refraction index is the opposite
+        if (refractionStack.empty()) {
+            refractionRatio = object->refractiveIndex / sceneRefractiveIndex;
+        } else {
+            refractionRatio = object->refractiveIndex / refractionStack.top()->refractiveIndex;
+            refractionStack.pop();
+        }
+    } else {
+        // the ray comes from the outside
+        refractionRatio = refractionStack.top()->refractiveIndex / object->refractiveIndex;
+        refractionStack.push(object);
+    }
+
+    float radicand = 1.0f - refractionRatio * refractionRatio * (1.0f - c * c);
     if (radicand < 0.0f) {
         // Only happens reflection because the sine of the angle of refraction is required to be greater than one.
         // https://en.wikipedia.org/wiki/Snell%27s_law#Total_internal_reflection_and_critical_angle
         return reflect(in, n);
     } else {
-        return norm(in * refractionIndex + n * (refractionIndex * c - sqrt(radicand)));
+        return norm(in * refractionRatio + n * (refractionRatio * c - sqrt(radicand)));
     }
 }
 
@@ -58,11 +72,12 @@ HCoord refract(const HCoord &in, HCoord n, float refractionIndex) {
  * @param object where the bounce occurs
  * @return new direction
  */
-HCoord getNewDirection(EVENT event, const HCoord &position, const HCoord &direction, const Object &object) {
+HCoord getNewDirection(EVENT event, const HCoord &position, const HCoord &direction, const Object &object,
+        stack<const Object*> &refractionStack, float sceneRefractiveIndex) {
     HCoord n = normal(object.geometry, position);
     switch (event) {
         case REFRACTION:
-            return refract(direction, n, object.refractionRatio);
+            return refract(direction, n, refractionStack, sceneRefractiveIndex, &object);
         case REFLECTION:
             return reflect(direction, n);
         case PHONG_DIFFUSE: {
