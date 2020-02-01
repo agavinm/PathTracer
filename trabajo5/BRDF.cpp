@@ -40,18 +40,18 @@ HCoord refract(const HCoord &in, HCoord n, stack<const Object*> &refractionStack
         n = -n;
     }
 
-    if (refractionStack.empty() || object == refractionStack.top()) {
-        // the ray comes from the inside, the refraction index is the opposite
-        if (refractionStack.empty()) {
-            refractionRatio = object->refractiveIndex / sceneRefractiveIndex;
-        } else {
-            refractionRatio = object->refractiveIndex / refractionStack.top()->refractiveIndex;
-            refractionStack.pop();
-        }
-    } else {
+    if (refractionStack.empty()) {
         // the ray comes from the outside
+        refractionRatio = sceneRefractiveIndex / object->refractiveIndex;
+        refractionStack.push(object);
+    } else if (object != refractionStack.top()) {
+        // the ray comes from another object
         refractionRatio = refractionStack.top()->refractiveIndex / object->refractiveIndex;
         refractionStack.push(object);
+    } else {
+        // the ray comes from the inside, the refraction index is the opposite
+        refractionRatio = object->refractiveIndex / refractionStack.top()->refractiveIndex;
+        refractionStack.pop();
     }
 
     float radicand = 1.0f - refractionRatio * refractionRatio * (1.0f - c * c);

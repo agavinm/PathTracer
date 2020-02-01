@@ -259,7 +259,7 @@ defineScene(refraction) {
     // SPHERES:
     objects.push_back(createObject(
             Sphere(hPoint(3, -3, -3), 1),
-            Phong(colored(C_GREEN), colored(C_YELLOW), 2),
+            Phong(colored(C_GREEN*0.5f + C_YELLOW*0.5f), colored(C_GREEN*0.5f + C_YELLOW*0.5f), 2),
             VACUUM_REFRACTIVE_INDEX
     ));
     objects.push_back(createObject(
@@ -269,7 +269,7 @@ defineScene(refraction) {
     ));
     objects.push_back(createObject(
             Sphere(hPoint(3, 2.5f, -2), 1.5f),
-            Phong(colored(C_BLUE), colored(C_GREEN), 2),
+            Phong(colored(C_BLUE*0.5f + C_GREEN*0.5f), colored(C_BLUE*0.5f + C_GREEN*0.5f), 2),
             VACUUM_REFRACTIVE_INDEX
     ));
     objects.push_back(createObject(
