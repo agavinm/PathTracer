@@ -1,4 +1,4 @@
-# Informática Gráfica - Trabajo 4: Path tracer
+# Informática Gráfica - Trabajo 5: Photon mapping
 
 Pthread compilation:  
  - https://stackoverflow.com/questions/1620918/cmake-and-libpthread  
