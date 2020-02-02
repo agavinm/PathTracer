@@ -34,12 +34,15 @@ struct Photon {
  * -     call #getColorFromMap() as fast as a kdtree allows
  */
 class PhotonMap {
+    int totalNumberOfPhotons;
     std::map<const Object*, KDTree<Photon, 3>> map;
     std::mutex mtx;
 
 public:
 
-    /**
+    PhotonMap(int totalNumberOfPhotons);
+
+/**
      * Adds all photons to the 'waiting' list of the container.
      * Can be called multiple times, and is thread-safe
      * When finished adding all photons, don't forget to call #markToRead()

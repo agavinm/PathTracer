@@ -14,13 +14,13 @@
 using namespace std;
 
 Color PhotonMap::getColorFromMap(HCoord position, HCoord direction, const Object *object) const {
-    const int ELEMENTS = 100;
-    const int k = 10; // kernel
+    const int ELEMENTS = 500;
+    float k = totalNumberOfPhotons / 100000.0f; // kernel
 
     Color color = C_BLACK;
     vector<const KDTree<Photon, 3>::Node *> list;
     float radius;
-    // using find, if the tree don't exists an error is generated
+    // using find, if the tree doesn't exist an error is generated
     map.find(object)->second.find(position.as_vector(), ELEMENTS, list, radius);
     for (auto &node : list) {
         Photon photon = node->data();
@@ -52,3 +52,5 @@ void PhotonMap::markToRead() {
     }
     mtx.unlock();
 }
+
+PhotonMap::PhotonMap(int totalNumberOfPhotons) : totalNumberOfPhotons(totalNumberOfPhotons) {}

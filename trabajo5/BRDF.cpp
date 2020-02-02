@@ -200,9 +200,10 @@ Color getBRDF(EVENT event, const HCoord &in, const HCoord &out, const HCoord &po
                    * c;
         }
         case PHONG_SPECULAR: {
+            HCoord reflected = reflect(in, n);
             return getColor(object.material.property.reflectance.ksPhong, position)
                    * (object.material.property.reflectance.s + 2.0f) / (2.0f * (float) M_PI)
-                   * pow(abs(dot(norm(in), norm(out))), object.material.property.reflectance.s)
+                   * pow(abs(dot(reflected, out)), object.material.property.reflectance.s)
                    * c;
         }
         case DEAD:

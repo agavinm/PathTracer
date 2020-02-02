@@ -123,7 +123,7 @@ defineScene(noEmitters) {
     lightPoints.push_back(createLightPoint({1, 0.5, 0}, hPoint(2.5f, 2.5, 4.5)));
 
     // BOX:
-    addDefaultBox(5, true, objects);
+    addDefaultBox(5, false, objects);
 
     // water
     objects.push_back(createObject(
@@ -145,6 +145,13 @@ defineScene(noEmitters) {
 //            Delta(colored(C_BLUE), colored(C_YELLOW)), // Refracts blue and reflects yellow
             Refractor(colored(C_WHITE)),
             WATER_REFRACTIVE_INDEX
+    ));
+
+    objects.push_back(createObject(
+            Sphere(hPoint(3, -2.5f, 2.5f), 1.5f),
+//            Phong(colored(C_BLUE), colored(C_GREEN), 10),
+            Phong(colored(C_WHITE), colored(C_WHITE), 2),
+            VACUUM_REFRACTIVE_INDEX
     ));
 
     return {
@@ -272,15 +279,26 @@ defineScene(mix) {
 
     // LIGHT:
     vector<LightPoint> lightPoints;
+    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(0, -4.5, 4.5)));
 //    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(-2.5f, 5, 0)));
 //    lightPoints.push_back(createLightPoint(C_YELLOW, hPoint(-5, -5, 0)));
 
     // BOX:
-    addDefaultBox(5, true, objects);
+    addDefaultBox(5, false, objects);
 
-    loadPly("ply/figure.ply", objects, false);
+//    loadPly("ply/figure.ply", objects, false);
 
-    loadPly("ply/monkey.ply", objects, false);
+//    loadPly("ply/monkey.ply", objects, false);
+
+    loadPly("ply/donut.ply", objects, false);
+
+    objects.push_back(createObject(
+            Sphere(hPoint(0,0,0), 3),
+            Refractor(colored(C_WHITE)),
+            1.1
+    ));
+
+
 
     return {
             .camera = camera,
@@ -363,8 +381,13 @@ defineScene(report){
 //            Diffuse(colored(C_PURPLE))
 //    ));
     objects.push_back(createObject(
-            Sphere(hPoint(2.5f,0,-3), 1.5f),
+            Sphere(hPoint(2.5f,3,-1), 1.5f),
             Refractor(colored(C_WHITE)),
+            1.1
+    ));
+    objects.push_back(createObject(
+            Sphere(hPoint(2.5f,-3,-1), 1.5f),
+            Specular(colored(C_WHITE)),
             1.1
     ));
 
@@ -373,7 +396,7 @@ defineScene(report){
             .objects = objects,
             .lightPoints = lightPoints,
             .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
-            .gammaCorrection = 2.0f,
+            .gammaCorrection = 3.0f,
 //            .clampCorrection = 0.3f
     };
 }

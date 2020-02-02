@@ -287,7 +287,7 @@ Image render(int width, int height, int ppp, int photons, const Scene &scene, in
     Progress progress;
     thread threads[numThreads];
 
-    PhotonMap globalPhotonMap;
+    PhotonMap globalPhotonMap(photons);
 
     if (!scene.lightPoints.empty()) {
         progress.start("[INFO] PhotonMapping");
