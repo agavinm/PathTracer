@@ -2,243 +2,135 @@
  * @file    Render.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 5: Photon mapping
  ******************************************************************************/
 
 #include <thread>
 #include <cassert>
 #include <cmath>
-#include <random>
 #include <iostream>
 #include "Render.hpp"
 #include "Progress.hpp"
 #include "Transform.hpp"
+#include "BRDF.hpp"
+#include "Random.hpp"
+#include "Material.hpp"
 
 using namespace std;
 
-pair<Color, HCoord> reflection(const HCoord &position, const HCoord &direction, const HCoord &n, const Object &intersection) {
-    pair<Color, HCoord> result;
-
-    result.first = getColor(intersection.material.property.reflectance.ks, position);
-
-    result.second = norm(direction - n * dot(direction, n) * 2.0f);
-
-    return result;
+bool isLightVisible(const LightPoint &lightPoint, const HCoord &position, const vector<Object> &objects) {
+    HCoord lightVect = position - lightPoint.position;
+    float lightDist = intersect(lightPoint.position, norm(lightVect), objects).second;
+    return lightDist >= mod(lightVect) - EPS;
 }
 
-pair<Color, HCoord> refraction(const Scene &scene, const HCoord &origin, const HCoord &position, const HCoord &direction,
-        HCoord n, const Object &intersection) {
-    pair<Color, HCoord> result;
+/**
+ * Returns the light towards a ray
+ * @param scene the scene to use
+ * @param position position of start of the ray
+ * @param direction direction of the ray, from 'position' towards the scene
+ * @return the ray color
+ */
+Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction) {
+    // intialize
+    Color rayFactor = C_WHITE; // the color factor (product of brdf and cosines along the path)
+    Color directTotal = C_BLACK; // the direct light computed at each step
+    int bounce = 1; // number of bounces
+    bool path = true; // to stop looping
+    stack<const Object *> refractionStack;
 
-    result.first = getColor(intersection.material.property.reflectance.kd, position);
-
-    HCoord intermediate = hPoint((origin.x() + position.x()) / 2.0f,
-                                 (origin.y() + position.y()) / 2.0f, (origin.z() + position.z()) / 2.0f);
-    float n1 = scene.refractiveIndex, n2 = scene.refractiveIndex;
-    const Object *o = nullptr;
-    bool insideOf_o = false;
-    for (unsigned long objectIndex = 0; !insideOf_o && objectIndex < scene.objects.size(); objectIndex++) {
-        o = &scene.objects[objectIndex];
-        if (o->material.type == REFLECTOR && o->type == OBJECT_3D && isInside(intermediate, *o)) {
-            // Ray is inside an object
-            n1 = o->n;
-            insideOf_o = true;
-        }
-    }
-    if (insideOf_o) {
-        // Ray is inside an object
-        n = -n;
-        switch (o->geometry.type) {
-            case SPHERE: {
-                if (mod(position - o->geometry.data.sphere.center) == o->geometry.data.sphere.radius) {
-                    // Ray will come out of the sphere
-                    bool objectFound = false;
-                    for (unsigned long objectIndex = 0; !objectFound && objectIndex < scene.objects.size(); objectIndex++) {
-                        const Object *outside = &scene.objects[objectIndex];
-                        if (outside->material.type == REFLECTOR && outside->type == OBJECT_3D &&
-                            isInside(position, *outside) && outside != o) {
-                            // Ray will enter an outside object
-                            n2 = outside->n;
-                            objectFound = true;
-                        }
-                    }
-                }
-                else {
-                    // Ray will enter another object
-                    n2 = intersection.n;
-                }
-
-                break;
-            }
-            default: {
-                exit(6);
-            }
-        }
-    }
-    else {
-        // Ray will enter an object
-        n2 = intersection.n;
-    }
-
-    // https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
-    float r = n1 / n2;
-    float c = dot(-n, direction);
-    float radicand = 1.0f - r * r * (1.0f - c * c);
-    if (radicand < 0.0f) {
-        // Only happens reflection because the sine of the angle of refraction is required to be greater than one.
-        // https://en.wikipedia.org/wiki/Snell%27s_law#Total_internal_reflection_and_critical_angle
-        return reflection(position, direction, n, intersection);
-    }
-    else {
-        result.second = norm(direction * r + n * (r * c - sqrt(1.0f - r * r * (1.0f - c * c))));
-
-        return result;
-    }
-}
-
-pair<Color, HCoord> phong(const Scene &scene, const HCoord &position, const HCoord &direction, const HCoord &n,
-        const Object &intersection, mt19937 &mt) {
-    pair<Color, HCoord> result;
-
-    HCoord ref = reflection(position, direction, n, intersection).second;
-
-    HCoord Z;
-    HCoord Y;
-    HCoord X;
-
-    if (abs(dot(direction, n)) < EPS) {
-        Z = direction;
-        Y = n;
-        X = cross(Y, Z);
-    }
-    else {
-        X = norm(cross(direction, ref));
-        Y = ref;
-        Z = cross(Y, X);
-    }
-
-    uniform_real_distribution<float> dist(0.0f, 1.0f);
-
-    float theta = acos(pow(dist(mt), (1.0f / (intersection.material.property.reflectance.s + 1.0f))));
-    float phi = 2.0f * (float) M_PI * dist(mt);
-
-    result.second = norm(changeFromBase(X, Y, Z, position) *
-            hVector(cos(phi) * sin(theta), cos(theta), sin(phi) * sin(theta)));
-
-    result.first = getColor(intersection.material.property.reflectance.kdPhong, position) / (float) M_PI
-                   + getColor(intersection.material.property.reflectance.ksPhong, position)
-                     * (intersection.material.property.reflectance.s + 2.0f) / (2.0f * (float) M_PI)
-                     * pow(abs(dot(ref, result.second)), intersection.material.property.reflectance.s);
-
-    return result;
-}
-
-Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, mt19937 &mt) {
-    Color color = C_WHITE;
-    Color shadowColor = C_BLACK;
-    float pathLength = 0.0f;
-
-    bool path = true;
     while (path) {
         // find nearest intersection
         pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
         const Object *intersection = object_dist.first;
         float dist = object_dist.second;
 
-        if (intersection == nullptr) { // Any light founded
-            color = C_BLACK;
-        } else {
-            HCoord origin = position;
-            position = position + direction * dist; // hit position
-            HCoord n = normal(intersection->geometry, position);
-            pathLength += dist;
+        if (intersection == nullptr) {
+            // no intersection, return the 'void color'
+            rayFactor = C_BLACK;
+            path = false;
 
+        } else {
+            // intersection with an object
+
+            // get properties of bounce
+            position = position + direction * dist; // update position with hit
+
+            // check material
             switch (intersection->material.type) {
-                case EMITTER: { // LIGHT
-                    color = color * getColor(intersection->material.property.texture, position) / (pathLength * pathLength);
-                    path = false;
+                case EMITTER: {
+                    // LIGHT, end of path
+                    rayFactor = rayFactor
+                                * getColor(intersection->material.property.texture, position); // update factor with light color
+                    path = false; // end
                     break;
                 }
                 case REFLECTOR: {
-                    uniform_real_distribution<float> zeroToOneDistribution(0.0f, 1.0f);
-                    float randomZeroToOne, maxKd, maxKs, maxKdPhong, maxKsPhong, pr[3];
+                    // a reflector (a non-emitter)
 
-                    maxKd = getColor(intersection->material.property.reflectance.kd, position).max();
-                    maxKs = getColor(intersection->material.property.reflectance.ks, position).max();
-                    maxKdPhong = getColor(intersection->material.property.reflectance.kdPhong,
-                                          position).max();
-                    maxKsPhong = getColor(intersection->material.property.reflectance.ksPhong,
-                                          position).max();
+                    // get BRDF & next ray of the event
+                    EVENT event = getRandomEvent(*intersection, position);
+                    HCoord nextDirection = getNewDirection(event, position, direction, *intersection,
+                                                           refractionStack, scene.refractiveIndex);
 
-                    // Russian roulette
-                    randomZeroToOne = zeroToOneDistribution(mt);
-                    pr[0] = maxKd;
-                    pr[1] = maxKs;
-                    pr[2] = maxKdPhong + maxKsPhong;
-                    if (pr[0] + pr[1] + pr[2] > 0.99f) {
-                        pr[1] = (0.99f / (pr[0] + pr[1] + pr[2]));
-                        pr[0] = maxKd * pr[1];
-                        pr[2] = pr[2] * pr[1];
-                        pr[1] = maxKs * pr[1];
-                    }
+                    if (event == PHONG_DIFFUSE || event == PHONG_SPECULAR) {
+                        // only on phong cases
 
-                    pair<Color, HCoord> result;
-                    if (randomZeroToOne < pr[0]) {
-                        // Perfect refraction case (delta BTDF)
-                        result = refraction(scene, origin, position, direction, n, *intersection);
-                    } else if (randomZeroToOne < pr[0] + pr[1]) {
-                        // Perfect specular reflectance case (delta BRDF)
-                        result = reflection(position, direction, n, *intersection);
-                    } else if (randomZeroToOne < pr[0] + pr[1] + pr[2]) {
-                        // Perfect Phong case (Phong BRDF)
-                        result = phong(scene, position, direction, n, *intersection, mt);
-                    } else {
-                        // Path deaths
-                        color = C_BLACK;
-                        break;
-                    }
+                        // get direct light
+                        for (const LightPoint &lightPoint : scene.lightPoints) {
+                            // foreach light
+                            if (isLightVisible(lightPoint, position, scene.objects)) {
 
+                                // if visible, compute path light
+                                HCoord lightVect = position - lightPoint.position;
+                                float lightDist = mod(lightVect);
+                                Color direct = lightPoint.color
+                                               * getBRDF(event, norm(lightVect), -direction, position, *intersection)
+                                               * rayFactor
+                                               / (lightDist * lightDist);
 
-                    color = color * result.first;
-
-                    // Shadow rays
-                    for (const LightPoint &lightPoint : scene.lightPoints) {
-                        HCoord lightVect = position - lightPoint.position;
-                        float lightDist = intersect(lightPoint.position, norm(lightVect), scene.objects).second;
-                        if (lightDist > mod(lightVect) - EPS) {
-                            float pathLightDist = dist + lightDist;
-                            shadowColor = shadowColor + lightPoint.color * color * abs(dot(n, norm(lightVect))) / (pathLightDist * pathLightDist);
+                                directTotal = directTotal + direct;
+                            }
                         }
                     }
 
-                    color = color * abs(dot(n, result.second));
-                    direction = result.second;
+                    if (event == DEAD) {
+                        // if the event is to kill, the path ends
+                        rayFactor = C_BLACK;
+                        path = false;
+                    }
 
+                    if (path) {
+                        // if the path is still active, prepare for next bounce
+                        bounce++;
+
+                        // update factor with the brdf and the geometry component
+                        rayFactor = rayFactor
+                                    * getBRDF(event, -nextDirection, -direction, position, *intersection);
+
+                        // next direction
+                        direction = nextDirection;
+                    }
                     break;
                 }
-                default: {
-                    exit(6);
-                }
             }
+
         }
 
-        if (color.max() <= 0.0f) {
+        if (rayFactor.max() <= 0.0f) {
             // avoid following paths with no light
             path = false;
         }
     }
 
-    return color + shadowColor;
+    // return light
+    return rayFactor + directTotal / (float) bounce;
+
 }
 
-void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene, bool last, Image &image,
-        Progress &progress) {
-    // initialization of utilities
-    random_device rd;
-    mt19937 mt(rd());
-    uniform_real_distribution<float> dist(0.0f, nextafter(1.0f, MAXFLOAT));
-
+void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene,
+                  bool last, Image &image, Progress &progress) {
     for (int j = j_ini; j < j_end; ++j) {
         for (int i = 0; i < width; ++i) {
             // foreach pixel
@@ -246,12 +138,12 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
 
             for (int p = 0; p < ppp; ++p) {
                 // get initial ray
-                HCoord direction = norm(getRay(scene.camera, ((float) i + dist(mt)) / (float) width,
-                                               ((float) j + dist(mt)) /
+                HCoord direction = norm(getRay(scene.camera, ((float) i + random_zero_one()) / (float) width,
+                                               ((float) j + random_zero_one()) /
                                                (float) height)); // should be a normalized ray
                 HCoord position = scene.camera.origin;
 
-                color = color + getLightFromRay(scene, position, direction, mt);
+                color = color + getLightFromRay(scene, position, direction);
             }
 
             // save
@@ -261,26 +153,61 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
     }
 }
 
-Image render(int width, int height, int ppp, const Scene &scene) {
-    return render(width, height, ppp, scene, (int) thread::hardware_concurrency());
+bool endsWith(const string &original, const string &suffix) {
+    return original.compare(original.length() - suffix.length(), suffix.length(), suffix) == 0;
+}
+
+void render(int width, int height, int ppp, const Scene &scene, const string& filename) {
+
+    Image hdr = render(width, height, ppp, scene, (int) thread::hardware_concurrency());
+
+    storePPM(filename.substr(0, filename.find_last_of(".")) + "_hdr.ppm", hdr, 65536);
+
+    Image ldr;
+    if (isnan(scene.clampCorrection)) {
+        if (isnan(scene.gammaCorrection)) {
+            // none
+            ldr = equalization(hdr);
+        } else {
+            // gamma only
+            ldr = gammaCurve(hdr, scene.gammaCorrection);
+        }
+    } else {
+        if (isnan(scene.gammaCorrection)) {
+            // clamp only
+            ldr = equalizeAndClamp(hdr, scene.clampCorrection);
+        } else {
+            // clamp and gamma
+            ldr = clampAndGammaCurve(hdr, scene.clampCorrection, scene.gammaCorrection);
+        }
+    }
+
+    if (endsWith(filename, ".ppm")) {
+        storePPM(filename, ldr, 255);
+    } else if (endsWith(filename, ".bmp")) {
+        storeBMP(filename, ldr);
+    } else {
+        cerr << "Unknown output file extension" << endl;
+    }
 }
 
 Image render(int width, int height, int ppp, const Scene &scene, int numThreads) {
     assert(numThreads > 0);
 
+    Progress progress;
+    thread threads[numThreads];
+
+    //-----------------------------------
+
     cout << "[INFO] Rendering " << width << "x" << height << " scene with " << ppp << "ppp (" << scene.objects.size()
          << " objects) (" << numThreads << " threads)" << endl;
 
-    Progress progress;
     progress.start("[INFO] Render");
 
     Image image = initImage(width, height);
 
-    thread threads[numThreads];
-
     int j_ini = 0, j_end = height / numThreads;
     for (int n = 0; n < numThreads; n++) {
-
         threads[n] = thread(renderRegion, j_ini, j_end, width, height, ppp, ref(scene),
                             n == numThreads - 1, ref(image), ref(progress));
 
@@ -295,5 +222,5 @@ Image render(int width, int height, int ppp, const Scene &scene, int numThreads)
 
     progress.end();
 
-    return gammaCurve(image, scene.gammaCorrection);
+    return image;
 }

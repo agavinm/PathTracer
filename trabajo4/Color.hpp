@@ -2,8 +2,8 @@
  * @file    Color.hpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
  ******************************************************************************/
 
 #ifndef TRABAJO3_COLOR_HPP

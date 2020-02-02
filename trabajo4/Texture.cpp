@@ -2,8 +2,8 @@
  * @file    Texture.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
  ******************************************************************************/
 
 #include <cmath>
@@ -94,23 +94,23 @@ Color getColor(const Texture &texture, const HCoord &position) {
     switch (texture.type) {
         case Texture::SIN_2D: {
             return {
-                    r * static_cast<float>(sin(position.x())),
-                    g * static_cast<float>(sin(position.y())),
-                    b * static_cast<float>(sin(position.z()))
+                    r * static_cast<float>(abs(sin(position.x()))),
+                    g * static_cast<float>(abs(sin(position.y()))),
+                    b * static_cast<float>(abs(sin(position.z())))
             };
         }
         case Texture::SIN_COS_2D: {
             return {
-                    r * static_cast<float>(sin(position.x()) * cos(position.x())),
-                    g * static_cast<float>(sin(position.y()) * cos(position.y())),
-                    b * static_cast<float>(sin(position.z()) * cos(position.z()))
+                    r * static_cast<float>(abs(sin(position.x()) * cos(position.x()))),
+                    g * static_cast<float>(abs(sin(position.y()) * cos(position.y()))),
+                    b * static_cast<float>(abs(sin(position.z()) * cos(position.z())))
             };
         }
         case Texture::SIN2_2D: {
             return {
-                    r * static_cast<float>(sin(position.x() * position.y() * position.z())),
-                    g * static_cast<float>(sin(position.x() * position.y() * position.z())),
-                    b * static_cast<float>(sin(position.x() * position.y() * position.z()))
+                    r * static_cast<float>(abs(sin(position.x() * position.y() * position.z()))),
+                    g * static_cast<float>(abs(sin(position.x() * position.y() * position.z()))),
+                    b * static_cast<float>(abs(sin(position.x() * position.y() * position.z())))
             };
         }
         default:

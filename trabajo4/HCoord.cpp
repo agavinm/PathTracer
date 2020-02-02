@@ -2,13 +2,14 @@
  * @file    HCoord.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
  ******************************************************************************/
 
 #include "HCoord.hpp"
 #include <cmath>
 #include <cassert>
+#include <vector>
 
 using namespace std;
 
@@ -179,4 +180,8 @@ float HCoord::z() const {
 
 bool HCoord::isVector() const {
     return this->e[3] == 0;
+}
+
+vector<float> HCoord::as_vector() const {
+    return {this->x(), this->y(), this->z()};
 }

@@ -2,8 +2,8 @@
  * @file    Object.hpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Diciembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
  ******************************************************************************/
 
 #ifndef TRABAJO4_OBJECT_HPP
@@ -21,7 +21,7 @@ struct Object {
     const Geometry geometry;
     const Material material;
     const OBJECT_TYPE type;
-    const float n; // Refractive index (Snell's law)
+    const float refractiveIndex; // Refractive index (Snell's law)
 
     // Only for TRIANGULAR_PLY
     const std::vector<Object> triangles;
@@ -34,9 +34,9 @@ struct LightPoint {
 
 LightPoint createLightPoint(const Color &color, const HCoord &position);
 
-Object create2D(const Geometry &geometry, const Material &material);
+Object createObject(const Geometry &geometry, const Material &material);
 
-Object create3D(const Geometry &geometry, const Material &material, float refractiveIndex);
+Object createObject(const Geometry &geometry, const Material &material, float refractiveIndex);
 
 /**
  * Triangular ply object is a triangle mesh without volume ("like a paper cover")
@@ -64,5 +64,5 @@ std::pair<const Object *, float> triangularPlyIntersect(const HCoord &origin, co
 const float VACUUM_REFRACTIVE_INDEX = 1.0f;
 const float WATER_REFRACTIVE_INDEX = 1.330f;
 const float AMBER_REFRACTIVE_INDEX = 1.55f;
-const float LIQUID_HELIUM_REFRACTIVE_INDEX = 1.025;
+const float LIQUID_HELIUM_REFRACTIVE_INDEX = 1.025f;
 #endif //TRABAJO4_OBJECT_HPP

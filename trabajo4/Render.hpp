@@ -2,8 +2,8 @@
  * @file    Render.hpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 5: Photon mapping
  ******************************************************************************/
 
 #ifndef TRABAJO4_RENDER_HPP
@@ -20,7 +20,7 @@
  * @param scene
  * @return the rendered image
  */
-Image render(int width, int height, int ppp, const Scene &scene);
+void render(int width, int height, int ppp, const Scene &scene, const std::string& filename);
 
 /**
  * Renders "objects" seen by "camera" into a width * height image.

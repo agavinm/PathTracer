@@ -2,8 +2,8 @@
  * @file    Object.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Diciembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 4: Path tracer
  ******************************************************************************/
 
 #include "Object.hpp"
@@ -13,26 +13,22 @@
 
 using namespace std;
 
-Object create2D(const Geometry &geometry, const Material &material) {
-    assert(geometry.type != SPHERE);
-
+Object createObject(const Geometry &geometry, const Material &material) {
     return {
             .geometry = geometry,
             .material = material,
             .type = OBJECT_2D,
-            .n = VACUUM_REFRACTIVE_INDEX,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .triangles = vector<Object>()
     };
 }
 
-Object create3D(const Geometry &geometry, const Material &material, float refractiveIndex) {
-    assert(geometry.type == SPHERE);
-
+Object createObject(const Geometry &geometry, const Material &material, float refractiveIndex) {
     return {
             .geometry = geometry,
             .material = material,
             .type = OBJECT_3D,
-            .n = refractiveIndex,
+            .refractiveIndex = refractiveIndex,
             .triangles = vector<Object>()
     };
 }
@@ -44,13 +40,13 @@ Object createTRIANGULAR_PLY(const Geometry &geometry, const std::vector<Object> 
             .geometry = geometry,
             .material = triangles[0].material, // Not used
             .type = TRIANGULAR_PLY,
-            .n = VACUUM_REFRACTIVE_INDEX,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
             .triangles = triangles
     };
 }
 
 LightPoint createLightPoint(const Color &color, const HCoord &position) {
-    return {.color = color,.position = position};
+    return {.color = color, .position = position};
 }
 
 bool isInside(const HCoord &point, const Object &object) {
@@ -77,8 +73,7 @@ pair<const Object *, float> intersect(const HCoord &origin, const HCoord &dir, c
         if (object.type == TRIANGULAR_PLY) {
             ply = triangularPlyIntersect(origin, dir, object);
             obj_dist = ply.second;
-        }
-        else
+        } else
             obj_dist = intersect(origin, dir, object);
 
         if (obj_dist > EPS && obj_dist < dist) {
@@ -93,7 +88,7 @@ pair<const Object *, float> intersect(const HCoord &origin, const HCoord &dir, c
 }
 
 float intersect(const HCoord &origin, const HCoord &dir, const Geometry &geometry) {
-    assert(mod(dir) < 1 + EPS && mod(dir) > 1 - EPS);
+//    assert(mod(dir) < 1 + EPS && mod(dir) > 1 - EPS);
 
     switch (geometry.type) {
         case SPHERE: {
@@ -109,7 +104,6 @@ float intersect(const HCoord &origin, const HCoord &dir, const Geometry &geometr
                    t2 < EPS ? t1 :
                    t1 < t2 ? t1 :
                    t2;
-
         }
         case PLANE: {
             GEOMETRY_PLANE data = geometry.data.plane;
@@ -181,8 +175,7 @@ float intersect(const HCoord &origin, const HCoord &dir, const Geometry &geometr
 float intersect(const HCoord &origin, const HCoord &dir, const Object &object) {
     if (object.type == TRIANGULAR_PLY) {
         return triangularPlyIntersect(origin, dir, object).second;
-    }
-    else {
+    } else {
         return intersect(origin, dir, object.geometry);
     }
 }

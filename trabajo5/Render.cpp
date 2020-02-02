@@ -26,7 +26,7 @@ using namespace std;
  *  0-1 for no special first bounce
  *  infinity for no photon mapping (path tracing)
  */
-const int MAP_AT = 2; // TODO
+const int MAP_AT = 2;
 
 void launchPhoton(const LightPoint &lightPoint, HCoord direction, vector<Photon> &list, const Scene &scene) {
     // intialize path

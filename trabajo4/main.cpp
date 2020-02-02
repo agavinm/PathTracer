@@ -1,9 +1,9 @@
 /******************************************************************************
- * @file    pathtracer.cpp
+ * @file    main.cpp
  * @author  Andrés Gavín Murillo, 716358
  * @author  Abel Naya Forcano, 544125
- * @date    Noviembre 2019
- * @coms    Informática Gráfica - Trabajo recomendado 4
+ * @date    Enero 2020
+ * @coms    Informática Gráfica - Trabajo 5: Photon mapping
  ******************************************************************************/
 
 #include <iostream>
@@ -11,20 +11,21 @@
 
 using namespace std;
 
-bool endsWith(const string &original, const string &suffix) {
-    return original.compare(original.length() - suffix.length(), suffix.length(), suffix) == 0;
-}
-
 void printUsage(const string &name) {
     cout << "Usage: " << name << " <ppp> <width> <height> <file name> <scene>" << endl
-            << "* <file name> needs to be one of" << endl
-            << "       - .ppm" << endl
-            << "       - .bmp" << endl
-            << "OPTIONAL* <scene> can be a triangular .ply file or a predefined scene." << endl;
+         << "* <file name> needs to be one of" << endl
+         << "       - .ppm" << endl
+         << "       - .bmp" << endl
+         << "OPTIONAL* <scene> can be a triangular .ply file or a predefined scene." << endl;
     printScenes();
 }
 
 int main(int argc, char *argv[]) {
+#ifdef USING_DEBUG
+    // debug code
+    cout << "!!!!! USING SLOW DEBUG CODE !!!!!" << endl;
+#endif
+
     // check enough arguments
     if (argc < 5 || argc > 6) {
         printUsage(argv[0]);
@@ -45,16 +46,7 @@ int main(int argc, char *argv[]) {
     }
     Scene scene = createScene(sceneName, (float) width / (float) height);
 
-    if (endsWith(argv[4], ".ppm")) {
-        storePPM(string(argv[4]), render(width, height, ppp, scene), 255);
-    }
-    else if (endsWith(argv[4], ".bmp")) {
-        storeBMP(string(argv[4]), render(width, height, ppp, scene));
-    }
-    else {
-        cerr << "Unknown output file extension" << endl;
-        return 1;
-    }
+    render(width, height, ppp, scene, argv[4]);
 
     return 0;
 }
