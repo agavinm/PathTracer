@@ -272,32 +272,57 @@ defineScene(circle) {
     };
 }
 
-defineScene(mix) {
-    Camera camera = createCamera(hPoint(-5, 0, 0), V_AX, V_AZ, ratio);
+defineScene(donut) {
+    Camera camera = createCamera(
+            hPoint(-9, 9, 5),
+            norm(hVector(1,-1,-1)),
+            norm(hVector(1,-1,1)),
+            ratio);
+
+//    Camera camera = createCamera(hPoint(-10, 0, 0), V_AX, V_AZ, ratio);
 
     vector<Object> objects;
 
     // LIGHT:
     vector<LightPoint> lightPoints;
-    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(0, -4.5, 4.5)));
+    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(-9, -9, 9)));
 //    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(-2.5f, 5, 0)));
 //    lightPoints.push_back(createLightPoint(C_YELLOW, hPoint(-5, -5, 0)));
 
     // BOX:
-    addDefaultBox(5, false, objects);
+    addDefaultBox(20, false, objects);
+
+//    objects.push_back(createObject(
+//            Plane(hVector(0,0,1), 6),
+//            Diffuse(colored(C_WHITE))
+//    ));
+
+    int R = 100;
+    for (int i = 0; i < R; ++i) {
+        float angle = 2 * M_PI * i / R;
+        objects.push_back(createObject(
+                Sphere(hPoint(0, 3 * cos(angle), 3 * sin(angle)), 1),
+                Diffuse(colored(C_YELLOW))
+        ));
+    }
+
+
+//    objects.push_back(createObject(
+//            Sphere(hPoint(0, 0,0), 2),
+//            Diffuse(colored(C_WHITE))
+//    ));
 
 //    loadPly("ply/figure.ply", objects, false);
 
 //    loadPly("ply/monkey.ply", objects, false);
 
-    loadPly("ply/donut.ply", objects, false);
+//    loadPly("ply/donut500.ply", objects, false);
 
     objects.push_back(createObject(
-            Sphere(hPoint(0,0,0), 3),
+            Sphere(hPoint(0, 0, 0), 5),
             Refractor(colored(C_WHITE)),
             1.1
     ));
-
 
 
     return {
@@ -305,7 +330,7 @@ defineScene(mix) {
             .objects = objects,
             .lightPoints = lightPoints,
             .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
-            .gammaCorrection = 4.0f
+            .gammaCorrection = 3.0f
     };
 }
 
@@ -342,7 +367,7 @@ defineScene(dna) {
     };
 }
 
-defineScene(report){
+defineScene(report) {
     Camera camera = createCamera(hPoint(-5, 0, 0), V_AX, V_AZ, ratio);
     vector<Object> objects;
     vector<LightPoint> lightPoints;
@@ -381,12 +406,12 @@ defineScene(report){
 //            Diffuse(colored(C_PURPLE))
 //    ));
     objects.push_back(createObject(
-            Sphere(hPoint(2.5f,3,-1), 1.5f),
+            Sphere(hPoint(2.5f, 3, -1), 1.5f),
             Refractor(colored(C_WHITE)),
             1.1
     ));
     objects.push_back(createObject(
-            Sphere(hPoint(2.5f,-3,-1), 1.5f),
+            Sphere(hPoint(2.5f, -3, -1), 1.5f),
             Specular(colored(C_WHITE)),
             1.1
     ));

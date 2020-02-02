@@ -13,6 +13,14 @@
 
 using namespace std;
 
+//#define SEPARATE_BY_OBJECT
+
+#ifdef SEPARATE_BY_OBJECT
+#define key(k) k
+#else
+#define key(k) 0
+#endif
+
 Color PhotonMap::getColorFromMap(HCoord position, HCoord direction, const Object *object) const {
     const int ELEMENTS = 500;
     float k = totalNumberOfPhotons / 100000.0f; // kernel
@@ -21,7 +29,7 @@ Color PhotonMap::getColorFromMap(HCoord position, HCoord direction, const Object
     vector<const KDTree<Photon, 3>::Node *> list;
     float radius;
     // using find, if the tree doesn't exist an error is generated
-    map.find(object)->second.find(position.as_vector(), ELEMENTS, list, radius);
+    map.find(key(object))->second.find(position.as_vector(), ELEMENTS, list, radius);
     for (auto &node : list) {
         Photon photon = node->data();
         color = color +
@@ -39,7 +47,7 @@ void PhotonMap::addAll(vector<Photon> &other) {
     mtx.lock();
     for (Photon photon : other) {
         // using [] if the tree don't exist, it is initialized
-        map[photon.object].store(photon.position.as_vector(), photon);
+        map[key(photon.object)].store(photon.position.as_vector(), photon);
     }
     mtx.unlock();
 }
