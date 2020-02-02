@@ -32,7 +32,7 @@ void launchPhoton(const LightPoint &lightPoint, HCoord direction, vector<Photon>
     // intialize path
     Color photonFactor = lightPoint.color;
     HCoord position = lightPoint.position;
-    stack<const Object*> refractionStack;
+    stack<const Object *> refractionStack;
 
     int bounce = 1;
     bool path = true;
@@ -64,7 +64,7 @@ void launchPhoton(const LightPoint &lightPoint, HCoord direction, vector<Photon>
                     // get BRDF & next ray of the event
                     EVENT event = getRandomEvent(*intersection, position);
                     HCoord nextDirection = getNewDirection(event, position, direction, *intersection,
-                            refractionStack, scene.refractiveIndex);
+                                                           refractionStack, scene.refractiveIndex);
 
                     if (event == PHONG_DIFFUSE || event == PHONG_SPECULAR) {
                         // only on phong cases
@@ -86,7 +86,7 @@ void launchPhoton(const LightPoint &lightPoint, HCoord direction, vector<Photon>
 
                         // update factor with the brdf
                         photonFactor = photonFactor
-                                      * getBRDF(event, direction, nextDirection, position, *intersection);
+                                       * getBRDF(event, direction, nextDirection, position, *intersection);
 
                         // next direction
                         direction = nextDirection;
@@ -126,11 +126,11 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
     Color directTotal = C_BLACK; // the direct light computed at each step
     int bounce = 1; // number of bounces
     bool path = true; // to stop looping
-    stack<const Object*> refractionStack;
+    stack<const Object *> refractionStack;
 
     while (path) {
         // find nearest intersection
-        pair<const Object*, float> object_dist = intersect(position, direction, scene.objects);
+        pair<const Object *, float> object_dist = intersect(position, direction, scene.objects);
         const Object *intersection = object_dist.first;
         float dist = object_dist.second;
 
@@ -160,7 +160,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
                     // get BRDF & next ray of the event
                     EVENT event = getRandomEvent(*intersection, position);
                     HCoord nextDirection = getNewDirection(event, position, direction, *intersection,
-                            refractionStack, scene.refractiveIndex);
+                                                           refractionStack, scene.refractiveIndex);
 
                     if (event == PHONG_DIFFUSE || event == PHONG_SPECULAR) {
                         // only on phong cases
@@ -248,7 +248,7 @@ void launchPhotons(int photons, const Scene &scene, bool last, Progress &progres
 }
 
 void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Scene &scene,
-        const PhotonMap &globalPhotonMap, bool last, Image &image, Progress &progress) {
+                  const PhotonMap &globalPhotonMap, bool last, Image &image, Progress &progress) {
     for (int j = j_ini; j < j_end; ++j) {
         for (int i = 0; i < width; ++i) {
             // foreach pixel
@@ -271,8 +271,42 @@ void renderRegion(int j_ini, int j_end, int width, int height, int ppp, const Sc
     }
 }
 
-Image render(int width, int height, int ppp, int photons, const Scene &scene) {
-    return render(width, height, ppp, photons, scene, (int) thread::hardware_concurrency());
+bool endsWith(const string &original, const string &suffix) {
+    return original.compare(original.length() - suffix.length(), suffix.length(), suffix) == 0;
+}
+
+void render(int width, int height, int ppp, int photons, const Scene &scene, const string& filename) {
+
+    Image hdr = render(width, height, ppp, photons, scene, (int) thread::hardware_concurrency());
+
+    storePPM(filename.substr(0, filename.find_last_of(".")) + "_hdr.ppm", hdr, 65536);
+
+    Image ldr;
+    if (isnan(scene.clampCorrection)) {
+        if (isnan(scene.gammaCorrection)) {
+            // none
+            ldr = equalization(hdr);
+        } else {
+            // gamma only
+            ldr = gammaCurve(hdr, scene.gammaCorrection);
+        }
+    } else {
+        if (isnan(scene.gammaCorrection)) {
+            // clamp only
+            ldr = equalizeAndClamp(hdr, scene.clampCorrection);
+        } else {
+            // clamp and gamma
+            ldr = clampAndGammaCurve(hdr, scene.clampCorrection, scene.gammaCorrection);
+        }
+    }
+
+    if (endsWith(filename, ".ppm")) {
+        storePPM(filename, ldr, 255);
+    } else if (endsWith(filename, ".bmp")) {
+        storeBMP(filename, ldr);
+    } else {
+        cerr << "Unknown output file extension" << endl;
+    }
 }
 
 Image render(int width, int height, int ppp, int photons, const Scene &scene, int numThreads) {
@@ -336,21 +370,5 @@ Image render(int width, int height, int ppp, int photons, const Scene &scene, in
 
     progress.end();
 
-    if (isnan(scene.clampCorrection)) {
-        if (isnan(scene.gammaCorrection)) {
-            // none
-            return equalization(image);
-        } else {
-            // gamma only
-            return gammaCurve(image, scene.gammaCorrection);
-        }
-    } else {
-        if (isnan(scene.gammaCorrection)) {
-            // clamp only
-            return equalizeAndClamp(image, scene.clampCorrection);
-        } else {
-            // clamp and gamma
-            return clampAndGammaCurve(image, scene.clampCorrection, scene.gammaCorrection);
-        }
-    }
+    return image;
 }

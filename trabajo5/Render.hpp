@@ -21,7 +21,7 @@
  * @param scene
  * @return the rendered image
  */
-Image render(int width, int height, int ppp, int photons, const Scene &scene);
+void render(int width, int height, int ppp, int photons, const Scene &scene, const std::string& filename);
 
 /**
  * Renders "objects" seen by "camera" into a width * height image.

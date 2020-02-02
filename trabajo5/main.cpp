@@ -11,12 +11,8 @@
 
 using namespace std;
 
-bool endsWith(const string &original, const string &suffix) {
-    return original.compare(original.length() - suffix.length(), suffix.length(), suffix) == 0;
-}
-
 void printUsage(const string &name) {
-    cout << "Usage: " << name << " <ppp> <fotons> <width> <height> <file name> <scene>" << endl
+    cout << "Usage: " << name << " <ppp> <photons> <width> <height> <file name> <scene>" << endl
          << "* <file name> needs to be one of" << endl
          << "       - .ppm" << endl
          << "       - .bmp" << endl
@@ -39,8 +35,8 @@ int main(int argc, char *argv[]) {
     // rays
     int ppp = stoi(argv[1]);
 
-    //fotons
-    int fotons = stoi(argv[2]);
+    //photons
+    int photons = stoi(argv[2]);
 
     // Image
     int width = stoi(argv[3]);
@@ -53,14 +49,7 @@ int main(int argc, char *argv[]) {
     }
     Scene scene = createScene(sceneName, (float) width / (float) height);
 
-    if (endsWith(argv[5], ".ppm")) {
-        storePPM(string(argv[5]), render(width, height, ppp, fotons, scene), 255);
-    } else if (endsWith(argv[5], ".bmp")) {
-        storeBMP(string(argv[5]), render(width, height, ppp, fotons, scene));
-    } else {
-        cerr << "Unknown output file extension" << endl;
-        return 1;
-    }
+    render(width, height, ppp, photons, scene, argv[5]);
 
     return 0;
 }
