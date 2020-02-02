@@ -50,10 +50,6 @@ void launchPhoton(const LightPoint &lightPoint, HCoord direction, vector<Photon>
 
             // get properties of bounce
             position = position + direction * stepDist; // hit position
-            HCoord n = normal(intersection->geometry, position);
-
-            // update factor with the geometry component
-            photonFactor = photonFactor * abs(dot(n, direction));
 
             // check material
             switch (intersection->material.type) {
@@ -148,7 +144,6 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
 
             // get properties of bounce
             position = position + direction * dist; // update position with hit
-            HCoord n = normal(intersection->geometry, position); // normal of hit point
 
             // check material
             switch (intersection->material.type) {
@@ -179,8 +174,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
                                 HCoord lightVect = position - lightPoint.position;
                                 float lightDist = mod(lightVect);
                                 Color direct = lightPoint.color
-                                               * getBRDF(event, lightVect, -direction, position, *intersection)
-                                               * abs(dot(n, lightVect))
+                                               * getBRDF(event, norm(lightVect), -direction, position, *intersection)
                                                * rayFactor
                                                / (lightDist * lightDist);
 
@@ -191,8 +185,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
                         if (bounce >= MAP_AT - 1) {
                             // get light from map
                             rayFactor = rayFactor
-                                        * globalPhotonMap.getColorFromMap(position, direction, intersection)
-                                        * abs(dot(n, direction));
+                                        * globalPhotonMap.getColorFromMap(position, direction, intersection);
                             path = false;
                         }
                     }
@@ -209,8 +202,7 @@ Color getLightFromRay(const Scene &scene, HCoord position, HCoord direction, con
 
                         // update factor with the brdf and the geometry component
                         rayFactor = rayFactor
-                                    * getBRDF(event, direction, nextDirection, position, *intersection)
-                                    * abs(dot(n, direction));
+                                    * getBRDF(event, -nextDirection, -direction, position, *intersection);
 
                         // next direction
                         direction = nextDirection;

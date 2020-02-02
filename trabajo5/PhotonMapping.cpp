@@ -26,7 +26,7 @@ Color PhotonMap::getColorFromMap(HCoord position, HCoord direction, const Object
         Photon photon = node->data();
         color = color +
                 photon.color
-                * getBRDF(PHONG_DIFFUSE, direction, -photon.direction, position, *object);
+                * getBRDF(PHONG_DIFFUSE, photon.direction, -direction, position, *object);
     }
 
     return color / ELEMENTS // average color

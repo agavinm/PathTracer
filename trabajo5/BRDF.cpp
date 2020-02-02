@@ -9,6 +9,7 @@
 #include "Transform.hpp"
 #include "Render.hpp"
 #include <cmath>
+#include <cassert>
 #include "BRDF.hpp"
 #include "Random.hpp"
 
@@ -30,8 +31,8 @@ HCoord reflect(const HCoord &in, const HCoord &n) {
  * @param n normal of water surface to air
  * @return
  */
-HCoord refract(const HCoord &in, HCoord n, stack<const Object*> &refractionStack,
-        float sceneRefractiveIndex, const Object* object) {
+HCoord refract(const HCoord &in, HCoord n, stack<const Object *> &refractionStack,
+               float sceneRefractiveIndex, const Object *object) {
     // https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
     float c = -dot(n, in), refractionRatio;
     if (c < 0) {
@@ -73,7 +74,7 @@ HCoord refract(const HCoord &in, HCoord n, stack<const Object*> &refractionStack
  * @return new direction
  */
 HCoord getNewDirection(EVENT event, const HCoord &position, const HCoord &direction, const Object &object,
-        stack<const Object*> &refractionStack, float sceneRefractiveIndex) {
+                       stack<const Object *> &refractionStack, float sceneRefractiveIndex) {
     HCoord n = normal(object.geometry, position);
     switch (event) {
         case REFRACTION:
@@ -95,7 +96,7 @@ HCoord getNewDirection(EVENT event, const HCoord &position, const HCoord &direct
             Y = norm(cross(Z, direction));
             X = norm(cross(Y, Z));
 
-            float theta = (float) M_PI / 2.0f * random_zero_one();//acos(1 - random_zero_one());
+            float theta = acos(sqrt(random_zero_one()));
             float phi = 2.0f * (float) M_PI * random_zero_one();
 
             return norm(changeFromBase(X, Y, Z, position) * hVector(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)));
@@ -182,20 +183,27 @@ EVENT getRandomEvent(const Object &object, const HCoord &position) {
  * @return the factor (color) of the bounce
  */
 Color getBRDF(EVENT event, const HCoord &in, const HCoord &out, const HCoord &position, const Object &object) {
+    HCoord n = normal(object.geometry, position);
+    float c = abs(dot(norm(n), norm(in)));
+
     switch (event) {
         case REFRACTION: {
-            return getColor(object.material.property.reflectance.kd, position);
+            return getColor(object.material.property.reflectance.kd, position)
+                   * c;
         }
         case REFLECTION: {
-            return getColor(object.material.property.reflectance.ks, position);
+            return getColor(object.material.property.reflectance.ks, position)
+                   * c;
         }
         case PHONG_DIFFUSE: {
-            return getColor(object.material.property.reflectance.kdPhong, position) / (float) M_PI;
+            return getColor(object.material.property.reflectance.kdPhong, position) / (float) M_PI
+                   * c;
         }
         case PHONG_SPECULAR: {
             return getColor(object.material.property.reflectance.ksPhong, position)
                    * (object.material.property.reflectance.s + 2.0f) / (2.0f * (float) M_PI)
-                   * pow(abs(dot(in, out)), object.material.property.reflectance.s);
+                   * pow(abs(dot(norm(in), norm(out))), object.material.property.reflectance.s)
+                   * c;
         }
         case DEAD:
             return C_BLACK;

@@ -88,7 +88,7 @@ pair<const Object *, float> intersect(const HCoord &origin, const HCoord &dir, c
 }
 
 float intersect(const HCoord &origin, const HCoord &dir, const Geometry &geometry) {
-    assert(mod(dir) < 1 + EPS && mod(dir) > 1 - EPS);
+//    assert(mod(dir) < 1 + EPS && mod(dir) > 1 - EPS);
 
     switch (geometry.type) {
         case SPHERE: {
