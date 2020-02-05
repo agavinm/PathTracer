@@ -112,6 +112,82 @@ defineScene(default) {
     };
 }
 
+defineScene(contest) {
+    Camera camera = createCamera(hPoint(1, 0, 2), V_AX, V_AZ, ratio);
+
+    vector<Object> objects;
+
+    // CAR
+    vector<LightPoint> lightPoints;
+    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(9, -1, 1)));
+    objects.push_back(createObject(
+            Sphere(hPoint(9.5f, 0.2f, 1.25f), 0.2f),
+            Emitter(colored(C_YELLOW))
+    ));
+    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(7, 2, 1)));
+    objects.push_back(createObject(
+            Sphere(hPoint(7.5f, 2.95f, 1), 0.23f),
+            Emitter(colored(C_YELLOW))
+    ));
+    loadPly("../ply/car.ply", objects, false);
+    // END_CAR
+
+    objects.push_back(createObject(
+            Plane(hVector(0, 0, 1), 1),
+            Diffuse(colored(C_GREEN))
+    )); // GROUND
+
+    // CAUSTICS
+    objects.push_back(createObject(
+            Cuadric(1, 1, -0.2f, 0, 0, 0, -15, 5, 0, 62),
+            Delta(colored(C_WHITE), colored({0.6, 0.6, 1})),
+            WATER_REFRACTIVE_INDEX
+    ));
+    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(8, -2, 1)));
+    objects.push_back(createObject(
+            Sphere(hPoint(7.5f, -2.5f, 0), 1),
+            Refractor(colored(C_YELLOW)),
+            AMBER_REFRACTIVE_INDEX
+    ));
+    // END_CAUSTICS
+
+    // MIRROR
+    objects.push_back(createObject(
+            Triangle(hPoint(10, -7.5f, -1), hPoint(6, 0, 6), hPoint(3, -3.5f, 1)),
+            Specular(colored(C_WHITE))
+    ));
+    // END_MIRROR
+
+    // RING
+    int R = 100;
+    for (int i = 0; i < R; ++i) {
+        float angle = 2 * M_PI * i / R;
+        objects.push_back(createObject(
+                Sphere(hPoint(7.5f + 1.5f * sin(angle), -2.5f + 1.5f * cos(angle), 3 - 1.5f * sin(angle)), 0.5f),
+                Phong(colored(C_YELLOW), colored(C_YELLOW), 10)
+        ));
+    }
+    // END_RING
+
+    // Stars
+    /*for (int i = 0; i < 100; i++) {
+        int y = random_zero_n(250) - 125, z = random_zero_n(83);
+        lightPoints.push_back(createLightPoint(C_WHITE, hPoint(45, y, z + 5)));
+        objects.push_back(createObject(
+                Sphere(hPoint(50, y, z), random_zero_one()),
+                Diffuse(colored(C_WHITE * random_zero_one()))
+        ));
+    }*/
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .lightPoints = lightPoints,
+            .refractiveIndex = AIR_REFRACTIVE_INDEX,
+            .gammaCorrection = 4.0f
+    };
+}
+
 defineScene(noEmitters) {
     Camera camera = createCamera(hPoint(-5, 0, 0), V_AX, V_AZ, ratio);
 
