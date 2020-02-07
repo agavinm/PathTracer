@@ -14,4 +14,7 @@ float random_zero_one();
 
 int random_zero_n(int n);
 
+float random_float(float min, float max);
+
+
 #endif //TRABAJO4_RANDOM_HPP

@@ -275,7 +275,7 @@ bool endsWith(const string &original, const string &suffix) {
     return original.compare(original.length() - suffix.length(), suffix.length(), suffix) == 0;
 }
 
-void render(int width, int height, int ppp, int photons, const Scene &scene, const string& filename) {
+void render(int width, int height, int ppp, int photons, const Scene &scene, const string &filename) {
 
     Image hdr = render(width, height, ppp, photons, scene, (int) thread::hardware_concurrency());
 
@@ -335,7 +335,7 @@ Image render(int width, int height, int ppp, int photons, const Scene &scene, in
             threads[n].join(); // wait thread n ends
         }
 
-        progress.step(99.99f);
+        progress.step(99.999f);
 
         globalPhotonMap.markToRead();
 

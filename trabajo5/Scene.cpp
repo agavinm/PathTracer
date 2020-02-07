@@ -13,6 +13,8 @@
 #include "Scene.hpp"
 #include "Texture.hpp"
 #include "Random.hpp"
+#include "Transform.hpp"
+#include "Color.hpp"
 
 using namespace std;
 
@@ -129,7 +131,7 @@ defineScene(contest) {
             Sphere(hPoint(7.5f, 2.95f, 1), 0.23f),
             Emitter(colored(C_YELLOW))
     ));
-    loadPly("../ply/car.ply", objects, false);
+    loadPly("ply/car.ply", objects, false);
     // END_CAR
 
     objects.push_back(createObject(
@@ -185,6 +187,259 @@ defineScene(contest) {
             .lightPoints = lightPoints,
             .refractiveIndex = AIR_REFRACTIVE_INDEX,
             .gammaCorrection = 4.0f
+    };
+}
+
+defineScene(caustics) {
+    float radius = 15;
+    Camera camera = createCamera(hPoint(-radius * 2 + EPS, 0, 0), V_AX, V_AZ, ratio);
+
+    vector<Object> objects;
+
+    // LIGHT:
+    vector<LightPoint> lightPoints;
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * 1.5f, radius * 1.5f, radius * 1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * 1.5f, radius * 1.5f, radius * -1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * 1.5f, radius * -1.5f, radius * 1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * 1.5f, radius * -1.5f, radius * -1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * -1.5f, radius * 1.5f, radius * 1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * -1.5f, radius * 1.5f, radius * -1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * -1.5f, radius * -1.5f, radius * 1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * -1.5f, radius * -1.5f, radius * -1.5f)));
+    lightPoints.push_back(createLightPoint(C_WHITE, P_ZERO));
+
+    // BOX:
+    objects.push_back(createObject(
+            Plane(hVector(0, 0, -1), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // UP
+    objects.push_back(createObject(
+            Plane(hVector(-1, 0, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // FRONT
+    objects.push_back(createObject(
+            Plane(hVector(0, 1, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // RIGHT
+    objects.push_back(createObject(
+            Plane(hVector(0, -1, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // LEFT
+    objects.push_back(createObject(
+            Plane(hVector(0, 0, 1), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // DOWN
+    objects.push_back(createObject(
+            Plane(hVector(1, 0, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // BACK
+
+//    objects.push_back(createObject(
+//            Sphere(
+//                    P_ZERO,
+//                    radius * 2
+//            ),
+//            Reflector(
+//                    colored(C_BLACK),
+//                    colored(C_WHITE),
+//                    1,
+//                    colored(C_WHITE),
+//                    colored(C_BLACK)
+//            ),
+//            AIR_REFRACTIVE_INDEX//random_float(VACUUM_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX)
+//    ));
+
+
+    // SPHERES:
+    int n = 100;
+    for (int i = 0; i < n; ++i) {
+
+        double theta = 2 * M_PI * random_zero_one();
+        double phi = acos(1 - 2 * random_zero_one());
+        HCoord direction = hVector(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
+
+        float local_radius = random_float(radius / 8, radius / 4);
+
+        objects.push_back(createObject(
+                Sphere(
+                        P_ZERO + direction * (radius - local_radius),
+                        local_radius
+                ),
+                Delta(
+                        colored(hsv(random_float(0, 360), 1.0, 1.0)),
+                        colored(hsv(random_float(0, 360), 1.0, 1.0))
+                ),
+                random_float(1.01, 1.1)
+        ));
+    }
+
+//    // CUADRICS
+//    for (int i = 0; i < 1; ++i) {
+//
+//        objects.push_back(createObject(
+//                Cuadric(
+//                        random_float(-10, 10),
+//                        random_float(-10, 10),
+//                        random_float(-10, 10),
+//                        random_float(-10, 10),
+//                        random_float(-10, 10),
+//                        random_float(-10, 10),
+//                        random_float(-10, 10),
+//                        random_float(-10, 10),
+//                        random_float(-10, 10),
+//                        random_float(-10, 10)
+//                ),
+//                Delta(
+//                        colored(hsv(random_float(0, 360), 1.0, 1.0)),
+//                        colored(hsv(random_float(0, 360), 1.0, 1.0))
+//                ),
+//                random_float(1.001, 1.01)
+//        ));
+//    }
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .lightPoints = lightPoints,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 3.0f,
+//            .clampCorrection = 25.0f
+    };
+
+}
+
+defineScene(layers) {
+    float radius = 15;
+    Camera camera = createCamera(hPoint(-radius * 4 + EPS, 0, 0), V_AX, V_AZ, ratio);
+
+    vector<Object> objects;
+
+    // LIGHT:
+    vector<LightPoint> lightPoints;
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * 1.5f, radius * 1.5f, radius * 1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * 1.5f, radius * 1.5f, radius * -1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * 1.5f, radius * -1.5f, radius * 1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * 1.5f, radius * -1.5f, radius * -1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * -1.5f, radius * 1.5f, radius * 1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * -1.5f, radius * 1.5f, radius * -1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * -1.5f, radius * -1.5f, radius * 1.5f)));
+//    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(radius * -1.5f, radius * -1.5f, radius * -1.5f)));
+    lightPoints.push_back(createLightPoint(C_WHITE, hPoint(0, radius, 0)));
+
+    // BOX:
+    objects.push_back(createObject(
+            Plane(hVector(0, 0, -1), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // UP
+    objects.push_back(createObject(
+            Plane(hVector(-1, 0, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // FRONT
+    objects.push_back(createObject(
+            Plane(hVector(0, 1, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // RIGHT
+    objects.push_back(createObject(
+            Plane(hVector(0, -1, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // LEFT
+    objects.push_back(createObject(
+            Plane(hVector(0, 0, 1), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // DOWN
+    objects.push_back(createObject(
+            Plane(hVector(1, 0, 0), radius * 4),
+            Diffuse(colored(C_WHITE))
+    )); // BACK
+
+    objects.push_back(createObject(
+            Sphere(hPoint(0, 0, -radius), radius),
+            Refractor(colored(C_WHITE)),
+            AIR_REFRACTIVE_INDEX//random_float(VACUUM_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX)
+    ));
+
+
+    // Planes:
+    int N = 3;
+    for (int i = 0; i < N; ++i) {
+
+        objects.push_back(createObject(
+                Plane(V_AZ, radius * 2 * (float) (i + 1) / (float) (N + 1)),
+                Delta(
+                        colored(C_WHITE),
+                        colored(C_WHITE)
+                ),
+                1.01//random_float(1.001, 1.01)
+        ));
+    }
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .lightPoints = lightPoints,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 3.0f,
+//            .clampCorrection = 25.0f
+    };
+}
+
+defineScene(rainbow) {
+    float radius = 15;
+    Camera camera = createCamera(hPoint(-radius + EPS, 0, 0), V_AX, V_AZ, ratio);
+
+    vector<Object> objects;
+
+    // LIGHT:
+    vector<LightPoint> lightPoints;
+    int lights = 8;
+    for (int i = 0; i < lights; ++i) {
+        float angle = (float) i / (float) lights;
+        lightPoints.push_back(createLightPoint(
+                hsv(angle * 360, 1.0, 1.0),
+                hPoint(0, cos(angle * 2 * M_PI) * radius, sin(angle * 2 * M_PI) * radius)
+        ));
+    }
+
+    // BOX:
+    objects.push_back(createObject(
+            Plane(hVector(0, 0, -1), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // UP
+    objects.push_back(createObject(
+            Plane(hVector(-1, 0, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // FRONT
+    objects.push_back(createObject(
+            Plane(hVector(0, 1, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // RIGHT
+    objects.push_back(createObject(
+            Plane(hVector(0, -1, 0), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // LEFT
+    objects.push_back(createObject(
+            Plane(hVector(0, 0, 1), radius * 2),
+            Diffuse(colored(C_WHITE))
+    )); // DOWN
+    objects.push_back(createObject(
+            Plane(hVector(1, 0, 0), radius),
+            Emitter(colored(C_BLACK))
+    )); // BACK
+
+
+    objects.push_back(createObject(
+            Sphere(hPoint(radius, 0, 0), radius / 2),
+            Refractor(colored(C_WHITE)),
+            1.2
+    ));
+
+    return {
+            .camera = camera,
+            .objects = objects,
+            .lightPoints = lightPoints,
+            .refractiveIndex = VACUUM_REFRACTIVE_INDEX,
+            .gammaCorrection = 3.0f,
+//            .clampCorrection = 25.0f
     };
 }
 
@@ -351,8 +606,8 @@ defineScene(circle) {
 defineScene(donut) {
     Camera camera = createCamera(
             hPoint(-9, 9, 5),
-            norm(hVector(1,-1,-1)),
-            norm(hVector(1,-1,1)),
+            norm(hVector(1, -1, -1)),
+            norm(hVector(1, -1, 1)),
             ratio);
 
 //    Camera camera = createCamera(hPoint(-10, 0, 0), V_AX, V_AZ, ratio);

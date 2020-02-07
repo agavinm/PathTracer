@@ -10,6 +10,7 @@
 #define TRABAJO3_COLOR_HPP
 
 #include "HCoord.hpp"
+#include "Random.hpp"
 
 struct Color {
     float r;

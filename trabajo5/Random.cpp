@@ -7,6 +7,8 @@
  ******************************************************************************/
 
 #include "Random.hpp"
+#include "Color.hpp"
+#include "Texture.hpp"
 #include <random>
 
 using namespace std;
@@ -23,3 +25,9 @@ float random_zero_one() {
 int random_zero_n(int n) {
     return uniform_int_distribution<>(0, n)(generator);
 }
+
+
+float random_float(float min, float max) {
+    return uniform_real_distribution<float>(min, nextafter(max, MAXFLOAT))(generator);
+}
+

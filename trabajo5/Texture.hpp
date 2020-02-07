@@ -53,4 +53,6 @@ Texture sinCos2D(const VertexColor &color);
 
 Color getColor(const Texture &texture, const HCoord &position);
 
+Color hsv(float H, float S, float V);
+
 #endif //TRABAJO3_TEXTURE_HPP

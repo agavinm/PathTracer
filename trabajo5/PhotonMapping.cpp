@@ -22,8 +22,8 @@ using namespace std;
 #endif
 
 Color PhotonMap::getColorFromMap(HCoord position, HCoord direction, const Object *object) const {
-    const int ELEMENTS = 500;
-    float k = totalNumberOfPhotons / 100000.0f; // kernel
+    const int ELEMENTS = 5000;
+    float k = totalNumberOfPhotons / 30000.0f; // kernel
 
     Color color = C_BLACK;
     vector<const KDTree<Photon, 3>::Node *> list;
@@ -34,7 +34,8 @@ Color PhotonMap::getColorFromMap(HCoord position, HCoord direction, const Object
         Photon photon = node->data();
         color = color +
                 photon.color
-                * getBRDF(PHONG_DIFFUSE, photon.direction, -direction, position, *object);
+                * getBRDF(PHONG_DIFFUSE, photon.direction, -direction, position, *object)
+                / mod(photon.position - position);
     }
 
     return color / ELEMENTS // average color
@@ -46,7 +47,7 @@ Color PhotonMap::getColorFromMap(HCoord position, HCoord direction, const Object
 void PhotonMap::addAll(vector<Photon> &other) {
     mtx.lock();
     for (Photon photon : other) {
-        // using [] if the tree don't exist, it is initialized
+        // using [] if the tree doesn't exist, it is initialized
         map[key(photon.object)].store(photon.position.as_vector(), photon);
     }
     mtx.unlock();

@@ -35,25 +35,29 @@ HCoord refract(const HCoord &in, HCoord n, stack<const Object *> &refractionStac
                float sceneRefractiveIndex, const Object *object) {
     // https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
     float c = -dot(n, in), refractionRatio;
+
+    refractionRatio = sceneRefractiveIndex / object->refractiveIndex;
+
     if (c < 0) {
         // the normal and the ray have the same direction
+        refractionRatio = 1.0f / refractionRatio;
         c = -c;
         n = -n;
     }
 
-    if (refractionStack.empty()) {
+//    if (refractionStack.empty()) {
         // the ray comes from the outside
-        refractionRatio = sceneRefractiveIndex / object->refractiveIndex;
-        refractionStack.push(object);
-    } else if (object != refractionStack.top()) {
-        // the ray comes from another object
-        refractionRatio = refractionStack.top()->refractiveIndex / object->refractiveIndex;
-        refractionStack.push(object);
-    } else {
-        // the ray comes from the inside, the refraction index is the opposite
-        refractionRatio = object->refractiveIndex / refractionStack.top()->refractiveIndex;
-        refractionStack.pop();
-    }
+//        refractionRatio = sceneRefractiveIndex / object->refractiveIndex;
+//        refractionStack.push(object);
+//    } else if (object != refractionStack.top()) {
+//        // the ray comes from another object
+//        refractionRatio = refractionStack.top()->refractiveIndex / object->refractiveIndex;
+//        refractionStack.push(object);
+//    } else {
+//        // the ray comes from the inside, the refraction index is the opposite
+//        refractionRatio = object->refractiveIndex / refractionStack.top()->refractiveIndex;
+//        refractionStack.pop();
+//    }
 
     float radicand = 1.0f - refractionRatio * refractionRatio * (1.0f - c * c);
     if (radicand < 0.0f) {
@@ -189,11 +193,11 @@ Color getBRDF(EVENT event, const HCoord &in, const HCoord &out, const HCoord &po
     switch (event) {
         case REFRACTION: {
             return getColor(object.material.property.reflectance.kd, position)
-                   * c;
+                   ;//* c;
         }
         case REFLECTION: {
             return getColor(object.material.property.reflectance.ks, position)
-                   * c;
+                   ;//* c;
         }
         case PHONG_DIFFUSE: {
             return getColor(object.material.property.reflectance.kdPhong, position) / (float) M_PI
