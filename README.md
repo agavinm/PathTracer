@@ -22,6 +22,7 @@ Available scenes: circle, contest, default, dna, donut, noEmitters, refraction, 
 
 ### Rendered images:
 ![alt text](https://github.com/agavinm/PathTracer/blob/master/images/contest.bmp "contest.bmp")  
+![alt text](https://github.com/agavinm/PathTracer/blob/master/images/noEmitters.bmp "noEmitters.bmp")  
 ![alt text](https://github.com/agavinm/PathTracer/blob/master/images/default.bmp "default.bmp")  
 ![alt text](https://github.com/agavinm/PathTracer/blob/master/images/circle.bmp "circle.bmp")  
 ![alt text](https://github.com/agavinm/PathTracer/blob/master/images/dna.bmp "dna.bmp")  
