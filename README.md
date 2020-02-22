@@ -19,3 +19,11 @@ Available scenes: circle, contest, default, dna, donut, noEmitters, refraction, 
 [INFO] gammaCurve -> [INFO] Clamping image with v=1.000 and applying gamma curve with gamma=4.000
 [INFO] Storing image as bmp images/circle.bmp
 </code></pre>
+
+### Rendered images:
+![alt text](https://github.com/agavinm/PathTracer/blob/master/images/contest.bmp "contest.bmp")  
+![alt text](https://github.com/agavinm/PathTracer/blob/master/images/default.bmp "default.bmp")  
+![alt text](https://github.com/agavinm/PathTracer/blob/master/images/circle.bmp "circle.bmp")  
+![alt text](https://github.com/agavinm/PathTracer/blob/master/images/dna.bmp "dna.bmp")  
+![alt text](https://github.com/agavinm/PathTracer/blob/master/images/refraction.bmp "refraction.bmp")  
+![alt text](https://github.com/agavinm/PathTracer/blob/master/images/specular.bmp "specular.bmp")  
