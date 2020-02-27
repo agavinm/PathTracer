@@ -1,6 +1,7 @@
 # PathTracer
 
 Path tracer written in C++ from scratch.  
+Latest release: https://github.com/agavinm/PathTracer/releases/latest  
   
 ### Usage:
 <pre><code>./PathTracer &ltppp> &ltwidth> &ltheight> &ltfile name> &ltscene>
@@ -21,10 +22,10 @@ Available scenes: circle, contest, default, dna, donut, noEmitters, refraction, 
 </code></pre>
 
 ### Rendered images:
-![alt text](https://github.com/agavinm/PathTracer/blob/master/images/contest.bmp "contest.bmp")  
-![alt text](https://github.com/agavinm/PathTracer/blob/master/images/noEmitters.bmp "noEmitters.bmp")  
-![alt text](https://github.com/agavinm/PathTracer/blob/master/images/default.bmp "default.bmp")  
-![alt text](https://github.com/agavinm/PathTracer/blob/master/images/circle.bmp "circle.bmp")  
-![alt text](https://github.com/agavinm/PathTracer/blob/master/images/dna.bmp "dna.bmp")  
-![alt text](https://github.com/agavinm/PathTracer/blob/master/images/refraction.bmp "refraction.bmp")  
-![alt text](https://github.com/agavinm/PathTracer/blob/master/images/specular.bmp "specular.bmp")  
+![contest](https://user-images.githubusercontent.com/37375662/75463325-eeca9e00-5985-11ea-96a0-580e748747d7.jpeg "contest")
+![noEmitters](https://user-images.githubusercontent.com/37375662/75463683-71535d80-5986-11ea-9952-56f70e915e5d.jpeg "noEmitters")
+![default](https://user-images.githubusercontent.com/37375662/75463697-744e4e00-5986-11ea-885f-b57f76caaf56.jpeg "default")
+![circle](https://user-images.githubusercontent.com/37375662/75463724-7ca68900-5986-11ea-80e4-ce20075ab043.jpeg "circle")
+![dna](https://user-images.githubusercontent.com/37375662/75463734-7fa17980-5986-11ea-87bd-30d7051adfdb.jpeg "dna")
+![refraction](https://user-images.githubusercontent.com/37375662/75463764-89c37800-5986-11ea-8da7-855762e6a39f.jpeg "refraction")
+![specular](https://user-images.githubusercontent.com/37375662/75463781-8cbe6880-5986-11ea-9b53-b2243675054f.jpeg "specular") 
