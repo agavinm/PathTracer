@@ -1,14 +1,14 @@
 # PathTracer
 
 Path tracer written in C++ from scratch.  
-Latest release: https://github.com/agavinm/PathTracer/releases/latest  
+[Latest release](https://github.com/agavinm/PathTracer/releases/latest)  
   
 ### Usage:
-<pre><code>./PathTracer &ltppp> &ltwidth> &ltheight> &ltfile name> &ltscene>
-* &ltfile name> needs to be one of
+<pre><code>./PathTracer &lt;ppp&gt; &lt;width&gt; &lt;height&gt; &lt;file name&gt; &lt;scene&gt;
+* &lt;file name&gt; needs to be one of
        - .ppm
        - .bmp
-OPTIONAL* &ltscene> can be a triangular .ply file or a predefined scene.
+OPTIONAL* &lt;scene&gt; can be a triangular .ply file or a predefined scene.
 Available scenes: circle, contest, default, dna, donut, noEmitters, refraction, report, specular.
 </code></pre>
 
@@ -20,6 +20,9 @@ Available scenes: circle, contest, default, dna, donut, noEmitters, refraction, 
 [INFO] gammaCurve -> [INFO] Clamping image with v=1.000 and applying gamma curve with gamma=4.000
 [INFO] Storing image as bmp images/circle.bmp
 </code></pre>
+
+### Documentation
+[Report](https://github.com/agavinm/PathTracer/files/5781424/pathtracer_report.pdf) (in Spanish)
 
 ### Rendered images:
 ![contest](https://user-images.githubusercontent.com/37375662/75463325-eeca9e00-5985-11ea-96a0-580e748747d7.jpeg "contest")
